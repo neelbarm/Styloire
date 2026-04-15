@@ -57,12 +57,13 @@ export default function Home() {
   const [eventName, setEventName] = useState("Grammys");
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
-
-  const previewSubjects = useMemo(() => {
-    return selectedBrands.map(
-      (brand) => `${talent} / ${eventName} / ${brand} - Styling Request`
-    );
-  }, [selectedBrands, talent, eventName]);
+  const previewSubjects = useMemo(
+    () =>
+      selectedBrands.map(
+        (brand) => `${talent} / ${eventName} / ${brand} - Styling Request`
+      ),
+    [selectedBrands, talent, eventName]
+  );
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -71,8 +72,7 @@ export default function Home() {
     setCsvText(text);
     const parsed = parseCsv(text);
     setGroups(parsed);
-    const allBrands = Object.keys(parsed).sort();
-    setSelectedBrands(allBrands.slice(0, 1));
+    setSelectedBrands(Object.keys(parsed).sort().slice(0, 1));
     setStep(2);
     event.currentTarget.value = "";
   };
@@ -133,6 +133,7 @@ export default function Home() {
               const itemStep = index + 1;
               const isActive = step === itemStep;
               const isComplete = step > itemStep;
+
               return (
                 <div
                   key={label}
@@ -162,9 +163,7 @@ export default function Home() {
         <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-8">
             <div className={baseCardClass}>
-              <h2 className="mb-3 text-2xl font-bold text-stone-800">
-                1) Upload CSV
-              </h2>
+              <h2 className="mb-3 text-2xl font-bold text-stone-800">1) Upload CSV</h2>
               <p className="mb-6 text-sm font-bold text-stone-600">
                 Required columns: <code>brand_name,email,first_name</code>
               </p>
@@ -333,7 +332,9 @@ export default function Home() {
             </form>
           </div>
 
-          <aside className={`${baseCardClass} h-fit border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50`}>
+          <aside
+            className={`${baseCardClass} h-fit border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50`}
+          >
             <h3 className="mb-4 text-2xl font-bold text-stone-800">Request Preview</h3>
             <p className="mb-6 text-sm font-bold text-stone-600">
               Subject line samples for selected brands:
@@ -360,8 +361,7 @@ export default function Home() {
 
             {step === 3 ? (
               <div className="mt-8 rounded-3xl border border-emerald-100 bg-emerald-50 p-6 text-sm font-bold text-emerald-700 shadow-xl">
-                Request drafted for {talent || "Talent"} / {eventName || "Event"} /
-                {" "}
+                Request drafted for {talent || "Talent"} / {eventName || "Event"} /{" "}
                 {selectedBrands.join(", ")}.
               </div>
             ) : null}
