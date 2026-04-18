@@ -19,7 +19,7 @@ export function StyloireMarketingHeader() {
           </Link>
           <Link
             href="/contact#waitlist"
-            className="rounded-full border border-transparent bg-styloire-sand px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-colors hover:bg-styloire-ink hover:text-styloire-canvas md:hidden"
+            className="rounded-full border border-transparent bg-styloire-sand px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-[color,background-color] duration-styloire ease-styloire hover:bg-styloire-ink hover:text-styloire-canvas md:hidden"
           >
             Join waitlist
           </Link>
@@ -33,7 +33,7 @@ export function StyloireMarketingHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors hover:border-styloire-ink hover:bg-styloire-ink/5"
+              className="rounded-full border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-[color,background-color,border-color] duration-styloire ease-styloire hover:border-styloire-ink hover:bg-styloire-ink/[0.05]"
             >
               {item.label}
             </Link>
@@ -43,7 +43,7 @@ export function StyloireMarketingHeader() {
         <div className="hidden justify-end md:flex">
           <Link
             href="/contact#waitlist"
-            className="rounded-full border border-transparent bg-styloire-sand px-6 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-colors hover:bg-styloire-ink hover:text-styloire-canvas"
+            className="rounded-full border border-transparent bg-styloire-sand px-6 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-[color,background-color] duration-styloire ease-styloire hover:bg-styloire-ink hover:text-styloire-canvas"
           >
             Join the waitlist
           </Link>

@@ -6,7 +6,7 @@ export default function NewRequestPage() {
     <>
       <StyloireAppPageHeader
         title="New request"
-        description="Mirrors onboarding flow §4.2 — talent + event, CSV import with brand toggles, template preview, optional follow-up scheduling. Sending waits on SendGrid."
+        description="Talent and event, file import, template preview, optional follow-up — sending unlocks when your mail layer is ready."
       />
       <NewRequestWizard />
     </>

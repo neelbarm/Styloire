@@ -83,7 +83,11 @@ export function ContactForm() {
         </StyloireButton>
         {sent ? (
           <p className="font-sans text-xs text-styloire-inkSoft">
-            Thanks — this prototype does not deliver mail yet. Email hello@styloire.co directly.
+            Thank you. If you need us sooner, write{" "}
+            <a href="mailto:hello@styloire.co" className="text-styloire-ink underline-offset-4 hover:underline">
+              hello@styloire.co
+            </a>
+            .
           </p>
         ) : (
           <p className="font-sans text-xs text-styloire-inkMuted">We reply within 24–48 hours.</p>

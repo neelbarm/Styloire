@@ -10,7 +10,7 @@ export default function ClientsPage() {
     <>
       <StyloireAppPageHeader
         title="My clients"
-        description="Each card is a saved Client Profile — talent name, contact count, and historical Requests (§5.3)."
+        description="Each card is a talent — contacts saved, requests filed beneath."
       />
       <div className="grid gap-6 md:grid-cols-2">
         {profiles.map((profile) => (

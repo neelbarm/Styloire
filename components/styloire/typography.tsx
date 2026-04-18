@@ -1,14 +1,19 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
-type HeadingLevel = "display" | "title" | "section";
+type HeadingLevel = "display" | "title" | "section" | "editorial";
 
 const headingClasses: Record<HeadingLevel, string> = {
+  /** Hero — sentence case, light weight, no shouty caps */
   display:
-    "font-serif text-styloire-display font-normal uppercase text-styloire-ink",
+    "font-serif text-styloire-display font-light normal-case tracking-tight text-styloire-ink",
+  /** Short section labels */
   title:
     "font-serif text-styloire-title font-normal uppercase tracking-[0.12em] text-styloire-ink",
   section:
-    "font-serif text-2xl md:text-3xl font-normal uppercase tracking-[0.14em] text-styloire-ink"
+    "font-serif text-2xl font-light uppercase tracking-[0.16em] text-styloire-ink md:text-3xl",
+  /** Longer headlines — mixed case, editorial rhythm */
+  editorial:
+    "mx-auto max-w-styloire-narrow font-serif text-[clamp(1.65rem,3.2vw,2.35rem)] font-light leading-[1.2] tracking-[0.01em] text-styloire-ink"
 };
 
 export type StyloireHeadingProps = HTMLAttributes<HTMLHeadingElement> & {
@@ -36,11 +41,10 @@ export type StyloireLeadProps = HTMLAttributes<HTMLParagraphElement> & {
   children: ReactNode;
 };
 
-/** Italic serif emphasis — taglines, pull quotes */
 export function StyloireLead({ className = "", children, ...rest }: StyloireLeadProps) {
   return (
     <p
-      className={`font-serif text-lg italic text-styloire-inkSoft md:text-xl md:leading-relaxed ${className}`.trim()}
+      className={`font-serif text-lg font-light italic leading-relaxed text-styloire-inkSoft md:text-xl ${className}`.trim()}
       {...rest}
     >
       {children}
@@ -50,7 +54,6 @@ export function StyloireLead({ className = "", children, ...rest }: StyloireLead
 
 export type StyloireBodyProps = HTMLAttributes<HTMLParagraphElement> & {
   children: ReactNode;
-  /** Tighter measure for long editorial copy */
   narrow?: boolean;
 };
 
@@ -74,7 +77,6 @@ export type StyloireEyebrowProps = HTMLAttributes<HTMLParagraphElement> & {
   children: ReactNode;
 };
 
-/** Small caps label — nav, field labels, section kicks */
 export function StyloireEyebrow({ className = "", children, ...rest }: StyloireEyebrowProps) {
   return (
     <p
@@ -90,19 +92,18 @@ export type StyloireListProps = HTMLAttributes<HTMLUListElement> & {
   items: string[];
 };
 
-/** Centered hyphen list — editorial, not bullet dots */
 export function StyloireList({ items, className = "", ...rest }: StyloireListProps) {
   return (
     <ul
-      className={`mx-auto max-w-styloire-narrow space-y-3 font-sans text-styloire-body font-light text-styloire-inkSoft ${className}`.trim()}
+      className={`mx-auto max-w-styloire-narrow list-none space-y-5 font-sans text-styloire-body font-light text-styloire-inkSoft ${className}`.trim()}
       {...rest}
     >
       {items.map((item) => (
-        <li key={item} className="flex justify-center gap-3">
-          <span className="select-none text-styloire-inkMuted" aria-hidden>
+        <li key={item} className="flex justify-center gap-4">
+          <span className="select-none pt-0.5 font-serif text-styloire-inkMuted" aria-hidden>
             —
           </span>
-          <span>{item}</span>
+          <span className="max-w-md text-center leading-relaxed">{item}</span>
         </li>
       ))}
     </ul>

@@ -4,16 +4,16 @@
 
 :root {
   color-scheme: dark;
-  --styloire-canvas: #1a1a1a;
-  --styloire-canvas-deep: #121212;
-  --styloire-ink: #e5ded0;
-  --styloire-ink-soft: #d6cfc3;
-  --styloire-ink-muted: #a89f91;
-  --styloire-line: rgba(229, 222, 208, 0.45);
-  --styloire-overlay: rgba(10, 10, 10, 0.55);
-  --styloire-overlay-heavy: rgba(10, 10, 10, 0.72);
-  --styloire-sand: #e8e1d6;
-  --styloire-sand-fg: #141414;
+  --styloire-canvas: #181818;
+  --styloire-canvas-deep: #111111;
+  --styloire-ink: #ebe4d8;
+  --styloire-ink-soft: #d4cdc1;
+  --styloire-ink-muted: #9c948a;
+  --styloire-line: rgba(235, 228, 216, 0.38);
+  --styloire-overlay: rgba(8, 8, 8, 0.52);
+  --styloire-overlay-heavy: rgba(6, 6, 6, 0.68);
+  --styloire-sand: #e4ddd2;
+  --styloire-sand-fg: #101010;
 }
 
 @layer base {
@@ -23,17 +23,15 @@
 
   body {
     @apply min-h-screen bg-styloire-canvas font-sans text-styloire-ink antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    @apply bg-styloire-ink/15 text-styloire-ink;
+    background-color: rgba(235, 228, 216, 0.18);
+    color: rgb(24, 24, 24);
   }
 }
 
-/**
- * Optional scope for light legacy surfaces (e.g. internal tools).
- * Marketing + app shell default to dark editorial tokens via body.
- */
 .styloire-light-surface {
   color-scheme: light;
   @apply bg-stone-50 text-stone-900;

@@ -45,7 +45,7 @@ export default function HowItWorksPage() {
             {
               index: "04",
               title: "Hit send",
-              body: "SendGrid dispatches individual messages per PR contact. Each row updates with sent time for audit-friendly history."
+              body: "Each house receives its own message from your single draft. The log records what left and when."
             },
             {
               index: "05",
@@ -83,7 +83,7 @@ export default function HowItWorksPage() {
       <StyloireSection tone="solid" className="pb-24">
         <StyloireHero>
           <StyloireHeading level="title">Ready when you are.</StyloireHeading>
-          <StyloireBody>Join the waitlist or explore the interactive prototype in the app preview.</StyloireBody>
+          <StyloireBody>Join the waitlist, or step into the workspace preview.</StyloireBody>
           <div className="flex flex-wrap justify-center gap-4">
             <StyloireButton href="/contact#waitlist" variant="solid">
               Join waitlist

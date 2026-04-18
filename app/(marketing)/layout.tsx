@@ -3,9 +3,17 @@ import { StyloireMarketingHeader } from "@/components/styloire";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 
 export const metadata: Metadata = {
-  title: "Styloire — Make Emailing Simple",
+  title: "Make emailing simple",
   description:
-    "Email automation for fashion stylists. Write one pull request email, personalize it for hundreds of brand PR contacts."
+    "Styloire helps stylists send one polished pull request and reach every house on the list — without the paste marathon.",
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: "Styloire — Make emailing simple",
+    description:
+      "Styloire helps stylists send one polished pull request and reach every house on the list — without the paste marathon."
+  }
 };
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {

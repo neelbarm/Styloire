@@ -8,7 +8,7 @@ export default function SettingsPage() {
     <>
       <StyloireAppPageHeader
         title="Account & billing"
-        description="Profile, password, and Stripe customer portal per §5.5 — actions disabled until Supabase + Stripe are wired."
+        description="Name, sign-in, and billing — available once accounts and payments are live."
       />
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -39,7 +39,7 @@ export default function SettingsPage() {
             Plan: <span className="text-styloire-ink">Styloire Pro — $20/month</span>
             <br />
             Status:{" "}
-            <span className="uppercase tracking-wide text-emerald-200">
+            <span className="uppercase tracking-wide text-styloire-ink">
               {MOCK_USER.subscription_status}
             </span>
           </p>

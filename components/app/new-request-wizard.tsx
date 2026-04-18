@@ -93,8 +93,7 @@ export function NewRequestWizard() {
           <StyloireEyebrow className="mb-4">Step 1</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-ink">Talent &amp; event</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Required fields mirror the spec: talent name and event / publication before
-            contacts upload.
+            Talent and event first — then the file. The same order as a real request.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <label className="space-y-2">
@@ -141,8 +140,9 @@ export function NewRequestWizard() {
           <StyloireEyebrow className="mb-4">Step 2</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-ink">Upload contacts</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            CSV with columns <code className="text-styloire-ink">brand_name,email,first_name</code>.
-            Production adds SheetJS for XLSX per spec.
+            CSV with columns{" "}
+            <code className="text-styloire-ink">brand_name, email, first_name</code>. Excel
+            will follow in a later release.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-styloire-line px-5 py-2 font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-ink hover:border-styloire-ink">
@@ -202,8 +202,7 @@ export function NewRequestWizard() {
           <StyloireEyebrow className="mb-4">Step 3</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-ink">Write once</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Default template from spec §6. Dynamic fields update from your first selected
-            brand row.
+            Default pull-request copy. Placeholders fill from your first selected row.
           </p>
           <div className="mt-8 space-y-4">
             <label className="block space-y-2">
@@ -244,8 +243,7 @@ export function NewRequestWizard() {
           <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-ink">Follow up &amp; send</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Optional follow-up date. Sending is disabled until SendGrid + Supabase are
-            connected.
+            Optional follow-up date. Send stays inactive until your outbound mail is configured.
           </p>
           <label className="mt-8 block max-w-xs space-y-2">
             <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
@@ -263,7 +261,7 @@ export function NewRequestWizard() {
               Back
             </StyloireButton>
             <StyloireButton type="button" variant="solid" disabled>
-              Send via SendGrid
+              Send outreach
             </StyloireButton>
           </div>
         </StyloirePanel>

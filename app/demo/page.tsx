@@ -3,6 +3,7 @@
 import { ArrowRight, CheckCircle, Upload } from "lucide-react";
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { StyloireButton, StyloireEyebrow, StyloireMarketingHeader, StyloirePanel } from "@/components/styloire";
 import {
   type GroupedContacts,
   parseBrandContactsCsv
@@ -13,6 +14,15 @@ PRADA,sally@prada.com,Sally
 PRADA,katie@prada.com,Katie
 PRADA,grace@prada.com,Grace
 CHANEL,sophie@chanel.com,Sophie`;
+
+const pillOutline =
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-styloire-line bg-transparent px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors hover:border-styloire-ink hover:bg-styloire-ink/5";
+
+const fieldLabel =
+  "mb-2 block font-sans text-styloire-caption font-medium uppercase tracking-styloireWide text-styloire-inkMuted";
+
+const fieldInput =
+  "w-full border-0 border-b border-styloire-line bg-transparent py-3 font-sans text-sm font-light text-styloire-ink placeholder:text-styloire-inkMuted focus:border-styloire-ink focus:outline-none";
 
 export default function DemoPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -64,282 +74,262 @@ export default function DemoPage() {
     setStep(3);
   };
 
-  const baseCardClass =
-    "rounded-3xl border border-stone-100 bg-white/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl";
-
   return (
-    <div className="styloire-light-surface min-h-screen">
-      <div className="border-b border-stone-200 bg-white/90 px-4 py-4 text-center text-xs font-semibold uppercase tracking-wide text-stone-600 md:text-left md:px-8">
-        <Link href="/" className="text-amber-700 underline-offset-4 hover:underline">
-          Back to Styloire
+    <div className="min-h-screen bg-styloire-canvas text-styloire-ink">
+      <StyloireMarketingHeader />
+      <div className="border-b border-styloire-lineSubtle px-6 py-4 md:px-10">
+        <Link
+          href="/"
+          className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-4 hover:text-styloire-ink hover:underline"
+        >
+          ← Marketing site
         </Link>
       </div>
-      <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50 px-4 py-6 md:px-8 md:py-10">
-        <div className="pointer-events-none absolute -left-16 top-16 h-64 w-64 rounded-full bg-amber-200/40 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 top-36 h-72 w-72 rounded-full bg-orange-200/35 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-8 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-stone-200/40 blur-3xl" />
 
-        <section className="relative mx-auto w-full max-w-7xl rounded-3xl border border-stone-100 bg-white/80 p-8 shadow-2xl backdrop-blur-xl md:p-12">
-          <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-3">
-              <p className="text-xs font-bold uppercase tracking-[0.35em] text-amber-600">
-                Styloire
-              </p>
-              <h1 className="text-4xl font-black leading-tight text-stone-800 md:text-6xl">
-                Fashion Stylist Request Demo
-              </h1>
-              <p className="max-w-3xl text-sm font-bold text-stone-600 md:text-base">
-                Luxury outreach workflow in 3 steps. Upload your PR sheet, auto-group
-                brand contacts, and generate polished request previews instantly.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 self-start rounded-3xl border border-amber-200 bg-amber-50 px-6 py-3 text-xs font-bold uppercase tracking-wide text-amber-700 shadow-xl">
-              <CheckCircle className="h-4 w-4" />
-              Step {step} of 3
-            </span>
+      <main className="relative mx-auto max-w-styloire px-6 py-10 md:px-10 md:py-14">
+        <div className="pointer-events-none absolute inset-0 bg-styloire-noise opacity-30" aria-hidden />
+
+        <div className="relative mb-12 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-3xl space-y-4">
+            <StyloireEyebrow>Live import flow</StyloireEyebrow>
+            <h1 className="font-serif text-3xl font-normal uppercase tracking-[0.08em] text-styloire-ink md:text-4xl md:leading-tight">
+              Fashion stylist request demo
+            </h1>
+            <p className="font-sans text-styloire-body font-light leading-relaxed text-styloire-inkSoft">
+              Upload a PR sheet, auto-group by house, and preview subject lines — the same
+              rhythm as the workspace, in one place.
+            </p>
           </div>
+          <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-styloire-line px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink">
+            <CheckCircle className="h-3.5 w-3.5 text-styloire-inkMuted" aria-hidden />
+            Step {step} of 3
+          </span>
+        </div>
 
-          <div className="mb-10 grid gap-4 md:grid-cols-3">
-            {["Upload CSV", "Brand Grouping", "Create Request"].map(
-              (label, index) => {
-                const itemStep = index + 1;
-                const isActive = step === itemStep;
-                const isComplete = step > itemStep;
-
-                return (
-                  <div
-                    key={label}
-                    className={`group rounded-3xl border px-6 py-6 text-sm font-bold transition-all duration-300 hover:scale-[1.02] ${
-                      isActive
-                        ? "border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 text-stone-800 shadow-xl"
-                        : isComplete
-                          ? "border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 text-stone-800 shadow-xl"
-                          : "border-stone-200 bg-stone-50 text-stone-600"
-                    }`}
-                  >
-                    <p className="flex items-center gap-2">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/80 text-xs shadow">
-                        {itemStep}
-                      </span>
-                      {label}
-                      {(isActive || isComplete) && (
-                        <ArrowRight className="ml-auto h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      )}
-                    </p>
-                  </div>
-                );
-              }
-            )}
-          </div>
-
-          <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-8">
-              <div className={baseCardClass}>
-                <h2 className="mb-3 text-2xl font-bold text-stone-800">1) Upload CSV</h2>
-                <p className="mb-6 text-sm font-bold text-stone-600">
-                  Required columns: <code>brand_name,email,first_name</code>
-                </p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl">
-                    <Upload className="h-4 w-4" />
-                    Upload CSV
-                    <input
-                      type="file"
-                      accept=".csv,text/csv"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleUseDemoCsv}
-                    className="rounded-3xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl"
-                  >
-                    Use Demo CSV
-                  </button>
-                </div>
-                {csvText ? (
-                  <p className="mt-4 text-xs font-bold text-stone-600">
-                    CSV loaded ({csvText.split(/\r?\n/).length - 1} contacts)
-                  </p>
-                ) : null}
-              </div>
-
-              <div className={`${baseCardClass} relative overflow-hidden`}>
-                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-100/70 blur-2xl" />
-                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-2xl font-bold text-stone-800">
-                    2) Brand Contact Groups
-                  </h2>
-                  <button
-                    type="button"
-                    disabled={!brands.length}
-                    onClick={() => setStep(2)}
-                    className="inline-flex items-center justify-center gap-2 rounded-3xl border border-stone-200 bg-white px-5 py-3 text-xs font-bold uppercase tracking-wide text-stone-700 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Focus table
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="hidden md:block">
-                  <table className="w-full table-fixed text-sm">
-                    <thead>
-                      <tr className="rounded-3xl border-b border-stone-200 bg-stone-50 text-left text-xs font-bold uppercase tracking-wide text-stone-700">
-                        <th className="w-20 px-3 py-4">Select</th>
-                        <th className="w-36 px-3 py-4">Brand</th>
-                        <th className="w-28 px-3 py-4"># Contacts</th>
-                        <th className="px-3 py-4">Email list</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {brands.length ? (
-                        brands.map((brand) => (
-                          <tr
-                            key={brand}
-                            className="border-b border-stone-100 align-top transition-colors duration-300 hover:bg-stone-50"
-                          >
-                            <td className="px-3 py-4">
-                              <input
-                                type="checkbox"
-                                checked={selectedBrands.includes(brand)}
-                                onChange={() => toggleBrand(brand)}
-                                className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
-                              />
-                            </td>
-                            <td className="truncate px-3 py-4 font-bold text-stone-800">
-                              {brand}
-                            </td>
-                            <td className="px-3 py-4 font-bold text-stone-600">
-                              {groups[brand].length}
-                            </td>
-                            <td className="break-words px-3 py-4 font-semibold text-stone-600">
-                              {groups[brand].map((contact) => contact.email).join(", ")}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="px-3 py-8 text-center font-bold text-stone-500"
-                          >
-                            Upload a CSV to auto-group contacts by brand.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="space-y-4 md:hidden">
-                  {brands.length ? (
-                    brands.map((brand) => (
-                      <div
-                        key={brand}
-                        className="rounded-3xl border border-stone-200 bg-stone-50 p-5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl"
-                      >
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="text-lg font-bold text-stone-800">{brand}</p>
-                          <input
-                            type="checkbox"
-                            checked={selectedBrands.includes(brand)}
-                            onChange={() => toggleBrand(brand)}
-                            className="h-5 w-5 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
-                          />
-                        </div>
-                        <p className="mb-2 text-sm font-bold text-stone-600">
-                          {groups[brand].length} contacts
-                        </p>
-                        <p className="break-words text-sm font-semibold text-stone-600">
-                          {groups[brand].map((contact) => contact.email).join(", ")}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-6 text-center text-sm font-bold text-stone-500">
-                      Upload a CSV to auto-group contacts by brand.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <form
-                onSubmit={submitRequest}
-                className={`${baseCardClass} relative overflow-hidden`}
+        <div className="relative mb-12 grid gap-3 md:grid-cols-3">
+          {["Upload CSV", "Brand grouping", "Create request"].map((label, index) => {
+            const itemStep = index + 1;
+            const isActive = step === itemStep;
+            const isComplete = step > itemStep;
+            return (
+              <div
+                key={label}
+                className={`rounded-full border px-5 py-3 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-colors ${
+                  isActive
+                    ? "border-styloire-ink bg-styloire-ink/10 text-styloire-ink"
+                    : isComplete
+                      ? "border-styloire-line text-styloire-inkSoft"
+                      : "border-styloire-lineSubtle text-styloire-inkMuted"
+                }`}
               >
-                <div className="pointer-events-none absolute -left-20 -top-20 h-48 w-48 rounded-full bg-emerald-100/60 blur-3xl" />
-                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-2xl font-bold text-stone-800">3) Create Request</h2>
-                  <button
-                    type="submit"
-                    disabled={!selectedBrands.length}
-                    className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Create Request
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                <p className="flex items-center gap-2">
+                  <span className="font-serif text-base not-italic text-styloire-inkMuted">
+                    {String(itemStep).padStart(2, "0")}
+                  </span>
+                  {label}
+                  {(isActive || isComplete) && (
+                    <ArrowRight className="ml-auto h-3.5 w-3.5 shrink-0 text-styloire-inkMuted" />
+                  )}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="relative grid gap-10 xl:grid-cols-[1.2fr_0.85fr]">
+          <div className="space-y-10">
+            <StyloirePanel>
+              <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+                1) Upload CSV
+              </h2>
+              <p className="mt-3 font-sans text-sm font-light text-styloire-inkSoft">
+                Required columns:{" "}
+                <code className="border border-styloire-lineSubtle px-2 py-0.5 font-mono text-xs text-styloire-ink">
+                  brand_name, email, first_name
+                </code>
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <label className={pillOutline}>
+                  <Upload className="h-4 w-4" aria-hidden />
+                  Upload CSV
+                  <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+                <StyloireButton type="button" variant="solid" onClick={handleUseDemoCsv}>
+                  Use demo CSV
+                </StyloireButton>
+              </div>
+              {csvText ? (
+                <p className="mt-6 font-sans text-xs uppercase tracking-styloireWide text-styloire-inkMuted">
+                  CSV loaded ({csvText.split(/\r?\n/).length - 1} rows)
+                </p>
+              ) : null}
+            </StyloirePanel>
+
+            <StyloirePanel>
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+                  2) Brand contact groups
+                </h2>
+                <StyloireButton
+                  type="button"
+                  variant="outline"
+                  disabled={!brands.length}
+                  onClick={() => setStep(2)}
+                >
+                  Focus table
+                  <ArrowRight className="ml-1 inline h-3 w-3" />
+                </StyloireButton>
+              </div>
+
+              <div className="hidden md:block">
+                <table className="w-full table-fixed text-sm">
+                  <thead>
+                    <tr className="border-b border-styloire-lineSubtle text-left font-sans text-[0.65rem] font-medium uppercase tracking-styloireWide text-styloire-inkMuted">
+                      <th className="w-20 px-3 py-3">Select</th>
+                      <th className="w-36 px-3 py-3">Brand</th>
+                      <th className="w-28 px-3 py-3">#</th>
+                      <th className="px-3 py-3">Emails</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-sans font-light text-styloire-inkSoft">
+                    {brands.length ? (
+                      brands.map((brand) => (
+                        <tr
+                          key={brand}
+                          className="border-b border-styloire-lineSubtle align-top transition-colors hover:bg-styloire-ink/[0.03]"
+                        >
+                          <td className="px-3 py-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedBrands.includes(brand)}
+                              onChange={() => toggleBrand(brand)}
+                              className="h-4 w-4 rounded border-styloire-line bg-transparent text-styloire-ink focus:ring-styloire-ink/30"
+                            />
+                          </td>
+                          <td className="truncate px-3 py-4 text-styloire-ink">{brand}</td>
+                          <td className="px-3 py-4">{groups[brand].length}</td>
+                          <td className="break-words px-3 py-4">{groups[brand].map((c) => c.email).join(", ")}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-10 text-center text-sm text-styloire-inkMuted">
+                          Upload a CSV to auto-group contacts by brand.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="space-y-4 md:hidden">
+                {brands.length ? (
+                  brands.map((brand) => (
+                    <div
+                      key={brand}
+                      className="border border-styloire-lineSubtle bg-styloire-canvas/30 p-5"
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="font-serif text-lg text-styloire-ink">{brand}</p>
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() => toggleBrand(brand)}
+                          className="h-4 w-4 rounded border-styloire-line bg-transparent text-styloire-ink focus:ring-styloire-ink/30"
+                        />
+                      </div>
+                      <p className="mb-2 font-sans text-xs uppercase tracking-styloireWide text-styloire-inkMuted">
+                        {groups[brand].length} contacts
+                      </p>
+                      <p className="break-words text-sm text-styloire-inkSoft">
+                        {groups[brand].map((c) => c.email).join(", ")}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="border border-styloire-lineSubtle px-4 py-8 text-center text-sm text-styloire-inkMuted">
+                    Upload a CSV to auto-group contacts by brand.
+                  </p>
+                )}
+              </div>
+            </StyloirePanel>
+
+            <StyloirePanel>
+              <form onSubmit={submitRequest}>
+                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+                    3) Create request
+                  </h2>
+                  <StyloireButton type="submit" variant="solid" disabled={!selectedBrands.length}>
+                    Create request
+                    <ArrowRight className="ml-1 inline h-3 w-3" />
+                  </StyloireButton>
                 </div>
 
-                <div className="grid gap-5 md:grid-cols-2">
-                  <label className="text-sm">
-                    <span className="mb-2 block font-bold text-stone-700">Talent</span>
+                <div className="grid gap-8 md:grid-cols-2">
+                  <label className="block">
+                    <span className={fieldLabel}>Talent</span>
                     <input
                       value={talent}
                       onChange={(e) => setTalent(e.target.value)}
-                      className="w-full rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 font-bold text-stone-800 outline-none ring-amber-300 transition-all duration-300 focus:ring"
-                      placeholder="Bella"
+                      className={fieldInput}
+                      placeholder="Bella Hadid"
                     />
                   </label>
-                  <label className="text-sm">
-                    <span className="mb-2 block font-bold text-stone-700">Event</span>
+                  <label className="block">
+                    <span className={fieldLabel}>Event</span>
                     <input
                       value={eventName}
                       onChange={(e) => setEventName(e.target.value)}
-                      className="w-full rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 font-bold text-stone-800 outline-none ring-amber-300 transition-all duration-300 focus:ring"
+                      className={fieldInput}
                       placeholder="Grammys"
                     />
                   </label>
                 </div>
               </form>
-            </div>
+            </StyloirePanel>
+          </div>
 
-            <aside
-              className={`${baseCardClass} h-fit border-stone-200 bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50`}
-            >
-              <h3 className="mb-4 text-2xl font-bold text-stone-800">Request Preview</h3>
-              <p className="mb-6 text-sm font-bold text-stone-600">
+          <aside>
+            <StyloirePanel className="h-fit">
+              <h3 className="font-serif text-xl text-styloire-ink">Request preview</h3>
+              <p className="mt-3 font-sans text-sm font-light text-styloire-inkSoft">
                 Subject line samples for selected brands:
               </p>
               {previewSubjects.length ? (
-                <ul className="space-y-4">
+                <ul className="mt-8 space-y-3">
                   {previewSubjects.map((subject) => (
                     <li
                       key={subject}
-                      className="rounded-3xl border border-stone-200 bg-white/90 px-5 py-4 text-sm font-bold text-stone-700 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl"
+                      className="border border-styloire-lineSubtle px-4 py-4 font-sans text-xs font-light leading-relaxed text-styloire-inkSoft"
                     >
                       <span className="inline-flex items-start gap-3 break-words">
-                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-styloire-inkMuted" aria-hidden />
                         {subject}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm font-bold text-stone-500">
+                <p className="mt-8 font-sans text-sm font-light text-styloire-inkMuted">
                   Select at least one brand to preview subjects.
                 </p>
               )}
 
               {step === 3 ? (
-                <div className="mt-8 rounded-3xl border border-emerald-100 bg-emerald-50 p-6 text-sm font-bold text-emerald-700 shadow-xl">
+                <div className="mt-8 border border-styloire-line px-5 py-6 font-sans text-sm font-light text-styloire-inkSoft">
                   Request drafted for {talent || "Talent"} / {eventName || "Event"} /{" "}
                   {selectedBrands.join(", ")}.
                 </div>
               ) : null}
-            </aside>
-          </div>
-        </section>
+            </StyloirePanel>
+          </aside>
+        </div>
       </main>
     </div>
   );

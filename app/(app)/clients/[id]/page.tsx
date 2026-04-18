@@ -15,7 +15,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <StyloireAppPageHeader
           title={profile.talent_name}
-          description="Profile detail: editable contacts, CSV merge with dedupe, and past Requests (read-only mock)."
+          description="Roster, history, and room to add or refine contacts."
         />
         <div className="flex flex-wrap gap-3">
           <StyloireButton type="button" variant="outline" disabled>
@@ -41,7 +41,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             </thead>
             <tbody className="font-sans font-light text-styloire-inkSoft">
               {contacts.map((c) => (
-                <tr key={c.id} className="border-b border-styloire-lineSubtle/60">
+                <tr key={c.id} className="border-b border-styloire-lineSubtle">
                   <td className="py-3 pr-4 text-styloire-ink">{c.brand_name}</td>
                   <td className="py-3 pr-4">{c.contact_name ?? "—"}</td>
                   <td className="py-3 pr-4">{c.email}</td>
@@ -57,7 +57,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
         <h2 className="font-serif text-xl text-styloire-ink">Past requests</h2>
         <ul className="mt-6 space-y-4 font-sans text-sm text-styloire-inkSoft">
           {requests.map((r) => (
-            <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-styloire-lineSubtle/40 pb-4">
+            <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-styloire-lineSubtle pb-4">
               <span>
                 {r.event_name}{" "}
                 <span className="text-styloire-inkMuted">· {r.status}</span>

@@ -6,17 +6,17 @@ export function DataSourceBanner({
   notice?: string;
 }) {
   return (
-    <div className="mb-8 space-y-3 border border-styloire-lineSubtle bg-styloire-canvas/40 px-5 py-4 font-sans text-xs font-light text-styloire-inkSoft">
+    <div className="mb-10 border border-styloire-lineSubtle bg-styloire-canvasDeep/50 px-5 py-4 font-sans text-xs font-light leading-relaxed text-styloire-inkSoft">
       <p>
         <span className="font-medium uppercase tracking-styloireNav text-styloire-inkMuted">
-          Data source
+          Data
         </span>
-        {": "}
+        {" · "}
         {source === "supabase"
-          ? "Supabase (service role on the server — swap for user JWT + RLS when auth ships)."
-          : "Bundled mock fixtures (set NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY to query Postgres)."}
+          ? "Reading from your database (server-side only)."
+          : "Preview dataset — connect Supabase to replace."}
       </p>
-      {notice ? <p className="text-amber-100/90">{notice}</p> : null}
+      {notice ? <p className="mt-2 border-t border-styloire-lineSubtle pt-3 text-styloire-inkMuted">{notice}</p> : null}
     </div>
   );
 }

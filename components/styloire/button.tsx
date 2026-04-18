@@ -5,16 +5,15 @@ type StyloireButtonVariant = "outline" | "solid";
 
 export type StyloireButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: StyloireButtonVariant;
-  /** Renders a Next.js link with the same editorial pill styles */
   href?: string;
 };
 
 const base =
-  "inline-flex items-center justify-center rounded-full border px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-styloire-ink/40 disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex items-center justify-center rounded-full border px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color,opacity] duration-styloire ease-styloire focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-styloire-ink/50 disabled:pointer-events-none disabled:opacity-35";
 
 const variants: Record<StyloireButtonVariant, string> = {
   outline:
-    "border-styloire-line bg-transparent text-styloire-ink hover:border-styloire-ink hover:bg-styloire-ink/5",
+    "border-styloire-line bg-transparent text-styloire-ink hover:border-styloire-ink hover:bg-styloire-ink/[0.06]",
   solid:
     "border-transparent bg-styloire-sand text-styloire-sandFg hover:bg-styloire-ink hover:text-styloire-canvas"
 };

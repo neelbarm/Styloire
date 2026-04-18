@@ -17,10 +17,10 @@ const nav = [
 
 function navClass(active: boolean) {
   return [
-    "rounded-full border px-4 py-2 text-center font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-colors",
+    "rounded-full border px-4 py-2 text-center font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color] duration-styloire ease-styloire",
     active
-      ? "border-styloire-ink bg-styloire-ink/10 text-styloire-ink"
-      : "border-styloire-line text-styloire-ink hover:border-styloire-ink hover:bg-styloire-ink/5"
+      ? "border-styloire-ink bg-styloire-ink/[0.08] text-styloire-ink"
+      : "border-styloire-line text-styloire-ink hover:border-styloire-ink hover:bg-styloire-ink/[0.04]"
   ].join(" ");
 }
 
@@ -31,14 +31,14 @@ export function AppChrome({ children }: { children: ReactNode }) {
   return (
     <StyloireAppShell
       sidebar={
-        <div className="flex h-full flex-col gap-10 px-6 py-10">
+        <div className="flex h-full flex-col gap-12 px-6 py-10">
           <Link
             href="/"
-            className="font-sans text-styloire-caption font-medium uppercase tracking-[0.42em] text-styloire-ink"
+            className="font-sans text-styloire-caption font-medium uppercase tracking-[0.38em] text-styloire-ink"
           >
             Styloire
           </Link>
-          <nav className="flex flex-col gap-3" aria-label="App">
+          <nav className="flex flex-col gap-2.5" aria-label="App">
             {nav.map((item) => {
               const active =
                 item.href === "/dashboard"
@@ -55,10 +55,10 @@ export function AppChrome({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <div className="mt-auto space-y-4 border-t border-styloire-lineSubtle pt-8">
-            <StyloireEyebrow className="text-left">Workspace</StyloireEyebrow>
-            <p className="font-sans text-xs font-light text-styloire-inkSoft">
-              Mock data — wire Supabase + SendGrid per developer spec v2.
+          <div className="mt-auto space-y-5 border-t border-styloire-lineSubtle pt-10">
+            <StyloireEyebrow className="text-left">Tools</StyloireEyebrow>
+            <p className="font-sans text-xs font-light leading-relaxed text-styloire-inkMuted">
+              Try the file import flow without leaving the house style.
             </p>
             <StyloireButton
               variant="outline"
@@ -66,7 +66,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => router.push("/demo")}
             >
-              Legacy CSV demo
+              CSV import
             </StyloireButton>
           </div>
         </div>
@@ -74,13 +74,13 @@ export function AppChrome({ children }: { children: ReactNode }) {
       topBar={
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="font-sans text-styloire-caption font-medium uppercase tracking-styloireWide text-styloire-inkMuted">
-            Signed in as Jordan Lee
+            Jordan Lee
           </p>
           <Link
             href="/"
-            className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkSoft underline-offset-4 hover:text-styloire-ink hover:underline"
+            className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
           >
-            Marketing site
+            Site
           </Link>
         </div>
       }

@@ -31,7 +31,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     items: [
       {
         q: "What format should my contact file be?",
-        a: "V1 expects structured columns (for example brand_name, email, first_name). SheetJS will parse CSV and XLSX in the browser before data is saved to your private client profiles."
+        a: "Structured columns — for example brand_name, email, first_name. Files are parsed in the browser, then stored only under your account."
       },
       {
         q: "Where do my contacts live?",
@@ -65,7 +65,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "Is there a free trial?",
-        a: "The public spec calls for a trial at launch; final policy will be confirmed at billing integration."
+        a: "Trial terms will be set at launch and shown clearly before you pay."
       },
       {
         q: "Can I cancel any time?",
@@ -83,7 +83,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "How is data secured?",
-        a: "Production will use Supabase with row-level security, HTTPS everywhere, and least-privilege service roles for SendGrid and Stripe."
+        a: "Hosted infrastructure with row-level security, HTTPS throughout, and least-privilege access to payment and mail providers."
       }
     ]
   }
