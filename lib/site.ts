@@ -1,8 +1,8 @@
-/** Canonical site URL for metadata, sitemap, and robots. Override in production with NEXT_PUBLIC_SITE_URL. */
+import { clientEnv } from "@/lib/env/client";
+
+/** Canonical site URL for metadata, sitemap, and robots. */
 export function siteUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (raw) return raw.replace(/\/$/, "");
-  return "https://styloire.co";
+  return clientEnv.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
 }
 
 export function showDataSourceBanner(): boolean {

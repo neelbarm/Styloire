@@ -10,10 +10,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/contact",
     "/dashboard",
     "/requests/new",
-    "/clients",
+    "/roster",
     "/templates",
-    "/settings",
-    "/demo"
+    "/settings"
   ];
   const now = new Date().toISOString();
   return paths.map((path) => ({

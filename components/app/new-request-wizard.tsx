@@ -2,9 +2,15 @@
 
 import { ArrowRight, Upload } from "lucide-react";
 import { ChangeEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { StyloireButton, StyloireEyebrow, StyloirePanel } from "@/components/styloire";
+import { getProfileWithContacts, listProfiles } from "@/lib/styloire/mock-data";
 import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
-import { type GroupedContacts, parseBrandContactsCsv } from "@/lib/styloire/parse-contacts";
+import {
+  type GroupedContacts,
+  parseBrandContactsCsvDetailed,
+  parseBrandContactsFileDetailed
+} from "@/lib/styloire/parse-contacts";
 import { renderTemplate } from "@/lib/styloire/template-render";
 
 const demoCsv = `brand_name,email,first_name
@@ -13,26 +19,41 @@ PRADA,katie@prada.com,Katie
 CHANEL,sophie@chanel.com,Sophie`;
 
 export function NewRequestWizard() {
+  const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [requestType, setRequestType] = useState<"new" | "existing">("new");
+  const [profileId, setProfileId] = useState("");
   const [talent, setTalent] = useState("");
   const [eventName, setEventName] = useState("");
   const [groups, setGroups] = useState<GroupedContacts>({});
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [contactSearch, setContactSearch] = useState("");
   const [followup, setFollowup] = useState("");
+  const [parseError, setParseError] = useState("");
+  const [emailBody, setEmailBody] = useState<string>(DEFAULT_TEMPLATE_STANDARD_PULL.body);
+  const [submitState, setSubmitState] = useState<"idle" | "saving" | "error">("idle");
+  const [submitError, setSubmitError] = useState("");
+  const profiles = listProfiles();
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
+  const filteredBrands = useMemo(() => {
+    const q = contactSearch.trim().toLowerCase();
+    if (!q) return brands;
+    return brands.filter((brand) => brand.toLowerCase().includes(q));
+  }, [brands, contactSearch]);
+  const selectedCount = selectedBrands.length;
   const previewBrand = selectedBrands[0] ?? brands[0];
   const previewContact = previewBrand ? groups[previewBrand]?.[0] : undefined;
 
   const mergedBody = useMemo(() => {
-    if (!previewContact || !talent || !eventName) return DEFAULT_TEMPLATE_STANDARD_PULL.body;
-    return renderTemplate(DEFAULT_TEMPLATE_STANDARD_PULL.body, {
+    if (!previewContact || !talent || !eventName) return emailBody;
+    return renderTemplate(emailBody, {
       brand_name: previewBrand ?? "",
       contact_name: previewContact.contact_name,
       talent,
       event: eventName
     });
-  }, [previewBrand, previewContact, talent, eventName]);
+  }, [emailBody, previewBrand, previewContact, talent, eventName]);
 
   const subjectPreview =
     talent && eventName && previewBrand
@@ -40,16 +61,44 @@ export function NewRequestWizard() {
       : "{{talent}} / {{event}} / {{brand_name}}";
 
   const loadCsv = (text: string) => {
-    const parsed = parseBrandContactsCsv(text);
-    setGroups(parsed);
-    setSelectedBrands(Object.keys(parsed).sort());
+    const parsed = parseBrandContactsCsvDetailed(text);
+    setGroups(parsed.groups);
+    setSelectedBrands(Object.keys(parsed.groups).sort());
+    setParseError(parsed.errors[0] ?? "");
+  };
+
+  const loadProfileContacts = (nextProfileId: string) => {
+    const profile = getProfileWithContacts(nextProfileId);
+    if (!profile) {
+      setGroups({});
+      setSelectedBrands([]);
+      return;
+    }
+
+    const grouped = profile.contacts.reduce<GroupedContacts>((acc, row) => {
+      const key = row.brand_name.trim().toUpperCase();
+      const list = acc[key] ?? [];
+      list.push({
+        brand_name: key,
+        email: row.email,
+        contact_name: row.contact_name ?? ""
+      });
+      acc[key] = list;
+      return acc;
+    }, {});
+
+    setTalent(profile.profile.talent_name);
+    setGroups(grouped);
+    setSelectedBrands(Object.keys(grouped).sort());
   };
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    loadCsv(text);
+    const parsed = await parseBrandContactsFileDetailed(file);
+    setGroups(parsed.groups);
+    setSelectedBrands(Object.keys(parsed.groups).sort());
+    setParseError(parsed.errors[0] ?? "");
     setStep(2);
     event.currentTarget.value = "";
   };
@@ -60,6 +109,81 @@ export function NewRequestWizard() {
         ? current.filter((name) => name !== brand)
         : [...current, brand]
     );
+  };
+
+  const isStepOneReady = Boolean(talent.trim() && eventName.trim());
+
+  const contactsPayload = Object.values(groups).flat();
+
+  const submitRequest = async () => {
+    setSubmitState("saving");
+    setSubmitError("");
+    const response = await fetch("/api/requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        talent: talent.trim(),
+        eventName: eventName.trim(),
+        requestType,
+        profileId: profileId || undefined,
+        contacts: contactsPayload,
+        selectedBrands,
+        emailBody,
+        followupDate: followup || null
+      })
+    });
+    const data = (await response.json().catch(() => ({}))) as {
+      id?: string;
+      error?: string;
+      source?: string;
+    };
+    if (!response.ok || !data.id) {
+      setSubmitState("error");
+      setSubmitError(data.error ?? "Could not create request.");
+      return;
+    }
+
+    if (data.source === "mock" || data.id === "req_local_preview") {
+      router.push(`/requests/${data.id}`);
+      return;
+    }
+
+    const sendResponse = await fetch(`/api/requests/${data.id}/send`, {
+      method: "POST",
+    });
+    const sendPayload = (await sendResponse.json().catch(() => ({}))) as {
+      error?: string;
+      ok?: boolean;
+      sent?: number;
+      failed?: number;
+    };
+
+    if (sendResponse.status === 400) {
+      setSubmitState("error");
+      setSubmitError(
+        sendPayload.error ??
+          "Could not send emails. Check your connected account in Settings.",
+      );
+      return;
+    }
+
+    if (sendResponse.status === 207) {
+      setSubmitState("error");
+      setSubmitError(
+        sendPayload.error ??
+          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed. Open the request to retry.`,
+      );
+      router.push(`/requests/${data.id}`);
+      return;
+    }
+
+    if (!sendResponse.ok) {
+      setSubmitState("error");
+      setSubmitError(sendPayload.error ?? "Send request failed.");
+      return;
+    }
+
+    router.push(`/requests/${data.id}`);
   };
 
   return (
@@ -77,7 +201,7 @@ export function NewRequestWizard() {
             key={label}
             type="button"
             onClick={() => setStep(n)}
-            className={`rounded-full border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-colors ${
+            className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-colors ${
               step === n
                 ? "border-styloire-ink bg-styloire-ink/10 text-styloire-ink"
                 : "border-styloire-line text-styloire-inkMuted hover:border-styloire-ink"
@@ -91,10 +215,36 @@ export function NewRequestWizard() {
       {step === 1 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 1</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-ink">Talent &amp; event</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Talent &amp; event</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Talent and event first — then the file. The same order as a real request.
+            Start with the talent and event. Then choose a new upload or an existing roster
+            profile.
           </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <label className="flex items-center gap-3 border border-styloire-lineSubtle px-4 py-3">
+              <input
+                type="radio"
+                name="requestType"
+                checked={requestType === "new"}
+                onChange={() => {
+                  setRequestType("new");
+                  setProfileId("");
+                  setGroups({});
+                  setSelectedBrands([]);
+                }}
+              />
+              <span className="font-sans text-sm text-styloire-ink">New profile from CSV</span>
+            </label>
+            <label className="flex items-center gap-3 border border-styloire-lineSubtle px-4 py-3">
+              <input
+                type="radio"
+                name="requestType"
+                checked={requestType === "existing"}
+                onChange={() => setRequestType("existing")}
+              />
+              <span className="font-sans text-sm text-styloire-ink">Use existing profile</span>
+            </label>
+          </div>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <label className="space-y-2">
               <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
@@ -119,11 +269,34 @@ export function NewRequestWizard() {
               />
             </label>
           </div>
+          {requestType === "existing" ? (
+            <label className="mt-6 block max-w-md space-y-2">
+              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
+                Profile
+              </span>
+              <select
+                value={profileId}
+                onChange={(e) => {
+                  const nextId = e.target.value;
+                  setProfileId(nextId);
+                  loadProfileContacts(nextId);
+                }}
+                className="w-full border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink"
+              >
+                <option value="">Select profile</option>
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.talent_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <div className="mt-10 flex flex-wrap gap-4">
             <StyloireButton
               type="button"
               variant="solid"
-              disabled={!talent.trim() || !eventName.trim()}
+              disabled={!isStepOneReady || (requestType === "existing" && !profileId)}
               onClick={() => setStep(2)}
             >
               <span className="inline-flex items-center gap-2">
@@ -138,29 +311,61 @@ export function NewRequestWizard() {
       {step === 2 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 2</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-ink">Upload contacts</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Upload contacts</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            CSV with columns{" "}
-            <code className="text-styloire-ink">brand_name, email, first_name</code>. Excel
-            will follow in a later release.
+            {requestType === "new"
+              ? "Upload CSV for a new profile. Expected columns: brand_name, email, first_name."
+              : "Review and toggle the saved contacts for this request. All are ON by default."}
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-styloire-line px-5 py-2 font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-ink hover:border-styloire-ink">
-              <Upload className="h-4 w-4" />
-              Upload file
-              <input type="file" accept=".csv,text/csv" className="hidden" onChange={handleFile} />
-            </label>
-            <StyloireButton type="button" variant="outline" onClick={() => loadCsv(demoCsv)}>
-              Load sample CSV
-            </StyloireButton>
-          </div>
+          {requestType === "new" ? (
+            <div className="mt-8 flex flex-wrap gap-4">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-styloire-line px-5 py-2 font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-ink hover:border-styloire-ink">
+                <Upload className="h-4 w-4" />
+                Upload file
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  className="hidden"
+                  onChange={handleFile}
+                />
+              </label>
+              <StyloireButton type="button" variant="outline" onClick={() => loadCsv(demoCsv)}>
+                Load sample CSV
+              </StyloireButton>
+            </div>
+          ) : (
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <input
+                value={contactSearch}
+                onChange={(e) => setContactSearch(e.target.value)}
+                placeholder="Search by brand"
+                className="min-w-[220px] flex-1 border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink"
+              />
+              <StyloireButton
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedBrands(brands)}
+                disabled={!brands.length}
+              >
+                Select all
+              </StyloireButton>
+              <StyloireButton
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedBrands([])}
+                disabled={!brands.length}
+              >
+                Deselect all
+              </StyloireButton>
+            </div>
+          )}
           {brands.length ? (
             <div className="mt-10 space-y-4">
               <p className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Toggle brands to include
+                {selectedCount} of {brands.length} contacts selected
               </p>
               <ul className="divide-y divide-styloire-lineSubtle border border-styloire-lineSubtle">
-                {brands.map((brand) => (
+                {filteredBrands.map((brand) => (
                   <li
                     key={brand}
                     className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 font-sans text-sm text-styloire-ink"
@@ -181,6 +386,9 @@ export function NewRequestWizard() {
               </ul>
             </div>
           ) : null}
+          {parseError ? (
+            <p className="mt-6 font-sans text-xs text-red-300">{parseError}</p>
+          ) : null}
           <div className="mt-10 flex flex-wrap gap-4">
             <StyloireButton type="button" variant="outline" onClick={() => setStep(1)}>
               Back
@@ -188,10 +396,10 @@ export function NewRequestWizard() {
             <StyloireButton
               type="button"
               variant="solid"
-              disabled={!brands.length || !selectedBrands.length}
+              disabled={!brands.length || !selectedCount}
               onClick={() => setStep(3)}
             >
-              Preview template
+              Continue with {selectedCount} contacts
             </StyloireButton>
           </div>
         </StyloirePanel>
@@ -200,7 +408,7 @@ export function NewRequestWizard() {
       {step === 3 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 3</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-ink">Write once</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Write once</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
             Default pull-request copy. Placeholders fill from your first selected row.
           </p>
@@ -220,12 +428,18 @@ export function NewRequestWizard() {
                 Body preview
               </span>
               <textarea
-                readOnly
                 rows={12}
-                value={mergedBody}
+                value={emailBody}
+                onChange={(event) => setEmailBody(event.target.value)}
                 className="w-full resize-y border border-styloire-lineSubtle bg-styloire-canvas/60 px-4 py-3 font-sans text-sm font-light text-styloire-inkSoft"
               />
             </label>
+            <p className="font-sans text-xs text-styloire-inkMuted">
+              Live merged preview shown in step content:
+            </p>
+            <pre className="whitespace-pre-wrap border border-styloire-lineSubtle bg-styloire-canvas/40 px-4 py-3 font-sans text-xs text-styloire-inkSoft">
+              {mergedBody}
+            </pre>
           </div>
           <div className="mt-10 flex flex-wrap gap-4">
             <StyloireButton type="button" variant="outline" onClick={() => setStep(2)}>
@@ -241,9 +455,9 @@ export function NewRequestWizard() {
       {step === 4 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-ink">Follow up &amp; send</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Follow up &amp; send</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Optional follow-up date. Send stays inactive until your outbound mail is configured.
+            Optional follow-up date. This creates and sends the request immediately.
           </p>
           <label className="mt-8 block max-w-xs space-y-2">
             <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
@@ -260,10 +474,16 @@ export function NewRequestWizard() {
             <StyloireButton type="button" variant="outline" onClick={() => setStep(3)}>
               Back
             </StyloireButton>
-            <StyloireButton type="button" variant="solid" disabled>
+            <StyloireButton
+              type="button"
+              variant="solid"
+              disabled={submitState === "saving" || !selectedCount}
+              onClick={submitRequest}
+            >
               Send outreach
             </StyloireButton>
           </div>
+          {submitError ? <p className="mt-4 font-sans text-xs text-red-300">{submitError}</p> : null}
         </StyloirePanel>
       ) : null}
     </div>

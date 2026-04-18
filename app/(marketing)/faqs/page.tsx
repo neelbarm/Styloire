@@ -10,7 +10,7 @@ export default function FaqsPage() {
           FAQs
         </StyloireHeading>
         <p className="mt-6 font-sans text-sm font-light text-styloire-inkSoft">
-          Answers mirror the Styloire Developer Spec v2 — update alongside product decisions.
+          Core answers on product use, pricing, and privacy.
         </p>
       </div>
       <FaqPageContent />

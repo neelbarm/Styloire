@@ -1,11 +1,8 @@
-import Link from "next/link";
 import {
   StyloireBody,
   StyloireEyebrow,
   StyloireHeading,
-  StyloireHero,
-  StyloireSection,
-  StyloireWaitlistForm
+  StyloireSection
 } from "@/components/styloire";
 import { ContactForm } from "@/components/marketing/contact-form";
 
@@ -19,8 +16,8 @@ export default function ContactPage() {
             Get in touch.
           </StyloireHeading>
           <StyloireBody>
-            Questions about launch timing, partnerships, or press — send a note. We respond
-            within 24–48 hours.
+            Questions about the product, billing, partnerships, or press — send a note. We
+            respond within 24–48 hours.
           </StyloireBody>
         </div>
       </StyloireSection>
@@ -46,21 +43,6 @@ export default function ContactPage() {
             </a>
           </p>
         </div>
-      </StyloireSection>
-
-      <StyloireSection id="waitlist" tone="solid" className="scroll-mt-28 pb-24">
-        <StyloireHero>
-          <StyloireEyebrow>Not ready to write?</StyloireEyebrow>
-          <StyloireHeading level="title">Join the waitlist</StyloireHeading>
-          <StyloireBody>We will email you when invites open — same list as the homepage.</StyloireBody>
-          <StyloireWaitlistForm />
-          <Link
-            href="/faqs"
-            className="mt-4 font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-4 hover:text-styloire-ink hover:underline"
-          >
-            Read FAQs first
-          </Link>
-        </StyloireHero>
       </StyloireSection>
     </>
   );

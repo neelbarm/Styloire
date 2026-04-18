@@ -24,13 +24,13 @@ export function StyloireAppShell({
       {...rest}
     >
       {sidebar ? (
-        <aside className="hidden w-64 shrink-0 border-r border-styloire-lineSubtle bg-styloire-canvas lg:block">
+        <aside className="hidden w-64 shrink-0 border-r border-styloire-lineSubtle bg-[linear-gradient(180deg,rgba(42,32,22,0.55),rgba(6,5,4,0.97))] lg:block">
           {sidebar}
         </aside>
       ) : null}
       <div className="flex min-h-screen flex-1 flex-col">
         {topBar ? (
-          <div className="border-b border-styloire-lineSubtle bg-styloire-canvas/90 px-6 py-4 backdrop-blur md:px-10">
+          <div className="border-b border-styloire-lineSubtle bg-styloire-canvas/95 px-6 py-4 backdrop-blur md:px-10">
             {topBar}
           </div>
         ) : null}
@@ -53,7 +53,7 @@ export function StyloireAppPageHeader({
 }: StyloireAppPageHeaderProps) {
   return (
     <div className={`mb-12 max-w-2xl space-y-4 ${className}`.trim()} {...rest}>
-      <h1 className="font-serif text-3xl font-normal tracking-wide text-styloire-ink md:text-4xl">
+      <h1 className="font-serif text-3xl font-normal tracking-wide text-styloire-champagne md:text-4xl">
         {title}
       </h1>
       {description ? (

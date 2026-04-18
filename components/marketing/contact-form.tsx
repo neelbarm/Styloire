@@ -5,9 +5,38 @@ import { StyloireButton } from "@/components/styloire/button";
 
 export function ContactForm() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setLoading(true);
+    setError("");
+    setSent(false);
+
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      firstName: String(form.get("firstName") ?? ""),
+      lastName: String(form.get("lastName") ?? ""),
+      email: String(form.get("email") ?? ""),
+      role: String(form.get("role") ?? "") as "stylist" | "assistant",
+      message: String(form.get("message") ?? "")
+    };
+
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(data.error ?? "Something went wrong. Please try again.");
+      return;
+    }
+
+    event.currentTarget.reset();
     setSent(true);
   };
 
@@ -24,7 +53,7 @@ export function ContactForm() {
           <input
             required
             name="firstName"
-            className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-ink focus:outline-none"
+            className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
           />
         </label>
         <label className="space-y-2">
@@ -34,7 +63,7 @@ export function ContactForm() {
           <input
             required
             name="lastName"
-            className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-ink focus:outline-none"
+            className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
           />
         </label>
       </div>
@@ -46,8 +75,8 @@ export function ContactForm() {
           required
           type="email"
           name="email"
-          className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-ink focus:outline-none"
-        />
+            className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
+          />
       </label>
       <label className="space-y-2">
         <span className="font-sans text-styloire-caption font-medium uppercase tracking-styloireWide text-styloire-inkMuted">
@@ -56,7 +85,7 @@ export function ContactForm() {
         <select
           required
           name="role"
-          className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-ink focus:outline-none"
+          className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
           defaultValue=""
         >
           <option value="" disabled>
@@ -74,14 +103,16 @@ export function ContactForm() {
           required
           name="message"
           rows={5}
-          className="w-full resize-y border border-styloire-lineSubtle bg-styloire-canvas/40 px-4 py-3 font-sans text-sm font-light text-styloire-ink focus:border-styloire-ink focus:outline-none"
+          className="w-full resize-y border border-styloire-lineSubtle bg-styloire-canvas/40 px-4 py-3 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne/70 focus:outline-none"
         />
       </label>
       <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <StyloireButton type="submit" variant="solid">
+        <StyloireButton type="submit" variant="solid" disabled={loading}>
           Send message
         </StyloireButton>
-        {sent ? (
+        {error ? (
+          <p className="font-sans text-xs text-red-300">{error}</p>
+        ) : sent ? (
           <p className="font-sans text-xs text-styloire-inkSoft">
             Thank you. If you need us sooner, write{" "}
             <a href="mailto:hello@styloire.co" className="text-styloire-ink underline-offset-4 hover:underline">

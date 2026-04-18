@@ -3,7 +3,7 @@ import Link from "next/link";
 export function MarketingFooter() {
   return (
     <footer className="border-t border-styloire-lineSubtle bg-styloire-canvasDeep px-6 py-14 text-center md:px-10">
-      <p className="font-sans text-styloire-caption font-medium uppercase tracking-styloireNav text-styloire-inkMuted">
+      <p className="font-sans text-styloire-caption font-medium uppercase tracking-styloireNav text-styloire-champagne">
         Styloire
       </p>
       <p className="mx-auto mt-4 max-w-sm font-sans text-xs font-light leading-relaxed text-styloire-inkSoft">
@@ -23,10 +23,10 @@ export function MarketingFooter() {
           |
         </span>
         <Link
-          href="/demo"
+          href="/contact"
           className="underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
         >
-          Import demo
+          Contact
         </Link>
       </div>
     </footer>

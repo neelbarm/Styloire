@@ -1,4 +1,4 @@
-/** Domain model aligned with Styloire Developer Spec v2 (April 2026). */
+/** Domain model aligned with Styloire Developer Spec v4 (April 2026). */
 
 export type SubscriptionStatus = "active" | "inactive" | "trialing";
 
@@ -6,6 +6,7 @@ export type User = {
   id: string;
   email: string;
   name: string;
+  cc_emails: string[];
   stripe_customer_id: string | null;
   subscription_status: SubscriptionStatus;
   created_at: string;
@@ -16,6 +17,7 @@ export type ClientProfile = {
   id: string;
   user_id: string;
   talent_name: string;
+  last_used_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -64,6 +66,7 @@ export type RequestContact = {
   opened: boolean;
   responded: boolean;
   sent_at: string | null;
+  send_error?: string | null;
 };
 
 export type Template = {
@@ -73,6 +76,25 @@ export type Template = {
   body: string;
   is_default: boolean;
   created_at: string;
+};
+
+export type ConnectedAccountProvider = "gmail" | "outlook" | "smtp";
+
+export type ConnectedAccount = {
+  id: string;
+  user_id: string;
+  provider: ConnectedAccountProvider;
+  email: string;
+  display_name: string | null;
+  smtp_host: string | null;
+  smtp_port: number | null;
+  smtp_username: string | null;
+  status: "active" | "inactive" | "error";
+  is_sending_active: boolean;
+  last_error_message: string | null;
+  last_error_at: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 /** Row shape for dashboard cards — denormalized counts */

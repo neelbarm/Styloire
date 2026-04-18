@@ -6,7 +6,8 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { StyloireButton, StyloireEyebrow, StyloireMarketingHeader, StyloirePanel } from "@/components/styloire";
 import {
   type GroupedContacts,
-  parseBrandContactsCsv
+  parseBrandContactsCsvDetailed,
+  parseBrandContactsFileDetailed
 } from "@/lib/styloire/parse-contacts";
 
 const demoCsv = `brand_name,email,first_name
@@ -16,19 +17,20 @@ PRADA,grace@prada.com,Grace
 CHANEL,sophie@chanel.com,Sophie`;
 
 const pillOutline =
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-styloire-line bg-transparent px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors hover:border-styloire-ink hover:bg-styloire-ink/5";
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-styloire-line bg-transparent px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors hover:border-styloire-champagne/45 hover:bg-styloire-champagne/[0.06]";
 
 const fieldLabel =
   "mb-2 block font-sans text-styloire-caption font-medium uppercase tracking-styloireWide text-styloire-inkMuted";
 
 const fieldInput =
-  "w-full border-0 border-b border-styloire-line bg-transparent py-3 font-sans text-sm font-light text-styloire-ink placeholder:text-styloire-inkMuted focus:border-styloire-ink focus:outline-none";
+  "w-full border-0 border-b border-styloire-line bg-transparent py-3 font-sans text-sm font-light text-styloire-ink placeholder:text-styloire-inkMuted focus:border-styloire-champagne focus:outline-none";
 
 export default function DemoPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [csvText, setCsvText] = useState("");
   const [groups, setGroups] = useState<GroupedContacts>({});
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [parseError, setParseError] = useState("");
   const [talent, setTalent] = useState("Bella");
   const [eventName, setEventName] = useState("Grammys");
 
@@ -44,20 +46,21 @@ export default function DemoPage() {
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    setCsvText(text);
-    const parsed = parseBrandContactsCsv(text);
-    setGroups(parsed);
-    setSelectedBrands(Object.keys(parsed).sort().slice(0, 1));
+    const parsed = await parseBrandContactsFileDetailed(file);
+    setCsvText(file.name);
+    setGroups(parsed.groups);
+    setSelectedBrands(Object.keys(parsed.groups).sort().slice(0, 1));
+    setParseError(parsed.errors[0] ?? "");
     setStep(2);
     event.currentTarget.value = "";
   };
 
   const handleUseDemoCsv = () => {
     setCsvText(demoCsv);
-    const parsed = parseBrandContactsCsv(demoCsv);
-    setGroups(parsed);
-    setSelectedBrands(Object.keys(parsed).sort().slice(0, 1));
+    const parsed = parseBrandContactsCsvDetailed(demoCsv);
+    setGroups(parsed.groups);
+    setSelectedBrands(Object.keys(parsed.groups).sort().slice(0, 1));
+    setParseError(parsed.errors[0] ?? "");
     setStep(2);
   };
 
@@ -92,7 +95,7 @@ export default function DemoPage() {
         <div className="relative mb-12 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="max-w-3xl space-y-4">
             <StyloireEyebrow>Live import flow</StyloireEyebrow>
-            <h1 className="font-serif text-3xl font-normal uppercase tracking-[0.08em] text-styloire-ink md:text-4xl md:leading-tight">
+            <h1 className="font-serif text-3xl font-normal uppercase tracking-[0.08em] text-styloire-champagne md:text-4xl md:leading-tight">
               Fashion stylist request demo
             </h1>
             <p className="font-sans text-styloire-body font-light leading-relaxed text-styloire-inkSoft">
@@ -139,7 +142,7 @@ export default function DemoPage() {
         <div className="relative grid gap-10 xl:grid-cols-[1.2fr_0.85fr]">
           <div className="space-y-10">
             <StyloirePanel>
-              <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+              <h2 className="font-serif text-xl font-normal text-styloire-champagne md:text-2xl">
                 1) Upload CSV
               </h2>
               <p className="mt-3 font-sans text-sm font-light text-styloire-inkSoft">
@@ -154,7 +157,7 @@ export default function DemoPage() {
                   Upload CSV
                   <input
                     type="file"
-                    accept=".csv,text/csv"
+                    accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     className="hidden"
                     onChange={handleFileUpload}
                   />
@@ -165,14 +168,15 @@ export default function DemoPage() {
               </div>
               {csvText ? (
                 <p className="mt-6 font-sans text-xs uppercase tracking-styloireWide text-styloire-inkMuted">
-                  CSV loaded ({csvText.split(/\r?\n/).length - 1} rows)
+                  File loaded ({Object.keys(groups).length} brands)
                 </p>
               ) : null}
+              {parseError ? <p className="mt-3 font-sans text-xs text-red-300">{parseError}</p> : null}
             </StyloirePanel>
 
             <StyloirePanel>
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+                <h2 className="font-serif text-xl font-normal text-styloire-champagne md:text-2xl">
                   2) Brand contact groups
                 </h2>
                 <StyloireButton
@@ -235,7 +239,7 @@ export default function DemoPage() {
                       className="border border-styloire-lineSubtle bg-styloire-canvas/30 p-5"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="font-serif text-lg text-styloire-ink">{brand}</p>
+                        <p className="font-serif text-lg text-styloire-champagneLight">{brand}</p>
                         <input
                           type="checkbox"
                           checked={selectedBrands.includes(brand)}
@@ -262,7 +266,7 @@ export default function DemoPage() {
             <StyloirePanel>
               <form onSubmit={submitRequest}>
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="font-serif text-xl font-normal text-styloire-ink md:text-2xl">
+                  <h2 className="font-serif text-xl font-normal text-styloire-champagne md:text-2xl">
                     3) Create request
                   </h2>
                   <StyloireButton type="submit" variant="solid" disabled={!selectedBrands.length}>
@@ -297,7 +301,7 @@ export default function DemoPage() {
 
           <aside>
             <StyloirePanel className="h-fit">
-              <h3 className="font-serif text-xl text-styloire-ink">Request preview</h3>
+              <h3 className="font-serif text-xl text-styloire-champagne">Request preview</h3>
               <p className="mt-3 font-sans text-sm font-light text-styloire-inkSoft">
                 Subject line samples for selected brands:
               </p>

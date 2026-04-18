@@ -14,10 +14,10 @@ export default function HowItWorksPage() {
       <StyloireSection tone="solid" className="pt-24">
         <div className="mx-auto max-w-styloire-narrow text-center">
           <StyloireEyebrow>Product tour</StyloireEyebrow>
-          <StyloireHeading as="h1" level="display">
-            How Styloire runs a pull.
+          <StyloireHeading as="h1" level="title">
+            How it works
           </StyloireHeading>
-          <StyloireBody>
+          <StyloireBody className="mt-6">
             One calm path from blank page to sent box — whether you are dressing a new face
             or returning to a saved client profile.
           </StyloireBody>
@@ -29,35 +29,35 @@ export default function HowItWorksPage() {
           steps={[
             {
               index: "01",
-              title: "Create request",
-              body: "Start with talent and event. Styloire opens a Request — the atomic unit for every outreach campaign."
+              title: "Create a request",
+              body: "Give the project a name; add talent, event, or publication. Styloire already knows how your subject lines should read."
             },
             {
               index: "02",
-              title: "Upload contacts",
-              body: "Import CSV or XLSX. Preview grouped brands, confirm spelling, and let the system auto-save a Client Profile for that talent."
+              title: "Upload your contacts",
+              body: "Import brand PR spreadsheets (Brand Name, Email, optional contact name) without reformatting or complicated imports."
             },
             {
               index: "03",
-              title: "Write email once",
-              body: "Pick a template, personalize merge fields, and preview subjects in the Talent / Event / Brand rhythm stylists already use."
+              title: "Write your email once",
+              body: "Use pre-written pull request templates or write custom copy. Every email is personalized per brand without manual copy-pasting."
             },
             {
               index: "04",
               title: "Hit send",
-              body: "Each house receives its own message from your single draft. The log records what left and when."
+              body: "Emails go out personalized and on time. Styloire handles tracking (opens, responses) and flags threads that need follow-up."
             },
             {
               index: "05",
-              title: "Schedule follow up",
-              body: "Optionally set a follow-up date. A daily job chases only the contacts still marked as no response — using your default or custom copy."
+              title: "Schedule your follow-up",
+              body: "Automatically send follow-ups on a date you pick to brands that have not responded."
             }
           ]}
         />
       </StyloireSection>
 
       <StyloireSection tone="solid">
-        <div className="mx-auto max-w-styloire-narrow border border-styloire-lineSubtle bg-styloire-canvas/40 px-8 py-12 text-center">
+        <div className="mx-auto max-w-styloire-narrow border border-styloire-lineSubtle bg-styloire-canvas/40 px-8 py-12 text-center ring-1 ring-styloire-champagne/[0.06]">
           <StyloireHeading level="section">Client profiles</StyloireHeading>
           <StyloireBody className="mt-4">
             Every upload becomes a living directory for that talent — editable contacts, bulk
@@ -72,7 +72,7 @@ export default function HowItWorksPage() {
           {["No setup required", "Works anywhere", "Your contacts stay private"].map((line) => (
             <p
               key={line}
-              className="font-serif text-lg italic text-styloire-inkSoft md:text-xl"
+              className="font-serif text-lg italic text-styloire-champagneLight md:text-xl"
             >
               {line}
             </p>
@@ -83,13 +83,13 @@ export default function HowItWorksPage() {
       <StyloireSection tone="solid" className="pb-24">
         <StyloireHero>
           <StyloireHeading level="title">Ready when you are.</StyloireHeading>
-          <StyloireBody>Join the waitlist, or step into the workspace preview.</StyloireBody>
+          <StyloireBody>Open the app to start a request, or write us if you need a hand.</StyloireBody>
           <div className="flex flex-wrap justify-center gap-4">
-            <StyloireButton href="/contact#waitlist" variant="solid">
-              Join waitlist
+            <StyloireButton href="/dashboard" variant="solid">
+              Get started
             </StyloireButton>
-            <StyloireButton href="/dashboard" variant="outline">
-              Open app preview
+            <StyloireButton href="/contact" variant="outline">
+              Contact
             </StyloireButton>
           </div>
         </StyloireHero>

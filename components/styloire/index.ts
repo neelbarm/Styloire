@@ -13,4 +13,3 @@ export {
   StyloireLead,
   StyloireList
 } from "./typography";
-export { StyloireWaitlistForm } from "./waitlist-form";

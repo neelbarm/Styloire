@@ -1,6 +1,5 @@
 import "server-only";
 
-import { STYLOIRE_SEED_USER_ID } from "@/lib/styloire/constants";
 import {
   getRequestDetail as getMockRequestDetail,
   listRequests as listMockRequests,
@@ -8,6 +7,7 @@ import {
 } from "@/lib/styloire/mock-data";
 import type { RequestStatus, RequestSummary } from "@/lib/styloire/types";
 import { createServiceRoleClient, isSupabaseConfigured } from "@/lib/supabase/service";
+import { getCurrentUserId } from "@/lib/supabase/server";
 
 export type RequestListResult = {
   source: "mock" | "supabase";
@@ -21,10 +21,6 @@ export type RequestDetailResult = {
   rows: RequestContactDetail[];
   notice?: string;
 };
-
-function dashboardUserId(): string {
-  return process.env.STYLOIRE_DASHBOARD_USER_ID?.trim() || STYLOIRE_SEED_USER_ID;
-}
 
 function mapDashboardRow(row: Record<string, unknown>): RequestSummary {
   const followup = row.followup_date;
@@ -88,6 +84,10 @@ export async function listDashboardRequestSummaries(
   filter: RequestStatus | "all"
 ): Promise<RequestListResult> {
   const mockRows = listMockRequests(filter === "all" ? undefined : filter);
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { source: "supabase", rows: [], notice: "Sign in to view your requests." };
+  }
 
   if (!isSupabaseConfigured()) {
     return { source: "mock", rows: mockRows };
@@ -101,7 +101,7 @@ export async function listDashboardRequestSummaries(
   let query = supabase
     .from("request_dashboard_rows")
     .select("*")
-    .eq("user_id", dashboardUserId())
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (filter !== "all") {
@@ -122,8 +122,7 @@ export async function listDashboardRequestSummaries(
     return {
       source: "supabase",
       rows: [],
-      notice:
-        "Supabase returned zero requests for this user. Run the migration seed or adjust STYLOIRE_DASHBOARD_USER_ID."
+      notice: "Supabase returned zero requests for this authenticated user."
     };
   }
 
@@ -132,13 +131,14 @@ export async function listDashboardRequestSummaries(
 
 async function fetchSummaryFromView(
   supabase: NonNullable<ReturnType<typeof createServiceRoleClient>>,
-  requestId: string
+  requestId: string,
+  userId: string
 ): Promise<RequestSummary | null> {
   const { data, error } = await supabase
     .from("request_dashboard_rows")
     .select("*")
     .eq("id", requestId)
-    .eq("user_id", dashboardUserId())
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error || !data) return null;
@@ -148,6 +148,8 @@ async function fetchSummaryFromView(
 export async function getRequestDetailResolved(
   requestId: string
 ): Promise<RequestDetailResult | null> {
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
   const mock = getMockRequestDetail(requestId);
 
   if (!isSupabaseConfigured()) {
@@ -161,7 +163,6 @@ export async function getRequestDetailResolved(
     return { source: "mock", request: mock.request, rows: mock.rows };
   }
 
-  const userId = dashboardUserId();
   const { data: reqRow, error: reqErr } = await supabase
     .from("requests")
     .select("*")
@@ -181,12 +182,14 @@ export async function getRequestDetailResolved(
 
   const { data: rcRows, error: rcErr } = await supabase
     .from("request_contacts")
-    .select("id,request_id,brand_contact_id,selected,email_sent,opened,responded,sent_at")
+    .select(
+      "id,request_id,brand_contact_id,selected,email_sent,opened,responded,sent_at,send_error",
+    )
     .eq("request_id", requestId);
 
   if (rcErr) {
     const summary =
-      (await fetchSummaryFromView(supabase, requestId)) ??
+      (await fetchSummaryFromView(supabase, requestId, userId)) ??
       mapRequestRowToPartialSummary(reqRow as Record<string, unknown>);
     return {
       source: "supabase",
@@ -209,7 +212,7 @@ export async function getRequestDetailResolved(
 
     if (bcErr) {
       const summary =
-        (await fetchSummaryFromView(supabase, requestId)) ??
+        (await fetchSummaryFromView(supabase, requestId, userId)) ??
         mapRequestRowToPartialSummary(reqRow as Record<string, unknown>);
       return {
         source: "supabase",
@@ -239,7 +242,7 @@ export async function getRequestDetailResolved(
   }
 
   const summary =
-    (await fetchSummaryFromView(supabase, requestId)) ??
+    (await fetchSummaryFromView(supabase, requestId, userId)) ??
     mapRequestRowToPartialSummary(reqRow as Record<string, unknown>);
 
   return { source: "supabase", request: summary, rows: merged };

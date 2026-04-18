@@ -19,13 +19,13 @@ export function StyloireSteps({ steps, className = "" }: StyloireStepsProps) {
       {steps.map((step) => (
         <li key={step.index} className="grid grid-cols-[minmax(0,4.5rem)_1fr] gap-8 md:gap-12">
           <span
-            className="font-serif text-4xl font-light text-styloire-ink md:text-5xl"
+            className="font-serif text-4xl font-light text-styloire-champagne md:text-5xl"
             aria-hidden
           >
             {step.index}
           </span>
           <div className="space-y-3">
-            <p className="font-sans text-[0.7rem] font-medium uppercase tracking-styloireNav text-styloire-ink">
+            <p className="font-sans text-[0.7rem] font-medium uppercase tracking-styloireNav text-styloire-champagneLight">
               {step.title}
             </p>
             <p className="font-sans text-styloire-body font-light text-styloire-inkSoft">

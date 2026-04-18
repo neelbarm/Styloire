@@ -17,7 +17,7 @@ export type StyloireNavProps = {
 export function StyloireNav({
   items,
   logo = (
-    <span className="font-sans text-styloire-caption font-medium uppercase tracking-[0.42em] text-styloire-ink">
+    <span className="font-sans text-styloire-caption font-medium uppercase tracking-[0.42em] text-styloire-champagne">
       Styloire
     </span>
   ),
@@ -37,7 +37,7 @@ export function StyloireNav({
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors duration-200 hover:border-styloire-ink hover:bg-styloire-ink/5"
+              className="rounded-sm border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-colors duration-200 hover:border-styloire-champagne/45 hover:bg-styloire-champagne/[0.06]"
             >
               {item.label}
             </Link>

@@ -4,7 +4,7 @@ export type StyloireUnderlineFieldProps = InputHTMLAttributes<HTMLInputElement> 
   label: string;
 };
 
-/** Minimal underline field — waitlist, account email */
+/** Minimal underline field — short forms and account email */
 export function StyloireUnderlineField({
   label,
   id,
@@ -20,7 +20,7 @@ export function StyloireUnderlineField({
         </span>
         <input
           id={fieldId}
-          className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink placeholder:text-styloire-inkMuted placeholder:uppercase placeholder:tracking-styloireWide focus:border-styloire-ink focus:outline-none focus:ring-0"
+          className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink placeholder:text-styloire-inkMuted placeholder:uppercase placeholder:tracking-styloireWide focus:border-styloire-champagne focus:outline-none focus:ring-0"
           {...props}
         />
       </label>

@@ -6,7 +6,7 @@ export default function NewRequestPage() {
     <>
       <StyloireAppPageHeader
         title="New request"
-        description="Talent and event, file import, template preview, optional follow-up — sending unlocks when your mail layer is ready."
+        description="Choose a new upload or existing roster profile, toggle contacts, preview templates, then schedule send."
       />
       <NewRequestWizard />
     </>

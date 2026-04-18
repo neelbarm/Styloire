@@ -5,7 +5,8 @@ import type {
   RequestContact,
   RequestSummary,
   Template,
-  User
+  User,
+  ConnectedAccount
 } from "./types";
 import {
   DEFAULT_TEMPLATE_FOLLOW_UP,
@@ -18,17 +19,38 @@ export const MOCK_USER: User = {
   id: "usr_demo",
   email: "atelier@styloire.co",
   name: "Jordan Lee",
+  cc_emails: ["assistant@styloire.co"],
   stripe_customer_id: "cus_demo",
   subscription_status: "active",
   created_at: now,
   updated_at: now
 };
 
+export const MOCK_CONNECTED_ACCOUNTS: ConnectedAccount[] = [
+  {
+    id: "acct_1",
+    user_id: MOCK_USER.id,
+    provider: "gmail",
+    email: "atelier@styloire.co",
+    display_name: "Jordan Lee",
+    smtp_host: null,
+    smtp_port: null,
+    smtp_username: null,
+    status: "active",
+    is_sending_active: true,
+    last_error_message: null,
+    last_error_at: null,
+    created_at: now,
+    updated_at: now
+  }
+];
+
 export const MOCK_PROFILES: ClientProfile[] = [
   {
     id: "prof_bella",
     user_id: MOCK_USER.id,
     talent_name: "Bella Hadid",
+    last_used_at: "2026-04-09T15:30:00.000Z",
     created_at: now,
     updated_at: now
   },
@@ -36,6 +58,7 @@ export const MOCK_PROFILES: ClientProfile[] = [
     id: "prof_zendaya",
     user_id: MOCK_USER.id,
     talent_name: "Zendaya",
+    last_used_at: "2026-04-05T10:00:00.000Z",
     created_at: now,
     updated_at: now
   }

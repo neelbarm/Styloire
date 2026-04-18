@@ -8,8 +8,7 @@ import {
   StyloireImageSection,
   StyloireLead,
   StyloireList,
-  StyloireSection,
-  StyloireWaitlistForm
+  StyloireSection
 } from "@/components/styloire";
 
 const heroImage =
@@ -18,27 +17,30 @@ const heroImage =
 const atelierImage =
   "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
 
+const whoImage =
+  "url('https://images.unsplash.com/photo-1539109140684-da3eeaafa257?auto=format&fit=crop&w=2400&q=82')";
+
 const threeSteps = [
   {
-    title: "Create request",
-    body: "Talent, event, one workspace. Nothing else on the screen until you need it."
+    title: "Create your request",
+    body: "Enter your talent and event. Styloire builds your subject lines automatically, in the exact format brands expect."
   },
   {
-    title: "Upload contacts",
-    body: "CSV or spreadsheet in. Brands grouped, list checked, profile saved for the next season."
+    title: "Upload your contacts",
+    body: "Drop in your brand PR list and create a client profile — set up once and have it saved. Just a simple spreadsheet."
   },
   {
-    title: "Write once",
-    body: "One note, merge fields, subjects in the rhythm you already use: talent, event, house."
+    title: "And hit send",
+    body: "Every email goes out on time and in seconds. Follow-ups are scheduled automatically for anyone who does not respond."
   }
 ];
 
 const features = [
-  "Hundreds of personalized sends from a single draft",
-  "Client profiles per talent — private, yours alone",
-  "Templates for first touch and follow-up, plus your own voice",
-  "Follow-ups only where there is still silence",
-  "Delivery and opens tracked; responses stay in your judgment"
+  "Auto-generated subject lines in industry format",
+  "Personalized emails per brand — no copy and paste",
+  "Pre-written pull request templates",
+  "Follow-up scheduling for non-responses",
+  "Dashboard to track opens, responses, and status per project"
 ];
 
 export default function MarketingHomePage() {
@@ -50,33 +52,30 @@ export default function MarketingHomePage() {
           <StyloireHeading as="h1" level="display">
             Make emailing simple.
           </StyloireHeading>
-          <StyloireLead>
+          <StyloireLead className="text-styloire-inkSoft">
             One letter. Every house addressed as it should be — without losing the afternoon
             to paste and pray.
           </StyloireLead>
-          <StyloireBody>
+          <StyloireBody className="text-styloire-inkSoft">
             For stylists and assistants who still live inside pull requests, Styloire is the
             quiet layer between your sentence and their inbox.
           </StyloireBody>
-          <StyloireButton href="/contact#waitlist" variant="solid">
-            Join the waitlist
+          <StyloireButton href="/dashboard" variant="solid">
+            Get started
           </StyloireButton>
         </StyloireHero>
       </StyloireImageSection>
 
       <StyloireSection tone="solid">
         <div className="mx-auto max-w-styloire-narrow text-center">
-          <StyloireHeading as="h2" level="editorial">
-            The old way is a full-time job.
+          <StyloireHeading as="h2" level="title">
+            The problem
           </StyloireHeading>
-          <p className="mx-auto mt-10 max-w-styloire-prose font-serif text-xl font-light italic leading-relaxed text-styloire-inkSoft md:text-2xl">
-            A hundred to five hundred messages a project — nearly the same line, a different
-            name each time.
-          </p>
           <StyloireBody className="mt-10">
-            You still write the note. Styloire carries it to every thread with care — fields,
-            subjects, and silence where there should be silence.
+            The average stylist sends 100–500 emails per project. Most of them are copy and
+            paste.
           </StyloireBody>
+          <StyloireLead className="mt-10">There&apos;s a better way.</StyloireLead>
         </div>
       </StyloireSection>
 
@@ -89,7 +88,7 @@ export default function MarketingHomePage() {
           </StyloireBody>
           <Link
             href="/how-it-works"
-            className="mt-8 inline-block font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink"
+            className="mt-8 inline-block font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-champagneMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-champagneLight"
           >
             The five steps
           </Link>
@@ -98,9 +97,9 @@ export default function MarketingHomePage() {
           {threeSteps.map((col) => (
             <article
               key={col.title}
-              className="border border-styloire-lineSubtle px-8 py-12 text-center transition-colors duration-styloire ease-styloire hover:border-styloire-line"
+              className="border border-styloire-lineSubtle px-8 py-12 text-center transition-colors duration-styloire ease-styloire hover:border-styloire-champagne/30"
             >
-              <h3 className="font-serif text-xl font-light italic text-styloire-ink md:text-2xl">
+              <h3 className="font-serif text-xl font-light italic text-styloire-inkSoft md:text-2xl">
                 {col.title}
               </h3>
               <p className="mt-6 font-sans text-sm font-light leading-relaxed text-styloire-inkSoft">
@@ -113,30 +112,44 @@ export default function MarketingHomePage() {
 
       <StyloireImageSection imageUrl={atelierImage} overlay="heavy" position="center">
         <StyloireHero>
-          <StyloireHeading level="title">Included at launch</StyloireHeading>
+          <StyloireHeading level="title" className="text-styloire-ink">
+            Features
+          </StyloireHeading>
+          <StyloireLead className="text-styloire-inkSoft">
+            Everything you need. Nothing you don&apos;t.
+          </StyloireLead>
           <StyloireList items={features} />
         </StyloireHero>
       </StyloireImageSection>
 
-      <StyloireSection tone="solid">
-        <div className="mx-auto max-w-styloire-narrow text-center">
-          <StyloireEyebrow>For</StyloireEyebrow>
-          <StyloireHeading level="section">The people behind the look.</StyloireHeading>
-          <StyloireBody className="mt-6">
-            Red carpet, commercial, editorial — whoever holds the rail and whoever holds the
-            inbox. If pull requests are your week, this is built for you.
-          </StyloireBody>
-        </div>
-      </StyloireSection>
-
-      <StyloireSection id="waitlist" tone="deep" className="scroll-mt-28 pb-28">
+      <StyloireImageSection imageUrl={whoImage} overlay="heavy" position="center 20%">
         <StyloireHero>
-          <StyloireHeading level="display">Be first in line.</StyloireHeading>
-          <StyloireLead>
-            Invitations go out in small batches. Leave your address; we will write when there
-            is a seat.
+          <StyloireHeading level="title" className="text-styloire-ink">
+            Who it&apos;s for
+          </StyloireHeading>
+          <StyloireLead className="text-styloire-inkSoft">
+            Built for stylists, by someone who gets it.
           </StyloireLead>
-          <StyloireWaitlistForm />
+          <StyloireBody className="text-styloire-inkSoft">
+            Whether you&apos;re dressing talent for a red carpet, an editorial shoot, or a
+            commercial campaign, your time belongs on set, in the showroom, making selects —
+            not in your inbox. Styloire was built for the people behind the looks.
+          </StyloireBody>
+        </StyloireHero>
+      </StyloireImageSection>
+
+      <StyloireSection id="get-started" tone="deep" className="scroll-mt-28 pb-28">
+        <StyloireHero>
+          <StyloireHeading level="display">Start when you&apos;re ready.</StyloireHeading>
+          <StyloireLead>Open your workspace and run a pull in minutes.</StyloireLead>
+          <div className="flex flex-wrap justify-center gap-4">
+            <StyloireButton href="/dashboard" variant="solid">
+              Get started
+            </StyloireButton>
+            <StyloireButton href="/contact" variant="outline">
+              Contact
+            </StyloireButton>
+          </div>
         </StyloireHero>
       </StyloireSection>
     </>

@@ -30,7 +30,7 @@ export default function TemplatesPage() {
           {DYNAMIC_FIELD_HELP.map((field) => (
             <code
               key={field}
-              className="rounded-full border border-styloire-line px-3 py-1 font-mono text-xs text-styloire-ink"
+              className="rounded-sm border border-styloire-line px-3 py-1 font-mono text-xs text-styloire-ink"
             >
               {field}
             </code>
@@ -43,7 +43,7 @@ export default function TemplatesPage() {
           <StyloirePanel key={tpl.id}>
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-serif text-2xl text-styloire-ink">{tpl.name}</p>
+                <p className="font-serif text-2xl text-styloire-champagne">{tpl.name}</p>
                 <p className="mt-1 font-sans text-xs uppercase tracking-wide text-styloire-inkMuted">
                   {tpl.user_id ? "Your template" : "Styloire default"}
                 </p>

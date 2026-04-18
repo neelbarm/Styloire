@@ -13,15 +13,15 @@ export function StyloireMarketingHeader() {
         <div className="flex items-center justify-between gap-6 md:justify-start">
           <Link
             href="/"
-            className="font-sans text-styloire-caption font-medium uppercase tracking-[0.42em] text-styloire-ink"
+            className="font-sans text-styloire-caption font-medium uppercase tracking-[0.42em] text-styloire-champagne"
           >
             Styloire
           </Link>
           <Link
-            href="/contact#waitlist"
-            className="rounded-full border border-transparent bg-styloire-sand px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-[color,background-color] duration-styloire ease-styloire hover:bg-styloire-ink hover:text-styloire-canvas md:hidden"
+            href="/dashboard"
+            className="rounded-sm border border-styloire-champagne/40 bg-gradient-to-b from-styloire-champagneLight to-styloire-champagne px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-champagneFg shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] transition-[color,background-color,border-color,transform] duration-styloire ease-styloire hover:-translate-y-[1px] hover:border-styloire-champagneLight hover:from-styloire-champagneLight hover:to-styloire-champagneLight md:hidden"
           >
-            Join waitlist
+            Get started
           </Link>
         </div>
 
@@ -33,7 +33,7 @@ export function StyloireMarketingHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-[color,background-color,border-color] duration-styloire ease-styloire hover:border-styloire-ink hover:bg-styloire-ink/[0.05]"
+              className="rounded-sm border border-styloire-line px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-ink transition-[color,background-color,border-color] duration-styloire ease-styloire hover:border-styloire-champagne/45 hover:bg-styloire-champagne/[0.06]"
             >
               {item.label}
             </Link>
@@ -42,10 +42,10 @@ export function StyloireMarketingHeader() {
 
         <div className="hidden justify-end md:flex">
           <Link
-            href="/contact#waitlist"
-            className="rounded-full border border-transparent bg-styloire-sand px-6 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-sandFg transition-[color,background-color] duration-styloire ease-styloire hover:bg-styloire-ink hover:text-styloire-canvas"
+            href="/dashboard"
+            className="rounded-sm border border-styloire-champagne/40 bg-gradient-to-b from-styloire-champagneLight to-styloire-champagne px-6 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-champagneFg shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] transition-[color,background-color,border-color,transform] duration-styloire ease-styloire hover:-translate-y-[1px] hover:border-styloire-champagneLight hover:from-styloire-champagneLight hover:to-styloire-champagneLight"
           >
-            Join the waitlist
+            Get started
           </Link>
         </div>
       </div>

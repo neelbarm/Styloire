@@ -17,7 +17,7 @@ const filters: Array<{ label: string; value: RequestStatus | "all" }> = [
 function statusStyles(status: RequestStatus) {
   switch (status) {
     case "active":
-      return "border-styloire-ink text-styloire-ink bg-styloire-ink/[0.07]";
+      return "border-styloire-champagne/55 text-styloire-champagneLight bg-styloire-champagne/[0.08]";
     case "draft":
       return "border-styloire-line text-styloire-inkSoft bg-transparent";
     default:
@@ -62,10 +62,10 @@ export default async function DashboardPage({
             <Link
               key={item.value}
               href={href}
-              className={`rounded-full border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color] duration-styloire ease-styloire ${
+              className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color] duration-styloire ease-styloire ${
                 active
-                  ? "border-styloire-ink bg-styloire-ink/[0.08] text-styloire-ink"
-                  : "border-styloire-line text-styloire-inkMuted hover:border-styloire-ink hover:text-styloire-ink"
+                  ? "border-styloire-champagne/55 bg-styloire-champagne/[0.08] text-styloire-champagneLight"
+                  : "border-styloire-line text-styloire-inkMuted hover:border-styloire-champagne/40 hover:text-styloire-champagneLight"
               }`}
             >
               {item.label}
@@ -76,7 +76,7 @@ export default async function DashboardPage({
 
       {rows.length === 0 ? (
         <StyloirePanel className="py-20 text-center">
-          <p className="font-serif text-2xl font-light text-styloire-ink">Nothing here yet.</p>
+          <p className="font-serif text-2xl font-light text-styloire-champagne">Nothing here yet.</p>
           <p className="mx-auto mt-4 max-w-sm font-sans text-sm font-light text-styloire-inkMuted">
             Open a request when you are ready — it will appear at the top of this list.
           </p>
@@ -90,10 +90,10 @@ export default async function DashboardPage({
         <div className="grid gap-5">
           {rows.map((request) => (
             <Link key={request.id} href={`/requests/${request.id}`}>
-              <StyloirePanel className="transition-[border-color] duration-styloire ease-styloire hover:border-styloire-line">
+              <StyloirePanel className="transition-[border-color] duration-styloire ease-styloire hover:border-styloire-champagne/25">
                 <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <p className="font-serif text-2xl font-light text-styloire-ink md:text-[1.65rem]">
+                    <p className="font-serif text-2xl font-light text-styloire-champagne md:text-[1.65rem]">
                       {request.talent_name}{" "}
                       <span className="text-styloire-inkMuted">/</span> {request.event_name}
                     </p>
@@ -104,7 +104,7 @@ export default async function DashboardPage({
                   </div>
                   <div className="flex flex-col items-start gap-3 md:items-end">
                     <span
-                      className={`rounded-full border px-3 py-1 font-sans text-[0.65rem] uppercase tracking-wide ${statusStyles(request.status)}`}
+                      className={`rounded-sm border px-3 py-1 font-sans text-[0.65rem] uppercase tracking-wide ${statusStyles(request.status)}`}
                     >
                       {request.status}
                     </span>

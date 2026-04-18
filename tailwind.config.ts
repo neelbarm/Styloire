@@ -9,15 +9,17 @@ const config: Config = {
     extend: {
       colors: {
         styloire: {
-          canvas: "rgb(24 24 24 / <alpha-value>)",
-          canvasDeep: "rgb(17 17 17 / <alpha-value>)",
-          ink: "rgb(235 228 216 / <alpha-value>)",
-          inkSoft: "rgb(212 205 193 / <alpha-value>)",
-          inkMuted: "rgb(156 148 138 / <alpha-value>)",
-          sand: "rgb(228 221 210 / <alpha-value>)",
-          sandFg: "rgb(16 16 16 / <alpha-value>)",
-          line: "rgba(235, 228, 216, 0.36)",
-          lineSubtle: "rgba(235, 228, 216, 0.14)"
+          canvas: "rgb(12 11 9 / <alpha-value>)",
+          canvasDeep: "rgb(6 5 4 / <alpha-value>)",
+          ink: "rgb(244 241 235 / <alpha-value>)",
+          inkSoft: "rgb(210 204 192 / <alpha-value>)",
+          inkMuted: "rgb(145 132 118 / <alpha-value>)",
+          champagne: "rgb(201 170 110 / <alpha-value>)",
+          champagneLight: "rgb(228 212 176 / <alpha-value>)",
+          champagneMuted: "rgb(158 138 94 / <alpha-value>)",
+          champagneFg: "rgb(26 24 20 / <alpha-value>)",
+          line: "rgba(212, 202, 186, 0.28)",
+          lineSubtle: "rgba(148, 134, 118, 0.22)"
         }
       },
       fontFamily: {

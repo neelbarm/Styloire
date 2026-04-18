@@ -65,7 +65,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "Is there a free trial?",
-        a: "Trial terms will be set at launch and shown clearly before you pay."
+        a: "If a trial is available, terms are shown clearly at checkout before you pay."
       },
       {
         q: "Can I cancel any time?",
@@ -103,7 +103,7 @@ export function FaqPageContent() {
                 key={item.q}
                 className="group border-b border-styloire-lineSubtle pb-6"
               >
-                <summary className="cursor-pointer list-none font-serif text-lg text-styloire-ink marker:content-none [&::-webkit-details-marker]:hidden">
+                <summary className="cursor-pointer list-none font-serif text-lg text-styloire-champagne marker:content-none [&::-webkit-details-marker]:hidden">
                   <span className="flex items-start justify-between gap-4">
                     <span>{item.q}</span>
                     <span className="font-sans text-xs text-styloire-inkMuted transition group-open:rotate-45">
@@ -125,7 +125,7 @@ export function FaqPageContent() {
           Talk to us
         </StyloireHeading>
         <p className="mx-auto mt-4 max-w-styloire-prose font-sans text-styloire-body font-light text-styloire-inkSoft">
-          For launch partnerships or press, write hello@styloire.co — we answer within 24–48 hours.
+          For partnerships or press, write hello@styloire.co — we answer within 24–48 hours.
         </p>
       </div>
     </div>

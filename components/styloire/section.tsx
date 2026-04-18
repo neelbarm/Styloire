@@ -8,7 +8,7 @@ export type StyloireSectionProps = HTMLAttributes<HTMLElement> & {
 
 const tones: Record<NonNullable<StyloireSectionProps["tone"]>, string> = {
   solid: "bg-styloire-canvas",
-  deep: "bg-styloire-canvasDeep"
+  deep: "bg-[radial-gradient(circle_at_18%_0%,rgba(201,170,110,0.09),transparent_45%),radial-gradient(circle_at_82%_100%,rgba(90,72,48,0.2),transparent_48%),rgb(6,5,4)]"
 };
 
 /**
