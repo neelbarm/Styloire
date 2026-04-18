@@ -3,9 +3,38 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  --styloire-canvas: #1a1a1a;
+  --styloire-canvas-deep: #121212;
+  --styloire-ink: #e5ded0;
+  --styloire-ink-soft: #d6cfc3;
+  --styloire-ink-muted: #a89f91;
+  --styloire-line: rgba(229, 222, 208, 0.45);
+  --styloire-overlay: rgba(10, 10, 10, 0.55);
+  --styloire-overlay-heavy: rgba(10, 10, 10, 0.72);
+  --styloire-sand: #e8e1d6;
+  --styloire-sand-fg: #141414;
 }
 
-body {
-  @apply min-h-screen bg-stone-50 text-stone-900 antialiased;
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-styloire-canvas font-sans text-styloire-ink antialiased;
+  }
+
+  ::selection {
+    @apply bg-styloire-ink/15 text-styloire-ink;
+  }
+}
+
+/**
+ * Optional scope for light legacy surfaces (e.g. internal tools).
+ * Marketing + app shell default to dark editorial tokens via body.
+ */
+.styloire-light-surface {
+  color-scheme: light;
+  @apply bg-stone-50 text-stone-900;
 }
