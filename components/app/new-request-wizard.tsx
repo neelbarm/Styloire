@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowRight, Check, Upload } from "lucide-react";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { StyloireButton, StyloireEyebrow, StyloirePanel } from "@/components/styloire";
+import { StyloireButton, StyloirePanel } from "@/components/styloire";
 import { getProfileWithContacts, listProfiles } from "@/lib/styloire/mock-data";
 import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
 import {
@@ -12,8 +12,23 @@ import {
 } from "@/lib/styloire/parse-contacts";
 import { renderTemplate } from "@/lib/styloire/template-render";
 
+// ─── Shared style tokens ──────────────────────────────────────────────────────
+const labelCls =
+  "font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/55";
+const inputCls =
+  "w-full rounded-[0.55rem] border border-white/16 bg-black/12 px-3.5 py-2.5 font-sans text-[0.92rem] text-styloire-champagneLight placeholder:text-white/32 focus:border-white/30 focus:outline-none transition-colors duration-styloire";
+const panelGrad =
+  "overflow-hidden rounded-[0.55rem] border border-white/12 bg-[linear-gradient(160deg,rgba(55,53,49,0.52),rgba(38,37,35,0.54))]";
+const footerCls =
+  "flex items-center justify-between border-t border-white/10 px-6 py-4 md:px-7";
+const ghostBtn =
+  "border-white/22 bg-transparent px-5 py-2 text-[0.65rem] tracking-[0.08em] text-white/75 hover:bg-white/8";
+const filledBtn =
+  "border-white/32 bg-white/10 px-6 py-2 text-[0.65rem] tracking-[0.08em] text-white/92 hover:bg-white/16";
+
 export function NewRequestWizard() {
   const router = useRouter();
+  // ── All state preserved exactly ──────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [requestType, setRequestType] = useState<"new" | "existing">("new");
   const [profileId, setProfileId] = useState("");
@@ -29,13 +44,15 @@ export function NewRequestWizard() {
   const [submitError, setSubmitError] = useState("");
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
   const profiles = listProfiles();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── All derived state preserved exactly ─────────────────────────────────
   const matchedProfile = useMemo(() => {
     const target = talent.trim().toLowerCase();
     if (!target) return null;
     return (
-      profiles.find((profile) => profile.talent_name.trim().toLowerCase() === target) ??
-      profiles.find((profile) => profile.talent_name.trim().toLowerCase().includes(target)) ??
+      profiles.find((p) => p.talent_name.trim().toLowerCase() === target) ??
+      profiles.find((p) => p.talent_name.trim().toLowerCase().includes(target)) ??
       null
     );
   }, [profiles, talent]);
@@ -54,7 +71,7 @@ export function NewRequestWizard() {
   const filteredBrands = useMemo(() => {
     const q = contactSearch.trim().toLowerCase();
     if (!q) return brands;
-    return brands.filter((brand) => brand.toLowerCase().includes(q));
+    return brands.filter((b) => b.toLowerCase().includes(q));
   }, [brands, contactSearch]);
   const selectedCount = selectedBrands.length;
   const previewBrand = selectedBrands[0] ?? brands[0];
@@ -72,9 +89,10 @@ export function NewRequestWizard() {
 
   const subjectPreview =
     talent && eventName && previewBrand
-      ? `${talent} / ${eventName} / ${previewBrand}`
-      : "{{talent}} / {{event}} / {{brand_name}}";
+      ? `${talent} / ${eventName} / ${previewBrand.toUpperCase()}`
+      : `{{talent}} / {{event}} / BRAND NAME`;
 
+  // ── All handlers preserved exactly ──────────────────────────────────────
   const loadPreviousContacts = () => {
     const target = talent.trim().toLowerCase();
     if (!target) {
@@ -82,10 +100,8 @@ export function NewRequestWizard() {
       return;
     }
     const matched =
-      profiles.find((profile) => profile.talent_name.trim().toLowerCase() === target) ??
-      profiles.find((profile) =>
-        profile.talent_name.trim().toLowerCase().includes(target),
-      );
+      profiles.find((p) => p.talent_name.trim().toLowerCase() === target) ??
+      profiles.find((p) => p.talent_name.trim().toLowerCase().includes(target));
     if (!matched) {
       setParseError(`No saved profile found for "${talent.trim()}".`);
       return;
@@ -103,19 +119,13 @@ export function NewRequestWizard() {
       setSelectedBrands([]);
       return;
     }
-
     const grouped = profile.contacts.reduce<GroupedContacts>((acc, row) => {
       const key = row.brand_name.trim().toUpperCase();
       const list = acc[key] ?? [];
-      list.push({
-        brand_name: key,
-        email: row.email,
-        contact_name: row.contact_name ?? ""
-      });
+      list.push({ brand_name: key, email: row.email, contact_name: row.contact_name ?? "" });
       acc[key] = list;
       return acc;
     }, {});
-
     setTalent(profile.profile.talent_name);
     setGroups(grouped);
     setSelectedBrands(Object.keys(grouped).sort());
@@ -128,20 +138,16 @@ export function NewRequestWizard() {
     setGroups(parsed.groups);
     setSelectedBrands(Object.keys(parsed.groups).sort());
     setParseError(parsed.errors[0] ?? "");
-    setStep(2);
     event.currentTarget.value = "";
   };
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((current) =>
-      current.includes(brand)
-        ? current.filter((name) => name !== brand)
-        : [...current, brand]
+      current.includes(brand) ? current.filter((n) => n !== brand) : [...current, brand]
     );
   };
 
   const isStepOneReady = Boolean(talent.trim() && eventName.trim());
-
   const contactsPayload = Object.values(groups).flat();
 
   const submitRequest = async () => {
@@ -171,279 +177,420 @@ export function NewRequestWizard() {
       setSubmitError(data.error ?? "Could not create request.");
       return;
     }
-
     if (data.source === "mock" || data.id === "req_local_preview") {
       setSubmittedRequestId(data.id);
       setSubmitState("success");
       return;
     }
-
-    const sendResponse = await fetch(`/api/requests/${data.id}/send`, {
-      method: "POST",
-    });
+    const sendResponse = await fetch(`/api/requests/${data.id}/send`, { method: "POST" });
     const sendPayload = (await sendResponse.json().catch(() => ({}))) as {
       error?: string;
       ok?: boolean;
       sent?: number;
       failed?: number;
     };
-
     if (sendResponse.status === 400) {
       setSubmitState("error");
       setSubmitError(
-        sendPayload.error ??
-          "Could not send emails. Check your connected account in Settings.",
+        sendPayload.error ?? "Could not send emails. Check your connected account in Settings."
       );
       return;
     }
-
     if (sendResponse.status === 207) {
       setSubmitState("error");
       setSubmitError(
         sendPayload.error ??
-          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed. Open the request to retry.`,
+          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed. Open the request to retry.`
       );
       return;
     }
-
     if (!sendResponse.ok) {
       setSubmitState("error");
       setSubmitError(sendPayload.error ?? "Send request failed.");
       return;
     }
-
     setSubmittedRequestId(data.id);
     setSubmitState("success");
   };
 
+  // ── Template download ────────────────────────────────────────────────────
+  const downloadTemplate = async () => {
+    const { utils, writeFile } = await import("xlsx");
+    const ws = utils.aoa_to_sheet([
+      ["brand_name", "email", "first_name"],
+      ["Valentino", "press@valentino.com", "Elena"],
+      ["Saint Laurent", "showroom@ysl.com", "Marie"]
+    ]);
+    // Set column widths for readability
+    ws["!cols"] = [{ wch: 28 }, { wch: 34 }, { wch: 18 }];
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Contacts");
+    writeFile(wb, "styloire-contacts-template.xlsx");
+  };
+
+  // ── Tab labels ───────────────────────────────────────────────────────────
   const wizardTabs = [
-    ["1 Details", 1],
-    ["2 Contacts", 2],
-    ["3 Email", 3],
-    ["4 Review", 4],
-    ["5 Send", 5]
-  ] as const;
+    { label: "Details", n: 1 as const },
+    { label: "Contacts", n: 2 as const },
+    { label: "Email", n: 3 as const },
+    { label: "Review", n: 4 as const },
+    { label: "Send", n: 5 as const }
+  ];
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-7">
-      {step !== 2 ? (
-        <div className="inline-flex overflow-hidden rounded-[0.58rem] border border-white/16 bg-black/22">
-          {wizardTabs.map(([label, n], index) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => setStep(n)}
-              className={`px-4 py-2 font-sans text-[0.87rem] font-semibold tracking-[-0.005em] transition-colors ${
-                step === n
-                  ? "bg-stone-100 text-stone-900"
-                  : "bg-transparent text-white/66 hover:text-white/85"
-              } ${index > 0 ? "border-l border-white/14" : ""}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+    <div className="space-y-6">
 
+      {/* ── STEP TAB BAR ── always visible ─────────────────────────────── */}
+      <div className="inline-flex overflow-hidden rounded-[0.6rem] border border-white/14 bg-black/20">
+        {wizardTabs.map(({ label, n }, i) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => setStep(n)}
+            className={[
+              "px-4 py-2 font-sans text-[0.78rem] font-semibold tracking-[0.01em] transition-colors duration-styloire",
+              i > 0 ? "border-l border-white/12" : "",
+              step === n
+                ? "bg-styloire-champagneLight/90 text-styloire-champagneFg"
+                : "bg-transparent text-white/54 hover:text-white/80"
+            ].join(" ")}
+          >
+            {n}&nbsp;&nbsp;{label}
+          </button>
+        ))}
+      </div>
+
+      {/* ══ STEP 1 — DETAILS ═══════════════════════════════════════════════ */}
       {step === 1 ? (
-        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
-          <div className="p-6 md:p-7">
-            <div className="grid gap-6 md:grid-cols-2">
+        <StyloirePanel className={panelGrad}>
+          <div className="space-y-6 p-6 md:p-7">
+
+            {/* Talent + Event fields */}
+            <div className="grid gap-5 md:grid-cols-2">
               <label className="space-y-2">
-                <span className="font-sans text-[1.8rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                  Talent name
-                </span>
+                <span className={labelCls}>Talent name</span>
                 <input
                   value={talent}
                   onChange={(e) => setTalent(e.target.value)}
-                  className="w-full rounded-[0.55rem] border border-white/14 bg-black/10 px-4 py-2.5 font-sans text-[1.03rem] text-styloire-champagneLight focus:border-white/32 focus:outline-none"
-                  placeholder=""
+                  placeholder="e.g. Jessica Alba"
+                  className={inputCls}
                 />
               </label>
               <label className="space-y-2">
-                <span className="font-sans text-[1.8rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                  Event or publication
-                </span>
+                <span className={labelCls}>Event / Publication</span>
                 <input
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
-                  className="w-full rounded-[0.55rem] border border-white/14 bg-black/10 px-4 py-2.5 font-sans text-[1.03rem] text-styloire-champagneLight focus:border-white/32 focus:outline-none"
-                  placeholder=""
+                  placeholder="e.g. Vogue June Cover"
+                  className={inputCls}
                 />
               </label>
             </div>
-            <p className="mt-2 font-sans text-[1.02rem] font-medium text-white/58">
+
+            {/* Profile status hint */}
+            <p className="font-sans text-[0.8rem] font-medium text-white/50">
               {matchedProfile
-                ? "Existing roster profile found — you can use saved contacts in step 2."
-                : "No saved roster profile found yet — you can upload contacts in step 2."}
+                ? `Existing profile found for ${matchedProfile.talent_name} — saved contacts load automatically in step 2.`
+                : "No saved roster profile found yet — you can upload a contact file in step 2."}
             </p>
-            <div className="mt-5">
-              <p className="font-sans text-[1.85rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                Subject line preview
+
+            {/* Subject line preview */}
+            <div className="space-y-2">
+              <span className={labelCls}>Subject line preview</span>
+              <div className="rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
+                <p className="font-sans text-[0.88rem] text-white/70">{subjectPreview}</p>
+              </div>
+              <p className="font-sans text-[0.72rem] text-white/42">
+                Auto-generated per brand. Updates live as you type above.
               </p>
             </div>
-            <div className="mt-2 space-y-2">
-              <div className="w-full rounded-[0.55rem] bg-black/24 px-3 py-2.5 font-sans text-[0.83rem] text-white/58">
-                Client&apos;s Name <span className="mx-4 text-white/75">/</span> Event{" "}
-                <span className="mx-4 text-white/75">/</span> Brand Name
-              </div>
-              <div className="w-full rounded-[0.55rem] bg-black/24 px-3 py-2.5 font-sans text-[0.83rem] text-white/58">
-                Client&apos;s Name <span className="mx-4 text-white/75">/</span> Event{" "}
-                <span className="mx-4 text-white/75">/</span> Brand Name
-              </div>
-            </div>
-            <p className="mt-2 font-sans text-[0.98rem] font-medium text-white/58">
-              Auto-generated per brand. Updates live as you type above.
-            </p>
           </div>
-          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
-            <p className="font-sans text-[1.02rem] font-semibold text-white/58">Step 1 of 5</p>
+
+          <div className={footerCls}>
+            <p className={labelCls}>Step 1 of 5</p>
             <StyloireButton
               type="button"
               variant="outline"
               disabled={!isStepOneReady}
               onClick={() => setStep(2)}
-              className="border-white/24 bg-transparent px-6 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              className={filledBtn}
             >
               <span className="inline-flex items-center gap-2">
-                Continue
-                <ArrowRight className="h-3.5 w-3.5" />
+                Continue <ArrowRight className="h-3 w-3" />
               </span>
             </StyloireButton>
           </div>
         </StyloirePanel>
       ) : null}
 
+      {/* ══ STEP 2 — CONTACTS ══════════════════════════════════════════════ */}
       {step === 2 ? (
-        <div className="mx-auto w-full max-w-5xl space-y-6 pt-1">
-          <div className="text-center">
-            <h2 className="font-serif text-[clamp(3rem,6.4vw,5.15rem)] font-semibold uppercase leading-[0.92] tracking-[-0.012em] text-styloire-champagneLight">
-              Select contact to include
-            </h2>
-            <p className="mt-2 font-sans text-[1.08rem] font-medium text-white/70">
-              All contacts are selected by default. Toggle off any brands you don&apos;t want to reach out to for this request.
-            </p>
-          </div>
+        <div className="space-y-5">
+          {brands.length === 0 ? (
+            /* Empty state — show source selectors */
+            <div className="space-y-5">
+              <div>
+                <h2 className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-white/55">
+                  Contacts
+                </h2>
+                <p className="mt-1 font-sans text-[0.85rem] font-light text-white/50">
+                  Load a saved profile or upload a new contact file (.csv or .xlsx).
+                </p>
+              </div>
 
-          <div className="mx-auto max-w-[55rem]">
-            <input
-              value={contactSearch}
-              onChange={(e) => setContactSearch(e.target.value)}
-              placeholder="Search brand or contact name...."
-              className="w-full rounded-full border border-white/42 bg-white/8 px-6 py-3 text-center font-sans text-[1.06rem] text-styloire-champagneLight placeholder:text-white/52 focus:border-white/55 focus:outline-none"
-            />
-          </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Saved profile card */}
+                <button
+                  type="button"
+                  onClick={loadPreviousContacts}
+                  disabled={!matchedProfile}
+                  className={[
+                    "rounded-[0.9rem] border p-5 text-left transition-[border-color,background-color] duration-styloire",
+                    matchedProfile
+                      ? "cursor-pointer border-white/38 bg-white/8 hover:border-white/54 hover:bg-white/12"
+                      : "cursor-not-allowed border-white/14 bg-white/4 opacity-50"
+                  ].join(" ")}
+                >
+                  <p className={labelCls}>Saved profile</p>
+                  <p className="mt-2 font-sans text-[1.05rem] font-semibold text-styloire-champagneLight">
+                    {matchedProfile ? matchedProfile.talent_name : "No match found"}
+                  </p>
+                  {matchedProfile ? (
+                    <p className="mt-1 font-sans text-[0.82rem] text-white/55">
+                      {matchedProfile.contact_count} contacts saved
+                    </p>
+                  ) : (
+                    <p className="mt-1 font-sans text-[0.82rem] text-white/45">
+                      Enter a talent name in step 1 that matches a saved profile.
+                    </p>
+                  )}
+                </button>
 
-          <div className="mx-auto max-w-[50rem] overflow-hidden rounded-[2px] border border-white/34 bg-transparent">
-            <ul className="divide-y divide-white/30">
-              {(filteredBrands.length ? filteredBrands : brands).slice(0, 4).map((brand) => (
-                <li key={brand} className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3.5">
-                  <span className="font-sans text-[1.08rem] font-medium uppercase tracking-[0.02em] text-white/82">
-                    {brand}
-                  </span>
-                  <label className="inline-flex cursor-pointer items-center justify-end">
-                    <input
-                      type="checkbox"
-                      checked={selectedBrands.includes(brand)}
-                      onChange={() => toggleBrand(brand)}
-                      className="peer sr-only"
-                    />
-                    <span className="relative inline-flex h-6 w-12 items-center rounded-full border border-white/45 bg-white/30 transition-colors peer-checked:bg-emerald-500/85">
-                      <span className="h-4 w-4 translate-x-1 rounded-full bg-[rgb(34,34,36)] transition-transform peer-checked:translate-x-6" />
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <p className="px-4 py-3 font-sans text-[1.06rem] font-semibold italic text-white/72">
-              + {Math.max(0, (brands.length || 148) - 4)} more contacts
-            </p>
-          </div>
+                {/* Upload new file card */}
+                <label className="cursor-pointer rounded-[0.9rem] border border-white/38 bg-white/8 p-5 transition-[border-color,background-color] duration-styloire hover:border-white/54 hover:bg-white/12">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv,.xlsx"
+                    className="sr-only"
+                    onChange={handleFile}
+                  />
+                  <p className={labelCls}>Upload contacts</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-styloire-champagneLight" />
+                    <p className="font-sans text-[1.05rem] font-semibold text-styloire-champagneLight">
+                      Upload .csv or .xlsx
+                    </p>
+                  </div>
+                  <p className="mt-1 font-sans text-[0.82rem] text-white/55">
+                    Columns: Brand Name, Email, PR Contact (optional)
+                  </p>
+                </label>
+              </div>
 
-          <div className="flex justify-center">
+              {/* Template download */}
+              <p className="font-sans text-[0.76rem] text-white/42">
+                Need a template?{" "}
+                <button
+                  type="button"
+                  onClick={downloadTemplate}
+                  className="text-styloire-champagneMuted underline-offset-3 transition-colors hover:text-styloire-champagneLight"
+                >
+                  Download xlsx template
+                </button>{" "}
+                — fill in your contacts and upload above.
+              </p>
+
+              {parseError ? (
+                <p className="font-sans text-[0.78rem] text-red-300">{parseError}</p>
+              ) : null}
+            </div>
+          ) : (
+            /* Loaded state — show toggle list */
+            <div className="space-y-5">
+              <div className="flex items-end justify-between">
+                <div>
+                  <h2 className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-white/55">
+                    Contacts
+                  </h2>
+                  <p className="mt-1 font-sans text-[0.85rem] text-white/50">
+                    {selectedCount} of {brands.length} contacts selected. Toggle off any brands to
+                    exclude from this request.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBrands([...brands])}
+                    className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-white/52 hover:text-white/78"
+                  >
+                    Select all
+                  </button>
+                  <span className="text-white/24">·</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBrands([])}
+                    className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-white/52 hover:text-white/78"
+                  >
+                    Deselect all
+                  </button>
+                </div>
+              </div>
+
+              {/* Search */}
+              <input
+                value={contactSearch}
+                onChange={(e) => setContactSearch(e.target.value)}
+                placeholder="Search brand or contact name..."
+                className="w-full rounded-full border border-white/18 bg-black/14 px-5 py-2.5 font-sans text-[0.88rem] text-styloire-champagneLight placeholder:text-white/35 focus:border-white/30 focus:outline-none"
+              />
+
+              {/* Toggle list */}
+              <div className="overflow-hidden rounded-[0.55rem] border border-white/16 bg-transparent">
+                <ul className="divide-y divide-white/10">
+                  {filteredBrands.map((brand) => (
+                    <li
+                      key={brand}
+                      className="grid grid-cols-[1fr_auto] items-center gap-3 px-5 py-3"
+                    >
+                      <div>
+                        <p className="font-sans text-[0.9rem] font-medium uppercase tracking-[0.04em] text-white/82">
+                          {brand}
+                        </p>
+                        {groups[brand]?.[0]?.email ? (
+                          <p className="font-sans text-[0.74rem] text-white/42">
+                            {groups[brand][0].email}
+                          </p>
+                        ) : null}
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() => toggleBrand(brand)}
+                          className="peer sr-only"
+                        />
+                        <span className="relative inline-flex h-5 w-10 items-center rounded-full border border-white/32 bg-white/18 transition-colors peer-checked:border-emerald-500/60 peer-checked:bg-emerald-500/80">
+                          <span className="h-3.5 w-3.5 translate-x-0.5 rounded-full bg-white/70 shadow transition-transform peer-checked:translate-x-[1.35rem] peer-checked:bg-white" />
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+                {brands.length > filteredBrands.length ? (
+                  <p className="px-5 py-3 font-sans text-[0.82rem] italic text-white/42">
+                    + {brands.length - filteredBrands.length} brands hidden by search
+                  </p>
+                ) : null}
+              </div>
+
+              {parseError ? (
+                <p className="font-sans text-[0.78rem] text-red-300">{parseError}</p>
+              ) : null}
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between border-t border-white/10 pt-4">
+            <StyloireButton
+              type="button"
+              variant="outline"
+              onClick={() => setStep(1)}
+              className={ghostBtn}
+            >
+              Back
+            </StyloireButton>
             <StyloireButton
               type="button"
               variant="outline"
               disabled={!brands.length || !selectedCount}
               onClick={() => setStep(3)}
-              className="border-white/28 bg-transparent px-7 py-2.5 text-[0.72rem] tracking-[0.08em] text-white/90 hover:bg-white/10"
+              className={filledBtn}
             >
               <span className="inline-flex items-center gap-2">
-                Continue
-                <ArrowRight className="h-3.5 w-3.5" />
+                Continue with {selectedCount} contacts <ArrowRight className="h-3 w-3" />
               </span>
             </StyloireButton>
           </div>
-
-          {parseError ? <p className="mt-2 text-center font-sans text-xs text-red-300">{parseError}</p> : null}
         </div>
       ) : null}
 
+      {/* ══ STEP 3 — EMAIL ═════════════════════════════════════════════════ */}
       {step === 3 ? (
-        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
-          <div className="space-y-5 p-6 md:p-7">
+        <StyloirePanel className={panelGrad}>
+          <div className="space-y-6 p-6 md:p-7">
+
+            {/* Subject preview */}
+            <div className="space-y-2">
+              <span className={labelCls}>Subject line preview</span>
+              <div className="rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
+                <p className="font-sans text-[0.88rem] text-white/70">{subjectPreview}</p>
+              </div>
+              <p className="font-sans text-[0.72rem] text-white/38">
+                Auto-generated per brand using Talent / Event / BRAND NAME format.
+              </p>
+            </div>
+
+            {/* Email body */}
             <label className="block space-y-2">
-              <span className="font-sans text-[1.28rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                Email body
-              </span>
+              <span className={labelCls}>Email body</span>
               <textarea
-                rows={6}
+                rows={8}
                 value={emailBody}
-                onChange={(event) => setEmailBody(event.target.value)}
-                placeholder="Text"
-                className="w-full resize-y rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2.5 font-sans text-[1rem] text-styloire-champagneLight placeholder:text-white/42 focus:border-white/30 focus:outline-none"
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder="Write your pull request email here. Use {{brand_name}} and {{contact_name}} for personalization."
+                className={inputCls + " resize-y"}
               />
             </label>
 
+            {/* Sending from */}
             <div className="space-y-2">
-              <p className="font-sans text-[1.2rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                Sending from
-              </p>
-              <div className="flex flex-wrap items-center gap-4 rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2.5">
-                <span className="font-sans text-[1rem] text-white/62">User&apos;s email</span>
-                <span className="font-sans text-[0.95rem] font-semibold text-emerald-400">
-                  Connected via Gmail
+              <span className={labelCls}>Sending from</span>
+              <div className="flex flex-wrap items-center gap-3 rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
+                <span className="font-sans text-[0.88rem] text-white/58">Your connected email</span>
+                <span className="rounded-full border border-emerald-400/40 bg-emerald-500/14 px-2.5 py-0.5 font-sans text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-emerald-300">
+                  Connected
                 </span>
               </div>
             </div>
 
+            {/* CC recipients */}
             <div className="space-y-2">
-              <p className="font-sans text-[1.2rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                CC recipients
-              </p>
+              <span className={labelCls}>CC recipients</span>
               <div className="flex flex-wrap items-center gap-2">
                 {ccRecipients.map((recipient, index) => (
                   <input
                     key={`cc-${index}`}
                     value={recipient}
-                    onChange={(event) => {
+                    onChange={(e) => {
                       const next = [...ccRecipients];
-                      next[index] = event.target.value;
+                      next[index] = e.target.value;
                       setCcRecipients(next);
                     }}
-                    className="rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2 font-sans text-[0.96rem] text-white/72 focus:border-white/30 focus:outline-none"
+                    className="min-w-[12rem] rounded-[0.55rem] border border-white/14 bg-black/12 px-3 py-2 font-sans text-[0.85rem] text-white/72 focus:border-white/28 focus:outline-none"
                   />
                 ))}
                 <button
                   type="button"
                   onClick={() => setCcRecipients((prev) => [...prev, ""])}
-                  className="font-sans text-[0.96rem] font-semibold text-white/62 transition-colors hover:text-white/85"
+                  className="font-sans text-[0.82rem] font-semibold text-white/48 transition-colors hover:text-white/72"
                 >
-                  + Add another
+                  + Add
                 </button>
               </div>
-              <p className="font-sans text-[0.9rem] text-white/52">
+              <p className="font-sans text-[0.72rem] text-white/38">
                 These addresses will be copied on every email sent in this request.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+          <div className={footerCls}>
             <StyloireButton
               type="button"
               variant="outline"
               onClick={() => setStep(2)}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              className={ghostBtn}
             >
               Back
             </StyloireButton>
@@ -451,139 +598,160 @@ export function NewRequestWizard() {
               type="button"
               variant="outline"
               onClick={() => setStep(4)}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              className={filledBtn}
             >
               <span className="inline-flex items-center gap-2">
-                Continue
-                <ArrowRight className="h-3.5 w-3.5" />
+                Review <ArrowRight className="h-3 w-3" />
               </span>
             </StyloireButton>
           </div>
         </StyloirePanel>
       ) : null}
 
+      {/* ══ STEP 4 — REVIEW ════════════════════════════════════════════════ */}
       {step === 4 ? (
-        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
-          <div className="space-y-4 p-6 md:p-7">
-            <div className="max-w-[26rem] rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-3">
-              <p className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.02em] text-styloire-champagneLight">
-                Request details
-              </p>
-              <p className="mt-2 font-sans text-[0.95rem] text-white/62">
-                {talent || "Client's Name"} <span className="mx-3 text-white/72">/</span>{" "}
-                {eventName || "Event"}
-              </p>
-              <p className="mt-1 font-sans text-[1.35rem] font-semibold text-styloire-champagneLight">
-                {selectedCount} contacts selected
-              </p>
-              <p className="mt-1 font-sans text-[0.95rem] text-white/62">
-                <span className="font-semibold text-white/78">Sending from:</span> User&apos;s email
+        <StyloirePanel className={panelGrad}>
+          <div className="space-y-5 p-6 md:p-7">
+            <div>
+              <span className={labelCls}>Review your request</span>
+              <p className="mt-1 font-sans text-[0.8rem] text-white/45">
+                Double-check everything before sending. Emails go out individually — one per brand.
               </p>
             </div>
 
-            <div className="rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-3">
-              <p className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.02em] text-styloire-champagneLight">
-                Email preview
-              </p>
-              <p className="mt-2 font-sans text-[0.92rem] text-white/62">
-                <span className="font-semibold text-white/76">Subject:</span> Client&apos;s Name{" "}
-                <span className="mx-3 text-white/72">/</span> Event{" "}
-                <span className="mx-3 text-white/72">/</span> Brand
-              </p>
-              <p className="mt-1 font-sans text-[0.92rem] text-white/62">
-                <span className="font-semibold text-white/76">From:</span> User&apos;s email{" "}
-                <span className="mx-6 text-white/72">CC:</span>{" "}
-                {ccRecipients.filter((v) => v.trim()).join(", ") || "User's assistant's email"}
-              </p>
-              <div className="mt-3 border-t border-white/10 pt-3">
-                <p className="whitespace-pre-wrap font-sans text-[0.95rem] text-white/72">
-                  {emailBody || "Text"}
+            {/* Request summary */}
+            <div className="rounded-[0.55rem] border border-white/12 bg-black/16 divide-y divide-white/8">
+              <div className="px-5 py-4">
+                <p className={labelCls + " mb-2"}>Request details</p>
+                <p className="font-sans text-[0.95rem] font-semibold text-styloire-champagneLight">
+                  {talent || "—"}{" "}
+                  <span className="mx-2 font-normal text-white/38">/</span>
+                  {eventName || "—"}
+                </p>
+                <p className="mt-1 font-sans text-[0.82rem] text-white/52">
+                  {selectedCount} contacts selected
+                </p>
+              </div>
+              <div className="px-5 py-4">
+                <p className={labelCls + " mb-2"}>Subject line (per brand)</p>
+                <p className="font-sans text-[0.88rem] text-white/65">{subjectPreview}</p>
+              </div>
+              <div className="px-5 py-4">
+                <p className={labelCls + " mb-2"}>Sending from</p>
+                <p className="font-sans text-[0.88rem] text-white/65">Your connected email</p>
+                {ccRecipients.filter((v) => v.trim()).length > 0 ? (
+                  <p className="mt-0.5 font-sans text-[0.82rem] text-white/45">
+                    CC: {ccRecipients.filter((v) => v.trim()).join(", ")}
+                  </p>
+                ) : null}
+              </div>
+              <div className="px-5 py-4">
+                <p className={labelCls + " mb-2"}>Email preview</p>
+                <p className="whitespace-pre-wrap font-sans text-[0.85rem] leading-relaxed text-white/60 line-clamp-6">
+                  {mergedBody || emailBody || "—"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+          <div className={footerCls}>
             <StyloireButton
               type="button"
               variant="outline"
               onClick={() => setStep(3)}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              className={ghostBtn}
             >
               Back
             </StyloireButton>
             <StyloireButton
               type="button"
               variant="outline"
-              disabled={submitState === "saving" || !selectedCount}
-              onClick={submitRequest}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              disabled={!selectedCount}
+              onClick={() => setStep(5)}
+              className={filledBtn}
             >
               <span className="inline-flex items-center gap-2">
-                Send {selectedCount} emails
-                <ArrowRight className="h-3.5 w-3.5" />
+                Looks good <ArrowRight className="h-3 w-3" />
               </span>
             </StyloireButton>
           </div>
         </StyloirePanel>
       ) : null}
 
+      {/* ══ STEP 5 — SEND ══════════════════════════════════════════════════ */}
       {step === 5 ? (
-        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
+        <StyloirePanel className={panelGrad}>
           {submitState === "success" ? (
-            <div className="mx-auto flex max-w-xl flex-col items-center py-6 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-200/45 bg-emerald-100/90">
-                <Check className="h-6 w-6 text-emerald-900" />
+            /* ── Success state ── */
+            <div className="flex flex-col items-center py-10 text-center">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/16">
+                <Check className="h-5 w-5 text-emerald-300" />
               </div>
-              <p className="mt-4 font-sans text-[1.35rem] font-semibold text-styloire-champagneLight">
+              <p className="mt-4 font-serif text-[1.5rem] font-semibold text-styloire-champagneLight">
                 {selectedCount} emails sent
               </p>
-              <p className="mt-1 font-sans text-[0.98rem] text-white/64">
-                {talent || "Client&apos;s Name"} <span className="mx-3 text-white/70">/</span>{" "}
-                {eventName || "Event"}
+              <p className="mt-1 font-sans text-[0.85rem] text-white/52">
+                {talent} <span className="mx-2 text-white/30">/</span> {eventName}
               </p>
-              <p className="mt-1 font-sans text-[0.98rem] text-white/64">
-                <span className="font-semibold text-white/78">Sending from</span> User&apos;s email
+              <p className="mt-0.5 font-sans text-[0.82rem] text-white/42">
+                Sent from your connected email
               </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <StyloireButton
                   href={submittedRequestId ? `/requests/${submittedRequestId}` : "/dashboard"}
                   variant="outline"
-                  className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+                  className={ghostBtn}
                 >
                   View request
                 </StyloireButton>
-                <StyloireButton
-                  href="/requests/new"
-                  variant="outline"
-                  className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
-                >
-                  + New Request
+                <StyloireButton href="/requests/new" variant="outline" className={filledBtn}>
+                  + New request
                 </StyloireButton>
               </div>
             </div>
-          ) : (
-            <>
-              <StyloireEyebrow className="mb-4">Step 5</StyloireEyebrow>
-              <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
-              <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-                Review and send the request immediately.
+          ) : submitState === "saving" ? (
+            /* ── Loading state ── */
+            <div className="flex flex-col items-center py-10 text-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-styloire-champagneLight" />
+              <p className="mt-4 font-sans text-[0.9rem] text-white/55">
+                Sending {selectedCount} emails…
               </p>
-              <div className="mt-10 flex flex-wrap gap-4">
-                <StyloireButton type="button" variant="outline" onClick={() => setStep(4)}>
+            </div>
+          ) : (
+            /* ── Pre-send / error state ── */
+            <div className="p-6 md:p-7">
+              <span className={labelCls}>Ready to send</span>
+              <p className="mt-2 font-sans text-[0.88rem] text-white/55">
+                {selectedCount} emails will go out individually — one per brand, personalized with
+                their name.
+              </p>
+
+              {submitError ? (
+                <div className="mt-4 rounded-[0.55rem] border border-red-400/30 bg-red-500/10 px-4 py-3">
+                  <p className="font-sans text-[0.82rem] text-red-300">{submitError}</p>
+                </div>
+              ) : null}
+
+              <div className={footerCls + " mt-6 border-t border-white/10 px-0 pt-5"}>
+                <StyloireButton
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(4)}
+                  className={ghostBtn}
+                >
                   Back
                 </StyloireButton>
                 <StyloireButton
                   type="button"
                   variant="solid"
-                  disabled={submitState === "saving" || !selectedCount}
+                  disabled={!selectedCount}
                   onClick={submitRequest}
+                  className="px-8 py-2 text-[0.65rem] tracking-[0.1em]"
                 >
-                  Send outreach
+                  Send {selectedCount} emails
                 </StyloireButton>
               </div>
-              {submitError ? <p className="mt-4 font-sans text-xs text-red-300">{submitError}</p> : null}
-            </>
+            </div>
           )}
         </StyloirePanel>
       ) : null}

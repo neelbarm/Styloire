@@ -1,5 +1,4 @@
 import { SettingsManager } from "@/components/app/settings-manager";
-import { StyloireAppPageHeader } from "@/components/styloire/app-shell";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export default async function SettingsPage({
@@ -13,10 +12,14 @@ export default async function SettingsPage({
 
   return (
     <>
-      <StyloireAppPageHeader
-        title="Account"
-        description="Connected sending account, CC defaults, and subscription controls."
-      />
+      <div className="mb-7 text-center">
+        <h1 className="font-serif text-[clamp(1.9rem,3.8vw,2.8rem)] font-semibold uppercase leading-[0.94] tracking-[-0.01em] text-styloire-champagneLight">
+          Account
+        </h1>
+        <p className="mt-2 font-sans text-[0.82rem] font-light text-white/40">
+          Email connection, CC defaults, and subscription.
+        </p>
+      </div>
       <SettingsManager
         defaultName={defaultName}
         defaultEmail={defaultEmail}
