@@ -42,8 +42,8 @@ export type StyloireImageSectionProps = HTMLAttributes<HTMLElement> & {
 };
 
 const overlays: Record<NonNullable<StyloireImageSectionProps["overlay"]>, string> = {
-  default: "from-black/30 to-black/30",
-  heavy: "from-black/65 to-black/65"
+  default: "from-black/28 to-black/28",
+  heavy: "from-black/45 to-black/45"
 };
 
 /**
@@ -60,7 +60,7 @@ export function StyloireImageSection({
 }: StyloireImageSectionProps) {
   return (
     <section
-      className={`relative min-h-[min(100vh,52rem)] overflow-hidden py-styloire-section ${className}`.trim()}
+      className={`relative flex min-h-[min(100vh,52rem)] flex-col overflow-hidden py-styloire-section ${className}`.trim()}
       style={{
         backgroundImage: imageUrl,
         backgroundSize: "cover",
@@ -74,7 +74,7 @@ export function StyloireImageSection({
         aria-hidden
       />
       <div className="pointer-events-none absolute inset-0 bg-styloire-noise mix-blend-overlay opacity-30" />
-      <div className="relative z-10 mx-auto flex min-h-[min(100vh,52rem)] w-full max-w-styloire flex-col items-center justify-center px-6 text-center md:px-10">
+      <div className="relative z-10 mx-auto flex flex-1 w-full max-w-styloire flex-col items-center justify-center px-6 text-center md:px-10">
         {children}
       </div>
     </section>
