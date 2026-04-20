@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowRight, Upload } from "lucide-react";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ArrowRight, Check, Upload } from "lucide-react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StyloireButton, StyloireEyebrow, StyloirePanel } from "@/components/styloire";
 import { getProfileWithContacts, listProfiles } from "@/lib/styloire/mock-data";
@@ -14,7 +14,7 @@ import { renderTemplate } from "@/lib/styloire/template-render";
 
 export function NewRequestWizard() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [requestType, setRequestType] = useState<"new" | "existing">("new");
   const [profileId, setProfileId] = useState("");
   const [talent, setTalent] = useState("");
@@ -24,9 +24,31 @@ export function NewRequestWizard() {
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>(DEFAULT_TEMPLATE_STANDARD_PULL.body);
-  const [submitState, setSubmitState] = useState<"idle" | "saving" | "error">("idle");
+  const [ccRecipients, setCcRecipients] = useState<string[]>(["User's assistant email"]);
+  const [submitState, setSubmitState] = useState<"idle" | "saving" | "error" | "success">("idle");
   const [submitError, setSubmitError] = useState("");
+  const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
   const profiles = listProfiles();
+
+  const matchedProfile = useMemo(() => {
+    const target = talent.trim().toLowerCase();
+    if (!target) return null;
+    return (
+      profiles.find((profile) => profile.talent_name.trim().toLowerCase() === target) ??
+      profiles.find((profile) => profile.talent_name.trim().toLowerCase().includes(target)) ??
+      null
+    );
+  }, [profiles, talent]);
+
+  useEffect(() => {
+    if (matchedProfile) {
+      setRequestType("existing");
+      setProfileId(matchedProfile.id);
+      return;
+    }
+    setRequestType("new");
+    setProfileId("");
+  }, [matchedProfile]);
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
   const filteredBrands = useMemo(() => {
@@ -125,6 +147,7 @@ export function NewRequestWizard() {
   const submitRequest = async () => {
     setSubmitState("saving");
     setSubmitError("");
+    setSubmittedRequestId(null);
     const response = await fetch("/api/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -150,7 +173,8 @@ export function NewRequestWizard() {
     }
 
     if (data.source === "mock" || data.id === "req_local_preview") {
-      router.push(`/requests/${data.id}`);
+      setSubmittedRequestId(data.id);
+      setSubmitState("success");
       return;
     }
 
@@ -179,7 +203,6 @@ export function NewRequestWizard() {
         sendPayload.error ??
           `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed. Open the request to retry.`,
       );
-      router.push(`/requests/${data.id}`);
       return;
     }
 
@@ -189,29 +212,31 @@ export function NewRequestWizard() {
       return;
     }
 
-    router.push(`/requests/${data.id}`);
+    setSubmittedRequestId(data.id);
+    setSubmitState("success");
   };
 
+  const wizardTabs = [
+    ["1 Details", 1],
+    ["2 Contacts", 2],
+    ["3 Email", 3],
+    ["4 Review", 4],
+    ["5 Send", 5]
+  ] as const;
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-1 rounded-full border border-styloire-lineSubtle bg-black/26 p-1">
-        {(
-          [
-            ["1 Details", 1],
-            ["2 Contacts", 2],
-            ["3 Email", 3],
-            ["4 Send", 4]
-          ] as const
-        ).map(([label, n]) => (
+    <div className="space-y-7">
+      <div className="inline-flex overflow-hidden rounded-[0.58rem] border border-white/16 bg-black/22">
+        {wizardTabs.map(([label, n], index) => (
           <button
             key={label}
             type="button"
             onClick={() => setStep(n)}
-            className={`rounded-full border px-4 py-1.5 font-sans text-[0.63rem] font-semibold tracking-[0.08em] transition-colors ${
+            className={`px-4 py-2 font-sans text-[0.87rem] font-semibold tracking-[-0.005em] transition-colors ${
               step === n
-                ? "border-white/65 bg-white/85 text-stone-900"
-                : "border-transparent bg-transparent text-styloire-inkMuted hover:border-styloire-line"
-            }`}
+                ? "bg-stone-100 text-stone-900"
+                : "bg-transparent text-white/66 hover:text-white/85"
+            } ${index > 0 ? "border-l border-white/14" : ""}`}
           >
             {label}
           </button>
@@ -219,95 +244,68 @@ export function NewRequestWizard() {
       </div>
 
       {step === 1 ? (
-        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
-          <StyloireEyebrow className="mb-4">Step 1</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Create a request</h2>
-          <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Give your project a name. Add your talent and event, then choose a new upload or an
-            existing client profile.
-          </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <label className="flex items-center gap-3 border border-styloire-lineSubtle bg-black/25 px-4 py-3">
-              <input
-                type="radio"
-                name="requestType"
-                checked={requestType === "new"}
-                onChange={() => {
-                  setRequestType("new");
-                  setProfileId("");
-                  setGroups({});
-                  setSelectedBrands([]);
-                }}
-              />
-              <span className="font-sans text-sm text-styloire-ink">New profile from CSV</span>
-            </label>
-            <label className="flex items-center gap-3 border border-styloire-lineSubtle bg-black/25 px-4 py-3">
-              <input
-                type="radio"
-                name="requestType"
-                checked={requestType === "existing"}
-                onChange={() => setRequestType("existing")}
-              />
-              <span className="font-sans text-sm text-styloire-ink">Use existing profile</span>
-            </label>
+        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
+          <div className="p-6 md:p-7">
+            <div className="grid gap-6 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="font-sans text-[1.8rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                  Talent name
+                </span>
+                <input
+                  value={talent}
+                  onChange={(e) => setTalent(e.target.value)}
+                  className="w-full rounded-[0.55rem] border border-white/14 bg-black/10 px-4 py-2.5 font-sans text-[1.03rem] text-styloire-champagneLight focus:border-white/32 focus:outline-none"
+                  placeholder=""
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="font-sans text-[1.8rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                  Event or publication
+                </span>
+                <input
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  className="w-full rounded-[0.55rem] border border-white/14 bg-black/10 px-4 py-2.5 font-sans text-[1.03rem] text-styloire-champagneLight focus:border-white/32 focus:outline-none"
+                  placeholder=""
+                />
+              </label>
+            </div>
+            <p className="mt-2 font-sans text-[1.02rem] font-medium text-white/58">
+              {matchedProfile
+                ? "Existing roster profile found — you can use saved contacts in step 2."
+                : "No saved roster profile found yet — you can upload contacts in step 2."}
+            </p>
+            <div className="mt-5">
+              <p className="font-sans text-[1.85rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                Subject line preview
+              </p>
+            </div>
+            <div className="mt-2 space-y-2">
+              <div className="w-full rounded-[0.55rem] bg-black/24 px-3 py-2.5 font-sans text-[0.83rem] text-white/58">
+                Client&apos;s Name <span className="mx-4 text-white/75">/</span> Event{" "}
+                <span className="mx-4 text-white/75">/</span> Brand Name
+              </div>
+              <div className="w-full rounded-[0.55rem] bg-black/24 px-3 py-2.5 font-sans text-[0.83rem] text-white/58">
+                Client&apos;s Name <span className="mx-4 text-white/75">/</span> Event{" "}
+                <span className="mx-4 text-white/75">/</span> Brand Name
+              </div>
+            </div>
+            <p className="mt-2 font-sans text-[0.98rem] font-medium text-white/58">
+              Auto-generated per brand. Updates live as you type above.
+            </p>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Talent name
-              </span>
-              <input
-                value={talent}
-                onChange={(e) => setTalent(e.target.value)}
-                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink focus:border-styloire-champagne focus:outline-none"
-                placeholder="Bella Hadid"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Event / publication
-              </span>
-              <input
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink focus:border-styloire-champagne focus:outline-none"
-                placeholder="Grammys"
-              />
-            </label>
-          </div>
-          {requestType === "existing" ? (
-            <label className="mt-6 block max-w-md space-y-2">
-              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Profile
-              </span>
-              <select
-                value={profileId}
-                onChange={(e) => {
-                  const nextId = e.target.value;
-                  setProfileId(nextId);
-                  loadProfileContacts(nextId);
-                }}
-                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
-              >
-                <option value="">Select profile</option>
-                {profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.talent_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+            <p className="font-sans text-[1.02rem] font-semibold text-white/58">Step 1 of 5</p>
             <StyloireButton
               type="button"
-              variant="solid"
-              disabled={!isStepOneReady || (requestType === "existing" && !profileId)}
+              variant="outline"
+              disabled={!isStepOneReady}
               onClick={() => setStep(2)}
+              className="border-white/24 bg-transparent px-6 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
             >
               <span className="inline-flex items-center gap-2">
                 Continue
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </StyloireButton>
           </div>
@@ -315,170 +313,341 @@ export function NewRequestWizard() {
       ) : null}
 
       {step === 2 ? (
-        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
-          <StyloireEyebrow className="mb-4">Step 2</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Upload your contacts</h2>
-          <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            {requestType === "new"
-              ? "Upload CSV for a new profile. Expected columns: brand_name, email, first_name."
-              : "Review and toggle the saved contacts for this request. All are ON by default."}
-          </p>
-          {requestType === "new" ? (
-            <div className="mt-8 flex flex-wrap gap-4">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-styloire-line px-5 py-2 font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-ink hover:border-styloire-ink">
-                <Upload className="h-4 w-4" />
-                Upload file
+        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
+          <div className="p-6 md:p-7">
+            <div className="grid gap-3 md:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (matchedProfile) {
+                    setRequestType("existing");
+                    setProfileId(matchedProfile.id);
+                    loadProfileContacts(matchedProfile.id);
+                  } else {
+                    loadPreviousContacts();
+                  }
+                }}
+                className={`rounded-[0.6rem] border px-4 py-3 text-left transition-colors ${
+                  requestType === "existing"
+                    ? "border-white/42 bg-white/10"
+                    : "border-white/16 bg-black/10 hover:border-white/28"
+                }`}
+              >
+                <p className="font-sans text-[1.45rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                  Use existing profile
+                </p>
+                <p className="mt-1 font-sans text-[1rem] font-medium text-white/62">
+                  {matchedProfile
+                    ? `${matchedProfile.talent_name} — ${Object.keys(groups).length || 148} saved contacts`
+                    : "Client Name — saved contacts"}
+                </p>
+              </button>
+
+              <label className="cursor-pointer rounded-[0.6rem] border border-white/16 bg-black/10 px-4 py-3 text-left transition-colors hover:border-white/28">
+                <p className="font-sans text-[1.45rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                  Upload new list
+                </p>
+                <p className="mt-1 font-sans text-[1rem] font-medium text-white/62">
+                  Upload a .csv or .xlsx file
+                </p>
                 <input
                   type="file"
                   accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   className="hidden"
                   onChange={handleFile}
+                  onClick={() => {
+                    setRequestType("new");
+                    setProfileId("");
+                  }}
                 />
               </label>
-              <StyloireButton type="button" variant="outline" onClick={loadPreviousContacts}>
-                Load previous contacts
-              </StyloireButton>
             </div>
-          ) : (
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <input
-                value={contactSearch}
-                onChange={(e) => setContactSearch(e.target.value)}
-                placeholder="Search by brand"
-                className="min-w-[220px] flex-1 rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
-              />
-              <StyloireButton
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedBrands(brands)}
-                disabled={!brands.length}
-              >
-                Select all
-              </StyloireButton>
-              <StyloireButton
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedBrands([])}
-                disabled={!brands.length}
-              >
-                Deselect all
-              </StyloireButton>
-            </div>
-          )}
-          {brands.length ? (
-            <div className="mt-10 space-y-4">
-              <p className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                {selectedCount} of {brands.length} contacts selected
-              </p>
-              <ul className="divide-y divide-styloire-lineSubtle rounded-sm border border-styloire-lineSubtle bg-black/25">
-                {filteredBrands.map((brand) => (
-                  <li
-                    key={brand}
-                    className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 font-sans text-sm text-styloire-ink"
-                  >
-                    <span>{brand}</span>
-                    <span className="text-styloire-inkSoft">{groups[brand].length} contacts</span>
-                    <label className="flex items-center gap-2 text-xs uppercase tracking-wide text-styloire-inkMuted">
+
+            <div className="mt-5 overflow-hidden rounded-[0.6rem] border border-white/14 bg-black/10">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                <p className="font-sans text-[1.25rem] font-semibold text-styloire-champagneLight">
+                  Select contacts
+                </p>
+                <p className="font-sans text-[1rem] font-semibold text-white/72">
+                  {selectedCount} of {brands.length || 148} selected
+                </p>
+              </div>
+
+              <div className="px-4 py-3">
+                <input
+                  value={contactSearch}
+                  onChange={(e) => setContactSearch(e.target.value)}
+                  placeholder="Search brands..."
+                  className="w-full rounded-[0.5rem] border border-white/10 bg-black/12 px-3 py-2.5 font-sans text-[1rem] text-styloire-champagneLight placeholder:text-white/45"
+                />
+              </div>
+
+              <div className="border-t border-white/10 px-4 py-2.5">
+                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 font-sans text-[0.95rem] font-semibold text-white/50">
+                  <span>Brand Name</span>
+                  <span className="justify-self-end"># of Contacts</span>
+                  <span className="w-8" />
+                </div>
+              </div>
+
+              <ul className="divide-y divide-white/10">
+                {(filteredBrands.length ? filteredBrands : brands).slice(0, 2).map((brand) => (
+                  <li key={brand} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3.5">
+                    <span className="font-sans text-[1.02rem] text-white/72">{brand || "Brand Name"}</span>
+                    <span className="justify-self-end font-sans text-[0.98rem] text-white/55">
+                      {groups[brand]?.length ?? "# of Contacts"}
+                    </span>
+                    <label className="inline-flex w-8 cursor-pointer justify-end">
                       <input
                         type="checkbox"
                         checked={selectedBrands.includes(brand)}
                         onChange={() => toggleBrand(brand)}
-                        className="h-4 w-4 rounded border-styloire-line"
+                        className="h-5 w-5 appearance-none rounded-full border border-white/30 bg-white/12 checked:border-emerald-400 checked:bg-emerald-400"
                       />
-                      Selected
                     </label>
                   </li>
                 ))}
               </ul>
+
+              <p className="px-4 py-2.5 font-sans text-[1rem] font-semibold italic text-white/62">
+                + {Math.max(0, (brands.length || 148) - 2)} more contacts
+              </p>
             </div>
-          ) : null}
-          {parseError ? (
-            <p className="mt-6 font-sans text-xs text-red-300">{parseError}</p>
-          ) : null}
-          <div className="mt-10 flex flex-wrap gap-4">
-            <StyloireButton type="button" variant="outline" onClick={() => setStep(1)}>
+
+            {parseError ? <p className="mt-3 font-sans text-xs text-red-300">{parseError}</p> : null}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+            <StyloireButton
+              type="button"
+              variant="outline"
+              onClick={() => setStep(1)}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+            >
               Back
             </StyloireButton>
             <StyloireButton
               type="button"
-              variant="solid"
+              variant="outline"
               disabled={!brands.length || !selectedCount}
               onClick={() => setStep(3)}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
             >
-              Continue with {selectedCount} contacts
+              <span className="inline-flex items-center gap-2">
+                Continue with {selectedCount} contacts
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
             </StyloireButton>
           </div>
         </StyloirePanel>
       ) : null}
 
       {step === 3 ? (
-        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
-          <StyloireEyebrow className="mb-4">Step 3</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Write your email once</h2>
-          <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Default pull-request copy. Placeholders fill from your first selected row.
-          </p>
-          <div className="mt-8 space-y-4">
+        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
+          <div className="space-y-5 p-6 md:p-7">
             <label className="block space-y-2">
-              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Subject preview
-              </span>
-              <input
-                readOnly
-                value={subjectPreview}
-                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-sm text-styloire-ink"
-              />
-            </label>
-            <label className="block space-y-2">
-              <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-                Body preview
+              <span className="font-sans text-[1.28rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                Email body
               </span>
               <textarea
-                rows={12}
+                rows={6}
                 value={emailBody}
                 onChange={(event) => setEmailBody(event.target.value)}
-                className="w-full resize-y rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-sm font-light text-styloire-inkSoft"
+                placeholder="Text"
+                className="w-full resize-y rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2.5 font-sans text-[1rem] text-styloire-champagneLight placeholder:text-white/42 focus:border-white/30 focus:outline-none"
               />
             </label>
-            <p className="font-sans text-xs text-styloire-inkMuted">
-              Live merged preview shown in step content:
-            </p>
-            <pre className="whitespace-pre-wrap rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-xs text-styloire-inkSoft">
-              {mergedBody}
-            </pre>
+
+            <div className="space-y-2">
+              <p className="font-sans text-[1.2rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                Sending from
+              </p>
+              <div className="flex flex-wrap items-center gap-4 rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2.5">
+                <span className="font-sans text-[1rem] text-white/62">User&apos;s email</span>
+                <span className="font-sans text-[0.95rem] font-semibold text-emerald-400">
+                  Connected via Gmail
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-sans text-[1.2rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
+                CC recipients
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {ccRecipients.map((recipient, index) => (
+                  <input
+                    key={`cc-${index}`}
+                    value={recipient}
+                    onChange={(event) => {
+                      const next = [...ccRecipients];
+                      next[index] = event.target.value;
+                      setCcRecipients(next);
+                    }}
+                    className="rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-2 font-sans text-[0.96rem] text-white/72 focus:border-white/30 focus:outline-none"
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCcRecipients((prev) => [...prev, ""])}
+                  className="font-sans text-[0.96rem] font-semibold text-white/62 transition-colors hover:text-white/85"
+                >
+                  + Add another
+                </button>
+              </div>
+              <p className="font-sans text-[0.9rem] text-white/52">
+                These addresses will be copied on every email sent in this request.
+              </p>
+            </div>
           </div>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <StyloireButton type="button" variant="outline" onClick={() => setStep(2)}>
+
+          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+            <StyloireButton
+              type="button"
+              variant="outline"
+              onClick={() => setStep(2)}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+            >
               Back
             </StyloireButton>
-            <StyloireButton type="button" variant="solid" onClick={() => setStep(4)}>
-              Continue
+            <StyloireButton
+              type="button"
+              variant="outline"
+              onClick={() => setStep(4)}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+            >
+              <span className="inline-flex items-center gap-2">
+                Continue
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
             </StyloireButton>
           </div>
         </StyloirePanel>
       ) : null}
 
       {step === 4 ? (
-        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
-          <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
-          <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Review and send the request immediately.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <StyloireButton type="button" variant="outline" onClick={() => setStep(3)}>
+        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
+          <div className="space-y-4 p-6 md:p-7">
+            <div className="max-w-[26rem] rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-3">
+              <p className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.02em] text-styloire-champagneLight">
+                Request details
+              </p>
+              <p className="mt-2 font-sans text-[0.95rem] text-white/62">
+                {talent || "Client's Name"} <span className="mx-3 text-white/72">/</span>{" "}
+                {eventName || "Event"}
+              </p>
+              <p className="mt-1 font-sans text-[1.35rem] font-semibold text-styloire-champagneLight">
+                {selectedCount} contacts selected
+              </p>
+              <p className="mt-1 font-sans text-[0.95rem] text-white/62">
+                <span className="font-semibold text-white/78">Sending from:</span> User&apos;s email
+              </p>
+            </div>
+
+            <div className="rounded-[0.55rem] border border-white/14 bg-black/10 px-3 py-3">
+              <p className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.02em] text-styloire-champagneLight">
+                Email preview
+              </p>
+              <p className="mt-2 font-sans text-[0.92rem] text-white/62">
+                <span className="font-semibold text-white/76">Subject:</span> Client&apos;s Name{" "}
+                <span className="mx-3 text-white/72">/</span> Event{" "}
+                <span className="mx-3 text-white/72">/</span> Brand
+              </p>
+              <p className="mt-1 font-sans text-[0.92rem] text-white/62">
+                <span className="font-semibold text-white/76">From:</span> User&apos;s email{" "}
+                <span className="mx-6 text-white/72">CC:</span>{" "}
+                {ccRecipients.filter((v) => v.trim()).join(", ") || "User's assistant's email"}
+              </p>
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <p className="whitespace-pre-wrap font-sans text-[0.95rem] text-white/72">
+                  {emailBody || "Text"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
+            <StyloireButton
+              type="button"
+              variant="outline"
+              onClick={() => setStep(3)}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+            >
               Back
             </StyloireButton>
             <StyloireButton
               type="button"
-              variant="solid"
+              variant="outline"
               disabled={submitState === "saving" || !selectedCount}
               onClick={submitRequest}
+              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
             >
-              Send outreach
+              <span className="inline-flex items-center gap-2">
+                Send {selectedCount} emails
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
             </StyloireButton>
           </div>
-          {submitError ? <p className="mt-4 font-sans text-xs text-red-300">{submitError}</p> : null}
+        </StyloirePanel>
+      ) : null}
+
+      {step === 5 ? (
+        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
+          {submitState === "success" ? (
+            <div className="mx-auto flex max-w-xl flex-col items-center py-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-200/45 bg-emerald-100/90">
+                <Check className="h-6 w-6 text-emerald-900" />
+              </div>
+              <p className="mt-4 font-sans text-[1.35rem] font-semibold text-styloire-champagneLight">
+                {selectedCount} emails sent
+              </p>
+              <p className="mt-1 font-sans text-[0.98rem] text-white/64">
+                {talent || "Client&apos;s Name"} <span className="mx-3 text-white/70">/</span>{" "}
+                {eventName || "Event"}
+              </p>
+              <p className="mt-1 font-sans text-[0.98rem] text-white/64">
+                <span className="font-semibold text-white/78">Sending from</span> User&apos;s email
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <StyloireButton
+                  href={submittedRequestId ? `/requests/${submittedRequestId}` : "/dashboard"}
+                  variant="outline"
+                  className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+                >
+                  View request
+                </StyloireButton>
+                <StyloireButton
+                  href="/requests/new"
+                  variant="outline"
+                  className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+                >
+                  + New Request
+                </StyloireButton>
+              </div>
+            </div>
+          ) : (
+            <>
+              <StyloireEyebrow className="mb-4">Step 5</StyloireEyebrow>
+              <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
+              <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
+                Review and send the request immediately.
+              </p>
+              <div className="mt-10 flex flex-wrap gap-4">
+                <StyloireButton type="button" variant="outline" onClick={() => setStep(4)}>
+                  Back
+                </StyloireButton>
+                <StyloireButton
+                  type="button"
+                  variant="solid"
+                  disabled={submitState === "saving" || !selectedCount}
+                  onClick={submitRequest}
+                >
+                  Send outreach
+                </StyloireButton>
+              </div>
+              {submitError ? <p className="mt-4 font-sans text-xs text-red-300">{submitError}</p> : null}
+            </>
+          )}
         </StyloirePanel>
       ) : null}
     </div>

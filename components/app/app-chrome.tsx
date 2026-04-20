@@ -15,15 +15,15 @@ const topNav = [
 
 const portalNav = [
   { href: "/requests/new", label: "Send a new request" },
-  { href: "/dashboard?status=all", label: "Existing requests" },
+  { href: "/roster", label: "Existing requests" },
   { href: "/roster", label: "Client profiles" },
   { href: "/templates", label: "Templates" },
-  { href: "/settings", label: "Account" }
+  { href: "/settings", label: "account" }
 ];
 
 function pillClass(active: boolean) {
   return [
-    "rounded-full border px-4 py-1.5 font-sans text-[0.76rem] font-medium normal-case tracking-[0.01em] transition-[color,background-color,border-color] duration-styloire ease-styloire md:px-5 md:text-[0.84rem]",
+    "rounded-full border px-5 py-1.5 font-sans text-[0.84rem] font-medium normal-case tracking-[0.01em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
     active
       ? "border-white/58 bg-white/24 text-white"
       : "border-white/46 bg-white/20 text-white/88 hover:border-white/65 hover:bg-white/26"
@@ -46,7 +46,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
             >
               Styloire
             </Link>
-            <div className="flex flex-wrap justify-end gap-2.5 md:gap-3">
+            <div className="flex flex-wrap justify-end gap-2.5">
               {topNav.map((item) => {
                 const active = item.href === "/dashboard" ? pathname.startsWith("/dashboard") : pathname.startsWith(item.href);
                 return (
