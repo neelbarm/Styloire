@@ -188,32 +188,33 @@ export function NewRequestWizard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-1 rounded-sm border border-styloire-lineSubtle bg-black/30 p-1">
         {(
           [
-            ["Start here", 1],
-            ["Select contacts", 2],
-            ["Write once", 3],
-            ["Follow up & send", 4]
+            ["1 Details", 1],
+            ["2 Contacts", 2],
+            ["3 Email", 3],
+            ["4 Review", 4],
+            ["5 Send", 4]
           ] as const
         ).map(([label, n]) => (
           <button
             key={label}
             type="button"
             onClick={() => setStep(n)}
-            className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-colors ${
+            className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-semibold tracking-[0.06em] transition-colors ${
               step === n
-                ? "border-styloire-ink bg-styloire-ink/10 text-styloire-ink"
-                : "border-styloire-line text-styloire-inkMuted hover:border-styloire-ink"
+                ? "border-stone-200 bg-stone-100 text-stone-900"
+                : "border-transparent bg-transparent text-styloire-inkMuted hover:border-styloire-line"
             }`}
           >
-            {n}. {label}
+            {label}
           </button>
         ))}
       </div>
 
       {step === 1 ? (
-        <StyloirePanel>
+        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
           <StyloireEyebrow className="mb-4">Step 1</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-champagne">Create a request</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
@@ -221,7 +222,7 @@ export function NewRequestWizard() {
             existing client profile.
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <label className="flex items-center gap-3 border border-styloire-lineSubtle px-4 py-3">
+            <label className="flex items-center gap-3 border border-styloire-lineSubtle bg-black/25 px-4 py-3">
               <input
                 type="radio"
                 name="requestType"
@@ -235,7 +236,7 @@ export function NewRequestWizard() {
               />
               <span className="font-sans text-sm text-styloire-ink">New profile from CSV</span>
             </label>
-            <label className="flex items-center gap-3 border border-styloire-lineSubtle px-4 py-3">
+            <label className="flex items-center gap-3 border border-styloire-lineSubtle bg-black/25 px-4 py-3">
               <input
                 type="radio"
                 name="requestType"
@@ -253,7 +254,7 @@ export function NewRequestWizard() {
               <input
                 value={talent}
                 onChange={(e) => setTalent(e.target.value)}
-                className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm text-styloire-ink focus:border-styloire-ink focus:outline-none"
+                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink focus:border-styloire-champagne focus:outline-none"
                 placeholder="Bella Hadid"
               />
             </label>
@@ -264,7 +265,7 @@ export function NewRequestWizard() {
               <input
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
-                className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm text-styloire-ink focus:border-styloire-ink focus:outline-none"
+                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink focus:border-styloire-champagne focus:outline-none"
                 placeholder="Grammys"
               />
             </label>
@@ -281,7 +282,7 @@ export function NewRequestWizard() {
                   setProfileId(nextId);
                   loadProfileContacts(nextId);
                 }}
-                className="w-full border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink"
+                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
               >
                 <option value="">Select profile</option>
                 {profiles.map((profile) => (
@@ -309,7 +310,7 @@ export function NewRequestWizard() {
       ) : null}
 
       {step === 2 ? (
-        <StyloirePanel>
+        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
           <StyloireEyebrow className="mb-4">Step 2</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-champagne">Upload your contacts</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
@@ -339,7 +340,7 @@ export function NewRequestWizard() {
                 value={contactSearch}
                 onChange={(e) => setContactSearch(e.target.value)}
                 placeholder="Search by brand"
-                className="min-w-[220px] flex-1 border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink"
+                className="min-w-[220px] flex-1 rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
               />
               <StyloireButton
                 type="button"
@@ -364,7 +365,7 @@ export function NewRequestWizard() {
               <p className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
                 {selectedCount} of {brands.length} contacts selected
               </p>
-              <ul className="divide-y divide-styloire-lineSubtle border border-styloire-lineSubtle">
+              <ul className="divide-y divide-styloire-lineSubtle rounded-sm border border-styloire-lineSubtle bg-black/25">
                 {filteredBrands.map((brand) => (
                   <li
                     key={brand}
@@ -406,7 +407,7 @@ export function NewRequestWizard() {
       ) : null}
 
       {step === 3 ? (
-        <StyloirePanel>
+        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
           <StyloireEyebrow className="mb-4">Step 3</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-champagne">Write your email once</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
@@ -420,7 +421,7 @@ export function NewRequestWizard() {
               <input
                 readOnly
                 value={subjectPreview}
-                className="w-full border border-styloire-lineSubtle bg-styloire-canvas/60 px-4 py-3 font-sans text-sm text-styloire-ink"
+                className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-sm text-styloire-ink"
               />
             </label>
             <label className="block space-y-2">
@@ -431,13 +432,13 @@ export function NewRequestWizard() {
                 rows={12}
                 value={emailBody}
                 onChange={(event) => setEmailBody(event.target.value)}
-                className="w-full resize-y border border-styloire-lineSubtle bg-styloire-canvas/60 px-4 py-3 font-sans text-sm font-light text-styloire-inkSoft"
+                className="w-full resize-y rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-sm font-light text-styloire-inkSoft"
               />
             </label>
             <p className="font-sans text-xs text-styloire-inkMuted">
               Live merged preview shown in step content:
             </p>
-            <pre className="whitespace-pre-wrap border border-styloire-lineSubtle bg-styloire-canvas/40 px-4 py-3 font-sans text-xs text-styloire-inkSoft">
+            <pre className="whitespace-pre-wrap rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-3 font-sans text-xs text-styloire-inkSoft">
               {mergedBody}
             </pre>
           </div>
@@ -453,7 +454,7 @@ export function NewRequestWizard() {
       ) : null}
 
       {step === 4 ? (
-        <StyloirePanel>
+        <StyloirePanel className="bg-[rgb(44,44,42)]/85">
           <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
@@ -467,7 +468,7 @@ export function NewRequestWizard() {
               type="date"
               value={followup}
               onChange={(e) => setFollowup(e.target.value)}
-              className="w-full border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink"
+              className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
             />
           </label>
           <div className="mt-10 flex flex-wrap gap-4">

@@ -41,19 +41,34 @@ export default async function DashboardPage({
 
   return (
     <>
-      <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+      <div className="mb-12 text-center">
         <StyloireAppPageHeader
-          title="Existing requests"
-          description="Every active or archived pull request in one place."
+          title="My portal"
+          description="Your request workspace."
+          className="mx-auto text-center"
         />
-        <StyloireButton href="/requests/new" variant="solid">
-          Send a new request
-        </StyloireButton>
+        <div className="mx-auto mt-2 flex max-w-md flex-col gap-4">
+          <StyloireButton href="/requests/new" variant="outline" className="rounded-full bg-white/10 text-white">
+            Send a new request
+          </StyloireButton>
+          <StyloireButton href="#requests" variant="outline" className="rounded-full bg-white/10 text-white">
+            Existing requests
+          </StyloireButton>
+          <StyloireButton href="/roster" variant="outline" className="rounded-full bg-white/10 text-white">
+            Client profiles
+          </StyloireButton>
+          <StyloireButton href="/templates" variant="outline" className="rounded-full bg-white/10 text-white">
+            Templates
+          </StyloireButton>
+          <StyloireButton href="/settings" variant="outline" className="rounded-full bg-white/10 text-white">
+            Account
+          </StyloireButton>
+        </div>
       </div>
 
       {showBanner ? <DataSourceBanner source={source} notice={notice} /> : null}
 
-      <div className="mb-10 flex flex-wrap gap-2">
+      <div id="requests" className="mb-10 flex flex-wrap gap-2 scroll-mt-36">
         {filters.map((item) => {
           const active = filter === item.value;
           const href =
