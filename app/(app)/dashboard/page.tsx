@@ -1,123 +1,49 @@
-import Link from "next/link";
-import { DataSourceBanner } from "@/components/app/data-source-banner";
-import { StyloireAppPageHeader } from "@/components/styloire/app-shell";
 import { StyloireButton } from "@/components/styloire/button";
-import { StyloirePanel } from "@/components/styloire/panel";
-import { listDashboardRequestSummaries } from "@/lib/data/request-queries";
-import { showDataSourceBanner } from "@/lib/site";
-import type { RequestStatus } from "@/lib/styloire/types";
 
-const filters: Array<{ label: string; value: RequestStatus | "all" }> = [
-  { label: "All", value: "all" },
-  { label: "Active", value: "active" },
-  { label: "Draft", value: "draft" },
-  { label: "Archived", value: "archived" }
-];
-
-function statusStyles(status: RequestStatus) {
-  switch (status) {
-    case "active":
-      return "border-styloire-champagne/55 text-styloire-champagneLight bg-styloire-champagne/[0.08]";
-    case "draft":
-      return "border-styloire-line text-styloire-inkSoft bg-transparent";
-    default:
-      return "border-styloire-lineSubtle text-styloire-inkMuted bg-transparent";
-  }
-}
-
-export default async function DashboardPage({
-  searchParams
-}: {
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
-  const raw = searchParams?.status;
-  const filter: RequestStatus | "all" =
-    typeof raw === "string" && ["active", "draft", "archived", "all"].includes(raw)
-      ? (raw as RequestStatus | "all")
-      : "all";
-
-  const { source, rows, notice } = await listDashboardRequestSummaries(filter);
-  const showBanner = showDataSourceBanner();
-
+export default function DashboardPage() {
   return (
-    <>
-      <div className="mb-10 text-center">
-        <StyloireAppPageHeader
-          title="My portal"
-          description="Your request workspace."
-          className="mx-auto text-center"
-        />
-        <div className="mt-3 flex justify-center">
-          <StyloireButton href="/requests/new" variant="outline" className="min-w-[220px] bg-white/10 text-white">
-            Send a new request
-          </StyloireButton>
-        </div>
+    <div className="mx-auto max-w-5xl pb-10 pt-9">
+      <h1 className="text-center font-serif text-[clamp(3.1rem,7vw,5.7rem)] font-semibold uppercase leading-[0.92] tracking-[-0.012em] text-styloire-champagneLight">
+        My portal
+      </h1>
+
+      <div className="mx-auto mt-5 flex max-w-[21rem] flex-col items-center gap-4.5">
+        <StyloireButton
+          href="/requests/new"
+          variant="outline"
+          className="w-full border-white/46 bg-white/24 py-3 text-[0.68rem] font-medium uppercase tracking-[0.2em] text-styloire-champagneLight"
+        >
+          Send a new request
+        </StyloireButton>
+        <StyloireButton
+          href="/dashboard?status=all"
+          variant="outline"
+          className="w-full border-white/46 bg-white/24 py-3 text-[0.68rem] font-medium uppercase tracking-[0.2em] text-styloire-champagneLight"
+        >
+          Existing requests
+        </StyloireButton>
+        <StyloireButton
+          href="/roster"
+          variant="outline"
+          className="w-full border-white/46 bg-white/24 py-3 text-[0.68rem] font-medium uppercase tracking-[0.2em] text-styloire-champagneLight"
+        >
+          Client profiles
+        </StyloireButton>
+        <StyloireButton
+          href="/templates"
+          variant="outline"
+          className="w-full border-white/46 bg-white/24 py-3 text-[0.68rem] font-medium uppercase tracking-[0.2em] text-styloire-champagneLight"
+        >
+          Templates
+        </StyloireButton>
+        <StyloireButton
+          href="/roster"
+          variant="outline"
+          className="w-full border-white/46 bg-white/24 py-3 text-[0.68rem] font-medium uppercase tracking-[0.2em] text-styloire-champagneLight"
+        >
+          Client profiles
+        </StyloireButton>
       </div>
-
-      {showBanner ? <DataSourceBanner source={source} notice={notice} /> : null}
-
-      <div id="requests" className="mb-10 flex flex-wrap gap-2 scroll-mt-36">
-        {filters.map((item) => {
-          const active = filter === item.value;
-          const href =
-            item.value === "all" ? "/dashboard" : `/dashboard?status=${item.value}`;
-          return (
-            <Link
-              key={item.value}
-              href={href}
-              className={`rounded-full border px-5 py-1.5 font-sans text-[0.62rem] font-medium uppercase tracking-[0.12em] transition-[color,background-color,border-color] duration-styloire ease-styloire ${
-                active
-                  ? "border-styloire-champagne/55 bg-styloire-champagne/[0.08] text-styloire-champagneLight"
-                  : "border-styloire-line text-styloire-inkMuted hover:border-styloire-champagne/40 hover:text-styloire-champagneLight"
-              }`}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-
-      {rows.length === 0 ? (
-        <StyloirePanel className="py-20 text-center">
-          <p className="font-serif text-2xl font-light text-styloire-champagne">Nothing here yet.</p>
-          <p className="mx-auto mt-4 max-w-sm font-sans text-sm font-light text-styloire-inkMuted">
-            Open a request when you are ready — it will appear at the top of this list.
-          </p>
-          <div className="mt-10 flex justify-center">
-            <StyloireButton href="/requests/new" variant="outline">
-              Send a new request
-            </StyloireButton>
-          </div>
-        </StyloirePanel>
-      ) : (
-        <div className="grid gap-5">
-          {rows.map((request) => (
-            <Link key={request.id} href={`/requests/${request.id}`}>
-              <StyloirePanel className="transition-[border-color] duration-styloire ease-styloire hover:border-styloire-champagne/25">
-                <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p className="font-serif text-2xl font-light text-styloire-champagne md:text-[1.65rem]">
-                      {request.talent_name}{" "}
-                      <span className="text-styloire-inkMuted">/</span> {request.event_name}
-                    </p>
-                    <p className="mt-3 font-sans text-[0.65rem] uppercase tracking-styloireWide text-styloire-inkMuted">
-                      {request.selected_count} contacts · {request.sent_count} sent ·{" "}
-                      {request.responded_count} responses
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-start gap-3 md:items-end">
-                    <span
-                      className={`rounded-sm border px-3 py-1 font-sans text-[0.65rem] uppercase tracking-wide ${statusStyles(request.status)}`}
-                    >
-                      {request.status}
-                    </span>
-                  </div>
-                </div>
-              </StyloirePanel>
-            </Link>
-          ))}
-        </div>
-      )}
-    </>
+    </div>
   );
 }

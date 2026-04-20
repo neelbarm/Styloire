@@ -15,7 +15,7 @@ const topNav = [
 
 const portalNav = [
   { href: "/requests/new", label: "Send a new request" },
-  { href: "/dashboard#requests", label: "Existing requests" },
+  { href: "/dashboard?status=all", label: "Existing requests" },
   { href: "/roster", label: "Client profiles" },
   { href: "/templates", label: "Templates" },
   { href: "/settings", label: "Account" }
@@ -23,52 +23,30 @@ const portalNav = [
 
 function pillClass(active: boolean) {
   return [
-    "rounded-full border px-5 py-1.5 font-sans text-[0.6rem] font-semibold uppercase tracking-[0.12em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
+    "rounded-full border px-4 py-1.5 font-sans text-[0.76rem] font-medium normal-case tracking-[0.01em] transition-[color,background-color,border-color] duration-styloire ease-styloire md:px-5 md:text-[0.84rem]",
     active
-      ? "border-white/70 bg-white/22 text-white"
-      : "border-white/42 bg-white/9 text-white/90 hover:border-white/65 hover:bg-white/17"
+      ? "border-white/58 bg-white/24 text-white"
+      : "border-white/46 bg-white/20 text-white/88 hover:border-white/65 hover:bg-white/26"
   ].join(" ");
 }
 
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-
-  async function signOut() {
-    await fetch("/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
+  const showPortalRow = pathname !== "/dashboard";
 
   return (
     <StyloireAppShell
-      sidebar={
-        <div className="flex h-full flex-col border-r border-white/14 bg-black/18 p-5">
-          <p className="mb-4 font-sans text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-white/60">
-            My portal
-          </p>
-          <nav className="space-y-2.5" aria-label="Portal">
-            {portalNav.map((item) => {
-              const active = item.href.startsWith("/dashboard")
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
-              return (
-                <Link key={item.href} href={item.href} className={`${pillClass(active)} w-full justify-center`}>
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-      }
+      sidebar={null}
       topBar={
-        <div>
-          <div className="flex flex-wrap items-center justify-between gap-5">
+        <div className="mx-auto w-full max-w-6xl space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/32 pb-5">
             <Link
               href="/"
-              className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.3em] text-white/90"
+              className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.18em] text-styloire-champagneLight"
             >
               Styloire
             </Link>
-            <div className="flex flex-wrap justify-end gap-3">
+            <div className="flex flex-wrap justify-end gap-2.5 md:gap-3">
               {topNav.map((item) => {
                 const active = item.href === "/dashboard" ? pathname.startsWith("/dashboard") : pathname.startsWith(item.href);
                 return (
@@ -77,11 +55,22 @@ export function AppChrome({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
-              <button type="button" onClick={() => void signOut()} className={pillClass(false)}>
-                Sign out
-              </button>
             </div>
           </div>
+          {showPortalRow ? (
+            <div className="flex flex-wrap gap-2.5 md:gap-3">
+              {portalNav.map((item) => {
+                const active = item.href.startsWith("/dashboard")
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(item.href);
+                return (
+                  <Link key={item.href} href={item.href} className={pillClass(active)}>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       }
     >
