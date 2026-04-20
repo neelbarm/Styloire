@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { StyloireMarketingHeader } from "@/components/styloire";
-import { MarketingFooter } from "@/components/marketing/marketing-footer";
 
 export const metadata: Metadata = {
   title: "Make emailing simple",
@@ -21,7 +20,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-styloire-canvas text-styloire-ink">
       <StyloireMarketingHeader />
       {children}
-      <MarketingFooter />
     </div>
   );
 }

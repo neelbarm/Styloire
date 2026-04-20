@@ -1,5 +1,3 @@
-import { StyloireEyebrow, StyloireHeading } from "@/components/styloire";
-
 export type FaqBlock = {
   id: string;
   title: string;
@@ -17,11 +15,11 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "Who is Styloire for?",
-        a: "Celebrity stylists, assistants who run outreach, and independent stylists who manage their own pulls. If you live in spreadsheets and BCC lines, this is for you."
+        a: "Stylists, styling assistants, and anyone managing pull request outreach for a client. Whether you're working editorial, red carpet, or commercial - if you're sending pull request emails, Styloire is for you."
       },
       {
-        q: "Do I need to be tech-savvy?",
-        a: "No. Upload a CSV or XLSX, confirm your brands, pick a template, and send. The product is designed to feel calm and editorial, not like enterprise software."
+        q: "Do I need to be tech-savvy to use it?",
+        a: "Not at all. You can put together a spreadsheet anywhere and still use Styloire. There's no technical setup, no complicated onboarding, and no learning curve. It fits into your workflow from the moment you sign in."
       }
     ]
   },
@@ -30,56 +28,24 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     title: "Using the platform",
     items: [
       {
-        q: "What format should my contact file be?",
-        a: "Structured columns — for example Brand Name, Email Address, and optional PR Contact Name. Files are parsed in the browser, then stored only under your account."
+        q: "How do I import my brand contacts?",
+        a: "You upload a simple spreadsheet with two columns - Brand Name and Email. There's an optional third column for your PR contact's name if you want personalized greetings. That's it."
       },
       {
-        q: "Where do my contacts live?",
-        a: "In your account as Client Profiles — one profile per talent. Contacts are never shared across users; there is no platform-provided PR database in V1."
+        q: "Does Styloire provide a database of brand PR contacts?",
+        a: "No - you bring your own contact list. Your contact list is what makes it yours, and we keep it that way. Styloire is the tool that makes using that list effortless."
       },
       {
-        q: "How are subject lines generated?",
-        a: "Each send uses the pattern Talent / Event / BRAND NAME so every thread is instantly recognizable in inboxes."
+        q: "What does the subject line look like?",
+        a: "Styloire auto generates subject lines in the standard industry format: Talent Name / BRAND NAME / event or publication - with the contact or brand name already inserted - no manual editing required."
       },
       {
-        q: "Can I save templates?",
-        a: "Yes. Styloire ships with a default pull template, and you can create, edit, and delete your own templates with merge fields like {{brand_name}} and {{contact_name}}."
+        q: "Can I use my own email copy?",
+        a: "Absolutely. You can use your own email from start to finish or choose from our saved pull request templates. Either way, the emails are personalized per brand."
       },
       {
         q: "What are client profiles?",
-        a: "When you upload a list for a talent, Styloire saves it as a reusable profile. Future requests can load the full brand list with toggles on by default."
-      }
-    ]
-  },
-  {
-    id: "pricing",
-    title: "Pricing",
-    items: [
-      {
-        q: "How much does Styloire cost?",
-        a: "$30/month flat. No tiers, no usage limits for V1 — one plan for everyone."
-      },
-      {
-        q: "Is there a free trial?",
-        a: "If a trial is available, terms are shown clearly at checkout before you pay."
-      },
-      {
-        q: "Can I cancel any time?",
-        a: "Yes — billing is handled through Stripe with a customer portal for self-serve cancellation."
-      }
-    ]
-  },
-  {
-    id: "privacy",
-    title: "Privacy & security",
-    items: [
-      {
-        q: "Who can see my contact lists?",
-        a: "Only your account. Lists are private and never pooled into a shared directory."
-      },
-      {
-        q: "How is data secured?",
-        a: "Hosted infrastructure with row-level security, HTTPS throughout, and least-privilege access to payment and mail providers."
+        a: "Every time you upload contacts for a talent, Styloire saves them under that talent's client profile. The next time you're pulling for them, your brand list, response history, and previous requests are all already there. Everything is already there."
       }
     ]
   }
@@ -87,43 +53,26 @@ export const FAQ_BLOCKS: FaqBlock[] = [
 
 export function FaqPageContent() {
   return (
-    <div className="mx-auto max-w-styloire-narrow space-y-16">
+    <div className="mx-auto max-w-[54rem] space-y-14">
       {FAQ_BLOCKS.map((block) => (
-        <section key={block.id} id={block.id} className="scroll-mt-28 space-y-8">
-          <StyloireHeading level="section" className="text-center">
+        <section key={block.id} id={block.id} className="scroll-mt-24 space-y-8 text-center">
+          <h2 className="font-serif text-[clamp(2.25rem,5vw,4rem)] font-semibold uppercase leading-none tracking-[0.02em] text-[#efe4d5]">
             {block.title}
-          </StyloireHeading>
-          <div className="space-y-6">
+          </h2>
+          <div className="space-y-7">
             {block.items.map((item) => (
-              <details
-                key={item.q}
-                className="group border-b border-styloire-lineSubtle pb-6"
-              >
-                <summary className="cursor-pointer list-none font-serif text-lg text-styloire-champagne marker:content-none [&::-webkit-details-marker]:hidden">
-                  <span className="flex items-start justify-between gap-4">
-                    <span>{item.q}</span>
-                    <span className="font-sans text-xs text-styloire-inkMuted transition group-open:rotate-45">
-                      +
-                    </span>
-                  </span>
-                </summary>
-                <p className="mt-4 font-sans text-styloire-body font-light leading-relaxed text-styloire-inkSoft">
+              <article key={item.q} className="space-y-2">
+                <h3 className="font-serif text-[clamp(1.15rem,2vw,1.55rem)] font-light italic leading-[1.15] text-[#f3eee8]">
+                  {item.q}
+                </h3>
+                <p className="mx-auto max-w-[43rem] font-serif text-[clamp(0.98rem,1.55vw,1.14rem)] font-light leading-[1.18] text-[#f3eee8]">
                   {item.a}
                 </p>
-              </details>
+              </article>
             ))}
           </div>
         </section>
       ))}
-      <div className="border border-styloire-lineSubtle bg-styloire-canvas/40 px-8 py-10 text-center">
-        <StyloireEyebrow>Still curious?</StyloireEyebrow>
-        <StyloireHeading level="title" className="mt-4">
-          Talk to us
-        </StyloireHeading>
-        <p className="mx-auto mt-4 max-w-styloire-prose font-sans text-styloire-body font-light text-styloire-inkSoft">
-          For partnerships or press, write hello@styloire.co — we answer within 24–48 hours.
-        </p>
-      </div>
     </div>
   );
 }
