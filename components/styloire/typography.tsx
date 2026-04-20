@@ -10,7 +10,7 @@ const headingClasses: Record<HeadingLevel, string> = {
   title:
     "font-serif text-styloire-title font-normal uppercase tracking-[0.12em] text-styloire-champagneLight",
   section:
-    "font-serif text-2xl font-light uppercase tracking-[0.16em] text-styloire-champagneLight md:text-3xl",
+    "font-serif text-[clamp(1.8rem,3.5vw,3rem)] font-light uppercase tracking-[0.16em] text-styloire-champagneLight",
   /** Longer headlines — mixed case, editorial rhythm */
   editorial:
     "mx-auto max-w-styloire-narrow font-serif text-[clamp(1.65rem,3.2vw,2.35rem)] font-light leading-[1.2] tracking-[0.01em] text-styloire-ink"

@@ -42,8 +42,8 @@ export type StyloireImageSectionProps = HTMLAttributes<HTMLElement> & {
 };
 
 const overlays: Record<NonNullable<StyloireImageSectionProps["overlay"]>, string> = {
-  default: "from-black/28 to-black/28",
-  heavy: "from-black/45 to-black/45"
+  default: "from-black/18 to-black/18",
+  heavy: "from-black/30 to-black/30"
 };
 
 /**

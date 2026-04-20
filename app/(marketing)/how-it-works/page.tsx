@@ -1,16 +1,17 @@
 import {
   StyloireBody,
   StyloireButton,
-  StyloireEyebrow,
-  StyloireHeading,
-  StyloireHero,
+  StyloireSection,
   StyloireImageSection,
-  StyloireSection
+  StyloireHero
 } from "@/components/styloire";
 
 const IMG_INTRO = "url('/images/editorial-bw.jpeg')";
 const IMG_PROFILES = "url('/images/stylist-rack.jpeg')";
 const IMG_CTA = "url('/images/dress-motion.jpeg')";
+
+/** Shared large editorial heading class (~5rem desktop) */
+const BIG = "font-serif text-[clamp(3rem,6.5vw,5.5rem)] font-semibold uppercase leading-none tracking-[0.08em]";
 
 const steps = [
   {
@@ -49,14 +50,14 @@ export default function HowItWorksPage() {
         imageUrl={IMG_INTRO}
         overlay="heavy"
         position="center 35%"
-        className="min-h-[min(70vh,40rem)] pt-28"
+        className="min-h-[min(65vh,38rem)] pt-28"
       >
-        <StyloireHero className="max-w-[52rem] gap-6">
-          <StyloireEyebrow className="text-white/55">How it works</StyloireEyebrow>
-          <h1 className="font-serif text-[clamp(3.2rem,7vw,6rem)] font-semibold uppercase leading-none tracking-[-0.02em] text-white">
-            How it works
+        <StyloireHero className="max-w-[52rem] gap-5">
+          {/* Single large heading — no duplicate eyebrow */}
+          <h1 className="font-serif text-[clamp(3.5rem,8vw,7rem)] font-semibold uppercase leading-none tracking-[0.06em] text-white">
+            How It Works
           </h1>
-          <StyloireBody className="max-w-[38rem] text-[clamp(0.9rem,1.6vw,1.05rem)] text-white/75">
+          <StyloireBody className="max-w-[38rem] text-[clamp(0.88rem,1.5vw,1rem)] text-white/75">
             You know the drill. A new project lands and suddenly you are staring
             down a long brand list, copying and pasting the same email. Styloire
             was built to end that.
@@ -65,7 +66,7 @@ export default function HowItWorksPage() {
       </StyloireImageSection>
 
       {/* ─── NUMBERED STEPS ────────────────────────────────────────── */}
-      <StyloireSection tone="deep" className="py-[clamp(5rem,10vw,8rem)]">
+      <StyloireSection tone="deep" className="py-[clamp(4rem,8vw,7rem)]">
         <div className="mx-auto max-w-[52rem] space-y-14">
           {steps.map((step, i) => (
             <article
@@ -97,14 +98,15 @@ export default function HowItWorksPage() {
         imageUrl={IMG_PROFILES}
         overlay="heavy"
         position="center 40%"
-        className="min-h-[min(60vh,36rem)] py-[clamp(4rem,8vw,7rem)]"
+        className="min-h-[min(55vh,30rem)] py-[clamp(4rem,8vw,6rem)]"
       >
         <div className="mx-auto max-w-[46rem] text-center">
-          <StyloireEyebrow className="mb-4 text-white/55">Client profiles</StyloireEyebrow>
-          <StyloireHeading level="title" className="text-white">
+          {/* CLIENT PROFILES as the large heading */}
+          <h2 className={`${BIG} text-white`}>Client Profiles</h2>
+          <p className="mt-5 font-serif text-[clamp(1.1rem,2vw,1.55rem)] font-light italic text-white/85">
             And it gets better over time.
-          </StyloireHeading>
-          <StyloireBody className="mt-5 max-w-[38rem] text-[clamp(0.88rem,1.6vw,1.02rem)] text-white/75">
+          </p>
+          <StyloireBody className="mt-5 max-w-[38rem] text-[clamp(0.85rem,1.4vw,0.98rem)] text-white/75">
             Every contact list you upload becomes a saved client profile. So the
             next time you&apos;re pulling for the same talent, your brand
             contacts, response history, and past requests are already there
@@ -132,14 +134,14 @@ export default function HowItWorksPage() {
         imageUrl={IMG_CTA}
         overlay="heavy"
         position="center 30%"
-        className="min-h-[min(55vh,32rem)] py-[clamp(4rem,8vw,7rem)]"
+        className="min-h-[min(48vh,26rem)] py-[clamp(4rem,8vw,6rem)]"
       >
-        <StyloireHero className="max-w-[42rem] gap-7">
-          <StyloireHeading level="title" className="text-white">
-            Ready when you are.
-          </StyloireHeading>
-          <StyloireBody className="text-[clamp(0.88rem,1.5vw,1rem)] text-white/72">
-            Open the app and send your first request in minutes.
+        <StyloireHero className="max-w-[42rem] gap-5">
+          <h2 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] font-normal leading-tight tracking-[0.06em] text-white">
+            Ready to Join?
+          </h2>
+          <StyloireBody className="text-[clamp(0.85rem,1.4vw,0.98rem)] text-white/72">
+            Join today and send a new request in minutes.
           </StyloireBody>
           <div className="flex flex-wrap justify-center gap-4">
             <StyloireButton
