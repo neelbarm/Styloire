@@ -2,7 +2,10 @@ import "server-only";
 import { ensurePublicUserRow } from "@/lib/supabase/ensure-public-user";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service";
-import { isPaidSubscriptionStatus } from "@/lib/stripe";
+
+function isPaidSubscriptionStatus(status: string | null | undefined): boolean {
+  return status === "active" || status === "trialing";
+}
 
 export type OnboardingState = {
   userId: string;
