@@ -27,6 +27,11 @@ function navClass(active: boolean) {
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
+  async function signOut() {
+    await fetch("/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
   return (
     <StyloireAppShell
       sidebar={
@@ -70,12 +75,23 @@ export function AppChrome({ children }: { children: ReactNode }) {
           <p className="font-sans text-styloire-caption font-medium uppercase tracking-styloireWide text-styloire-inkMuted">
             Jordan Lee
           </p>
-          <Link
-            href="/"
-            className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
-          >
-            Site
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
+            >
+              Site
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                void signOut();
+              }}
+              className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       }
     >

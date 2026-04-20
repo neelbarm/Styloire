@@ -10,7 +10,10 @@ import { getCurrentUserId } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const origin = new URL(request.url).origin;
+    return NextResponse.redirect(
+      `${origin}/login?error=session&next=${encodeURIComponent("/settings")}`,
+    );
   }
 
   try {
