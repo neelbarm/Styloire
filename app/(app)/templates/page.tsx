@@ -1,11 +1,11 @@
 import { StyloireAppPageHeader } from "@/components/styloire/app-shell";
 import { StyloireButton } from "@/components/styloire/button";
 import { StyloirePanel } from "@/components/styloire/panel";
+import { listTemplatesResolved } from "@/lib/data/template-queries";
 import { DYNAMIC_FIELD_HELP } from "@/lib/styloire/default-templates";
-import { listTemplates } from "@/lib/styloire/mock-data";
 
-export default function TemplatesPage() {
-  const templates = listTemplates();
+export default async function TemplatesPage() {
+  const templates = await listTemplatesResolved();
 
   return (
     <>

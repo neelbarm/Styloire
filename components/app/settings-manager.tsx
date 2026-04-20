@@ -27,6 +27,10 @@ type Props = {
   emailError: string | null;
   subscriptionStatus: string;
   hasStripeCustomer: boolean;
+  checkoutSuccessPath?: string;
+  checkoutCancelPath?: string;
+  emailReturnPath?: string;
+  onboardingMode?: boolean;
 };
 
 type SmtpForm = {
@@ -55,7 +59,11 @@ export function SettingsManager({
   connected,
   emailError,
   subscriptionStatus,
-  hasStripeCustomer
+  hasStripeCustomer,
+  checkoutSuccessPath = "/settings?checkout=success",
+  checkoutCancelPath = "/settings?checkout=cancelled",
+  emailReturnPath = "/settings",
+  onboardingMode = false
 }: Props) {
   const router = useRouter();
 
@@ -74,6 +82,7 @@ export function SettingsManager({
   // ── Per-action busy flags ─────────────────────────────────────────────────
   const [busy, setBusy] = useState(false);          // general email/CC actions
   const [pwBusy, setPwBusy] = useState(false);      // password reset
+  const [checkoutBusy, setCheckoutBusy] = useState(false); // subscription checkout
   const [portalBusy, setPortalBusy] = useState(false);     // billing portal
   const [cancelBusy, setCancelBusy] = useState(false);     // cancel subscription
   const [cancelConfirm, setCancelConfirm] = useState(false); // confirm step
@@ -323,6 +332,32 @@ export function SettingsManager({
     }
   }
 
+  // ── Stripe checkout ────────────────────────────────────────────────────────
+  async function startCheckout() {
+    setCheckoutBusy(true);
+    setNote("");
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          successPath: checkoutSuccessPath,
+          cancelPath: checkoutCancelPath
+        })
+      });
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setNote(data.error ?? "Could not start subscription checkout.");
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setNote("Network error — could not start subscription checkout.");
+    } finally {
+      setCheckoutBusy(false);
+    }
+  }
+
   // ── Billing portal ────────────────────────────────────────────────────────
   async function openBillingPortal(flow?: "cancel") {
     const setter = flow === "cancel" ? setCancelBusy : setPortalBusy;
@@ -457,7 +492,7 @@ export function SettingsManager({
             <div>
               <p className={labelCls + " mb-1"}>Login link</p>
               <p className="font-sans text-[0.8rem] text-white/42">
-                Styloire uses magic link sign-in. Send a new login link to your email to re-authenticate or share access.
+                Send a one-time login link to your email whenever you need to re-authenticate.
               </p>
             </div>
             <button
@@ -513,7 +548,7 @@ export function SettingsManager({
             <button
               type="button"
               disabled={busy}
-              onClick={() => { window.location.href = "/api/email/connect/google"; }}
+              onClick={() => { window.location.href = `/api/email/connect/google?next=${encodeURIComponent(emailReturnPath)}`; }}
               className={smSolidBtn}
             >
               Connect Gmail
@@ -521,7 +556,7 @@ export function SettingsManager({
             <button
               type="button"
               disabled={busy}
-              onClick={() => { window.location.href = "/api/email/connect/microsoft"; }}
+              onClick={() => { window.location.href = `/api/email/connect/microsoft?next=${encodeURIComponent(emailReturnPath)}`; }}
               className={smActionBtn}
             >
               Connect Outlook
@@ -744,7 +779,7 @@ export function SettingsManager({
         <div className={rowCls}>
           <p className={labelCls + " mb-1"}>Plan</p>
           <p className="font-sans text-[0.9rem] text-styloire-champagneLight">
-            Styloire — $20/month
+            Styloire — $30/month
           </p>
           <p className="mt-0.5 font-sans text-[0.75rem] text-white/40">
             No tiers, no usage limits. Cancel anytime.
@@ -779,6 +814,16 @@ export function SettingsManager({
         ) : null}
 
         <div className={rowCls + " flex flex-wrap gap-2"}>
+          {!isActive ? (
+            <button
+              type="button"
+              disabled={checkoutBusy}
+              onClick={startCheckout}
+              className={smSolidBtn}
+            >
+              {checkoutBusy ? "Redirecting…" : onboardingMode ? "Start subscription" : "Subscribe now"}
+            </button>
+          ) : null}
           <button
             type="button"
             disabled={portalBusy || !hasStripeCustomer}

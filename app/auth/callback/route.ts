@@ -1,6 +1,25 @@
 import { NextResponse } from "next/server";
+import { ensurePublicUserRow } from "@/lib/supabase/ensure-public-user";
+import { createServiceRoleClient } from "@/lib/supabase/service";
 import { createUserServerClient } from "@/lib/supabase/server";
 import { publicSiteOrigin } from "@/lib/site-url";
+
+async function ensureAuthedPublicUser(supabase: ReturnType<typeof createUserServerClient>) {
+  const client = createServiceRoleClient();
+  if (!client) return;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.id || !user.email) return;
+
+  await ensurePublicUserRow(client, {
+    id: user.id,
+    email: user.email,
+    name: (user.user_metadata?.full_name as string | undefined) ?? null,
+  });
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -19,6 +38,7 @@ export async function GET(request: Request) {
         `${base}/login?error=${encodeURIComponent(error.message)}`,
       );
     }
+    await ensureAuthedPublicUser(supabase);
     return NextResponse.redirect(`${base}${redirectTo}`);
   }
 
@@ -32,6 +52,7 @@ export async function GET(request: Request) {
         `${base}/login?error=${encodeURIComponent(error.message)}`,
       );
     }
+    await ensureAuthedPublicUser(supabase);
     return NextResponse.redirect(`${base}${redirectTo}`);
   }
 

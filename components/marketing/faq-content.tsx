@@ -31,7 +31,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     items: [
       {
         q: "What format should my contact file be?",
-        a: "Structured columns — for example brand_name, email, first_name. Files are parsed in the browser, then stored only under your account."
+        a: "Structured columns — for example Brand Name, Email Address, and optional PR Contact Name. Files are parsed in the browser, then stored only under your account."
       },
       {
         q: "Where do my contacts live?",
@@ -57,7 +57,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     items: [
       {
         q: "How much does Styloire cost?",
-        a: "$20/month flat. No tiers, no usage limits for V1 — one plan for everyone."
+        a: "$30/month flat. No tiers, no usage limits for V1 — one plan for everyone."
       },
       {
         q: "Is there a free trial?",

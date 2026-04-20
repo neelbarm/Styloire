@@ -18,6 +18,14 @@ export function googleStateCookieName(): string {
   return "styloire_oauth_google_state";
 }
 
+export function googleNextCookieName(): string {
+  return "styloire_oauth_google_next";
+}
+
 export function microsoftStateCookieName(): string {
   return "styloire_oauth_microsoft_state";
+}
+
+export function microsoftNextCookieName(): string {
+  return "styloire_oauth_microsoft_next";
 }

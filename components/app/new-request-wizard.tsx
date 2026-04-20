@@ -4,8 +4,8 @@ import { ArrowRight, Check, Upload } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StyloireButton, StyloirePanel } from "@/components/styloire";
-import { getProfileWithContacts, listProfiles } from "@/lib/styloire/mock-data";
 import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
+import type { BrandContact, ClientProfileSummary } from "@/lib/styloire/types";
 import {
   type GroupedContacts,
   parseBrandContactsFileDetailed
@@ -26,7 +26,22 @@ const ghostBtn =
 const filledBtn =
   "border-white/32 bg-white/10 px-6 py-2 text-[0.65rem] tracking-[0.08em] text-white/92 hover:bg-white/16";
 
-export function NewRequestWizard() {
+type Props = {
+  initialProfiles: ClientProfileSummary[];
+  initialProfileId?: string;
+};
+
+function groupContacts(contacts: BrandContact[]): GroupedContacts {
+  return contacts.reduce<GroupedContacts>((acc, row) => {
+    const key = row.brand_name.trim().toUpperCase();
+    const list = acc[key] ?? [];
+    list.push({ brand_name: key, email: row.email, contact_name: row.contact_name ?? "" });
+    acc[key] = list;
+    return acc;
+  }, {});
+}
+
+export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const router = useRouter();
   // ── All state preserved exactly ──────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -43,7 +58,7 @@ export function NewRequestWizard() {
   const [submitState, setSubmitState] = useState<"idle" | "saving" | "error" | "success">("idle");
   const [submitError, setSubmitError] = useState("");
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
-  const profiles = listProfiles();
+  const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── All derived state preserved exactly ─────────────────────────────────
@@ -66,6 +81,15 @@ export function NewRequestWizard() {
     setRequestType("new");
     setProfileId("");
   }, [matchedProfile]);
+
+  useEffect(() => {
+    if (!initialProfileId) return;
+    const preselected = profiles.find((profile) => profile.id === initialProfileId);
+    if (!preselected) return;
+    setTalent(preselected.talent_name);
+    setProfileId(preselected.id);
+    setRequestType("existing");
+  }, [initialProfileId, profiles]);
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
   const filteredBrands = useMemo(() => {
@@ -93,7 +117,7 @@ export function NewRequestWizard() {
       : `{{talent}} / {{event}} / BRAND NAME`;
 
   // ── All handlers preserved exactly ──────────────────────────────────────
-  const loadPreviousContacts = () => {
+  const loadPreviousContacts = async () => {
     const target = talent.trim().toLowerCase();
     if (!target) {
       setParseError("Enter a talent/client name first, then load previous contacts.");
@@ -108,28 +132,49 @@ export function NewRequestWizard() {
     }
     setRequestType("existing");
     setProfileId(matched.id);
-    loadProfileContacts(matched.id);
+    await loadProfileContacts(matched.id);
     setParseError("");
   };
 
-  const loadProfileContacts = (nextProfileId: string) => {
-    const profile = getProfileWithContacts(nextProfileId);
-    if (!profile) {
+  const loadProfileContacts = async (nextProfileId: string) => {
+    try {
+      const response = await fetch(`/api/brand-contacts?profile_id=${encodeURIComponent(nextProfileId)}`);
+      const data = (await response.json().catch(() => ({}))) as {
+        contacts?: BrandContact[];
+        error?: string;
+      };
+      if (!response.ok) {
+        setParseError(data.error ?? "Could not load saved contacts.");
+        setGroups({});
+        setSelectedBrands([]);
+        return;
+      }
+
+      const profile = profiles.find((row) => row.id === nextProfileId);
+      const contacts = data.contacts ?? [];
+      if (!profile) {
+        setParseError("Saved profile not found.");
+        setGroups({});
+        setSelectedBrands([]);
+        return;
+      }
+
+      const grouped = groupContacts(contacts);
+      setTalent(profile.talent_name);
+      setGroups(grouped);
+      setSelectedBrands(Object.keys(grouped).sort());
+      setParseError("");
+    } catch {
+      setParseError("Could not load saved contacts.");
       setGroups({});
       setSelectedBrands([]);
-      return;
     }
-    const grouped = profile.contacts.reduce<GroupedContacts>((acc, row) => {
-      const key = row.brand_name.trim().toUpperCase();
-      const list = acc[key] ?? [];
-      list.push({ brand_name: key, email: row.email, contact_name: row.contact_name ?? "" });
-      acc[key] = list;
-      return acc;
-    }, {});
-    setTalent(profile.profile.talent_name);
-    setGroups(grouped);
-    setSelectedBrands(Object.keys(grouped).sort());
   };
+
+  useEffect(() => {
+    if (step !== 2 || requestType !== "existing" || !profileId || brands.length > 0) return;
+    void loadProfileContacts(profileId);
+  }, [step, requestType, profileId, brands.length]);
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -217,9 +262,8 @@ export function NewRequestWizard() {
   const downloadTemplate = async () => {
     const { utils, writeFile } = await import("xlsx");
     const ws = utils.aoa_to_sheet([
-      ["brand_name", "email", "first_name"],
-      ["Valentino", "press@valentino.com", "Elena"],
-      ["Saint Laurent", "showroom@ysl.com", "Marie"]
+      ["Brand Name", "Email Address", "PR Contact Name"],
+      ["Valentino", "press@valentino.com", "Elena"]
     ]);
     // Set column widths for readability
     ws["!cols"] = [{ wch: 28 }, { wch: 34 }, { wch: 18 }];
@@ -384,7 +428,7 @@ export function NewRequestWizard() {
                     </p>
                   </div>
                   <p className="mt-1 font-sans text-[0.82rem] text-white/55">
-                    Columns: Brand Name, Email, PR Contact (optional)
+                    Columns: Brand Name, Email Address, PR Contact Name (optional)
                   </p>
                 </label>
               </div>

@@ -15,6 +15,21 @@ function formatSendDate(value: string | null) {
   return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function formatResponseRate(sent: number, responded: number) {
+  if (!sent) return "—";
+  return `${Math.round((responded / sent) * 100)}%`;
+}
+
+function badgeClass(status: string) {
+  if (status === "active") {
+    return "border-emerald-400/38 bg-emerald-500/12 text-emerald-300";
+  }
+  if (status === "archived") {
+    return "border-white/18 bg-white/6 text-white/54";
+  }
+  return "border-amber-400/28 bg-amber-500/10 text-amber-200";
+}
+
 export default async function RosterDetailPage({
   params,
   searchParams
@@ -96,12 +111,14 @@ export default async function RosterDetailPage({
           <div className="mt-5">
             <div className="overflow-hidden rounded-[0.55rem] border border-white/12 bg-black/8">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[440px] text-left">
+                <table className="w-full min-w-[680px] text-left">
                   <thead>
                     <tr className="border-b border-white/10 bg-black/12">
                       <th className={thCls}>Event / Publication</th>
                       <th className={thCls}>Sent</th>
                       <th className={thCls}>Contacts</th>
+                      <th className={thCls}>Response rate</th>
+                      <th className={thCls}>Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/8">
@@ -111,19 +128,36 @@ export default async function RosterDetailPage({
                           key={r.id}
                           className="transition-colors duration-100 hover:bg-white/[0.025]"
                         >
-                          <td className={tdCls + " font-medium"}>{r.event_name || "—"}</td>
+                          <td className={tdCls + " font-medium"}>
+                            <Link
+                              href={`/requests/${r.id}`}
+                              className="transition-colors hover:text-styloire-champagneLight"
+                            >
+                              {r.event_name || "—"}
+                            </Link>
+                          </td>
                           <td className={tdCls + " text-white/50"}>
                             {formatSendDate(r.sent_at ?? null)}
                           </td>
                           <td className={tdCls + " text-white/50"}>
                             {r.selected_count > 0 ? r.selected_count : "—"}
                           </td>
+                          <td className={tdCls + " text-white/50"}>
+                            {formatResponseRate(r.sent_count, r.responded_count)}
+                          </td>
+                          <td className={tdCls}>
+                            <span
+                              className={`inline-flex rounded-full border px-2.5 py-0.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] ${badgeClass(r.status)}`}
+                            >
+                              {r.status}
+                            </span>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
                         <td
-                          colSpan={3}
+                          colSpan={5}
                           className="px-4 py-8 text-center font-sans text-[0.82rem] text-white/28"
                         >
                           No requests for this profile yet.{" "}

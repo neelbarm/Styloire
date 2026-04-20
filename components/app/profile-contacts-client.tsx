@@ -533,7 +533,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           <p className="mt-2 font-sans text-[0.75rem] text-red-300">{addError}</p>
         ) : null}
         <p className="mt-2 font-sans text-[0.72rem] text-white/28">
-          CSV columns: <code className="text-white/42">brand_name, email, first_name</code>
+          CSV columns: <code className="text-white/42">Brand Name, Email Address, PR Contact Name</code>
         </p>
       </div>
     </div>

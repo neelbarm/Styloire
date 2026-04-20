@@ -3,17 +3,25 @@ import { google } from "googleapis";
 import { googleOAuthWebConfig } from "@/lib/email/env-config";
 import {
   createOAuthState,
+  googleNextCookieName,
   googleStateCookieName,
   oauthCookieOptions,
 } from "@/lib/email/oauth-state";
 import { getCurrentUserId } from "@/lib/supabase/server";
 
+function resolveNext(url: URL): string {
+  const next = url.searchParams.get("next");
+  return next && next.startsWith("/") ? next : "/settings";
+}
+
 export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const next = resolveNext(url);
   const userId = await getCurrentUserId();
   if (!userId) {
-    const origin = new URL(request.url).origin;
+    const origin = url.origin;
     return NextResponse.redirect(
-      `${origin}/login?error=session&next=${encodeURIComponent("/settings")}`,
+      `${origin}/login?error=session&next=${encodeURIComponent(next)}`,
     );
   }
 
@@ -34,12 +42,13 @@ export async function GET(request: Request) {
     });
     const res = NextResponse.redirect(url);
     res.cookies.set(googleStateCookieName(), state, oauthCookieOptions);
+    res.cookies.set(googleNextCookieName(), next, oauthCookieOptions);
     return res;
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Google OAuth setup error";
-    const origin = new URL(request.url).origin;
+    const origin = url.origin;
     return NextResponse.redirect(
-      `${origin}/settings?email_error=${encodeURIComponent(msg)}`,
+      `${origin}${next}?email_error=${encodeURIComponent(msg)}`,
     );
   }
 }

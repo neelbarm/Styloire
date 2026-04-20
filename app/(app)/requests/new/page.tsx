@@ -1,6 +1,15 @@
 import { NewRequestWizard } from "@/components/app/new-request-wizard";
+import { listClientProfileSummaries } from "@/lib/data/profile-queries";
 
-export default function NewRequestPage() {
+export default async function NewRequestPage({
+  searchParams
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
+  const profiles = await listClientProfileSummaries();
+  const profileId =
+    typeof searchParams?.profile === "string" ? searchParams.profile : undefined;
+
   return (
     <>
       <div className="mb-7 text-center">
@@ -12,7 +21,7 @@ export default function NewRequestPage() {
         </p>
       </div>
       <div className="mx-auto max-w-4xl">
-        <NewRequestWizard />
+        <NewRequestWizard initialProfiles={profiles} initialProfileId={profileId} />
       </div>
     </>
   );

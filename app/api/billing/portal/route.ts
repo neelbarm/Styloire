@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { getAuthedServiceRoleClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/service";
 import { serverEnv } from "@/lib/env/server";
-
-function getStripeClient(): Stripe | null {
-  const key = serverEnv.STRIPE_SECRET_KEY;
-  if (!key) return null;
-  return new Stripe(key);
-}
+import { getStripeClient } from "@/lib/stripe";
 
 // POST /api/billing/portal
 // Body: { flow?: "cancel" }

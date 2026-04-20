@@ -3,40 +3,52 @@ import { cookies } from "next/headers";
 import { google } from "googleapis";
 import { encryptSecret } from "@/lib/crypto/encryption";
 import { googleOAuthWebConfig } from "@/lib/email/env-config";
-import { googleStateCookieName } from "@/lib/email/oauth-state";
+import { googleNextCookieName, googleStateCookieName } from "@/lib/email/oauth-state";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { ensurePublicUserRow } from "@/lib/supabase/ensure-public-user";
 import { getAuthedServiceRoleClient, getCurrentUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/service";
 
+function readNext(cookieStore: ReturnType<typeof cookies>): string {
+  const next = cookieStore.get(googleNextCookieName())?.value;
+  return next && next.startsWith("/") ? next : "/settings";
+}
+
 export async function GET(request: Request) {
   const base = publicSiteOrigin(request);
   const authed = await getAuthedServiceRoleClient();
+  const cookieStore = cookies();
+  const next = readNext(cookieStore);
   if (!authed) {
-    return NextResponse.redirect(`${base}/settings?email_error=unauthorized`);
+    const res = NextResponse.redirect(`${base}${next}?email_error=unauthorized`);
+    res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
+    return res;
   }
 
   const u = new URL(request.url);
   const code = u.searchParams.get("code");
   const state = u.searchParams.get("state");
-  const cookieStore = cookies();
   const expected = cookieStore.get(googleStateCookieName())?.value;
   if (!code || !state || !expected || state !== expected) {
-    const res = NextResponse.redirect(`${base}/settings?email_error=oauth_state`);
+    const res = NextResponse.redirect(`${base}${next}?email_error=oauth_state`);
     res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
     return res;
   }
 
   if (!isSupabaseConfigured()) {
-    const res = NextResponse.redirect(`${base}/settings?email_error=supabase`);
+    const res = NextResponse.redirect(`${base}${next}?email_error=supabase`);
     res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
     return res;
   }
 
   const user = await getCurrentUser();
   if (!user?.email) {
-    const res = NextResponse.redirect(`${base}/settings?email_error=no_email`);
+    const res = NextResponse.redirect(`${base}${next}?email_error=no_email`);
     res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
     return res;
   }
 
@@ -87,15 +99,17 @@ export async function GET(request: Request) {
       throw new Error(insertError.message);
     }
 
-    const res = NextResponse.redirect(`${base}/settings?connected=gmail`);
+    const res = NextResponse.redirect(`${base}${next}?connected=gmail`);
     res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
     return res;
   } catch (e) {
     const msg = e instanceof Error ? e.message : "google_callback";
     const res = NextResponse.redirect(
-      `${base}/settings?email_error=${encodeURIComponent(msg)}`,
+      `${base}${next}?email_error=${encodeURIComponent(msg)}`,
     );
     res.cookies.delete(googleStateCookieName());
+    res.cookies.delete(googleNextCookieName());
     return res;
   }
 }

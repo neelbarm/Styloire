@@ -1,7 +1,15 @@
 import "server-only";
 
-import { getProfileWithContacts as getMockBundle } from "@/lib/styloire/mock-data";
-import type { BrandContact, ClientProfile, RequestSummary } from "@/lib/styloire/types";
+import {
+  getProfileWithContacts as getMockBundle,
+  listProfiles as listMockProfiles
+} from "@/lib/styloire/mock-data";
+import type {
+  BrandContact,
+  ClientProfile,
+  ClientProfileSummary,
+  RequestSummary
+} from "@/lib/styloire/types";
 import { createServiceRoleClient, isSupabaseConfigured } from "@/lib/supabase/service";
 import { getCurrentUserId } from "@/lib/supabase/server";
 
@@ -46,6 +54,87 @@ function mapRequest(r: Record<string, unknown>): RequestSummary {
     opened_count: Number(r.opened_count ?? 0),
     responded_count: Number(r.responded_count ?? 0)
   };
+}
+
+function mapProfileSummary(
+  row: Record<string, unknown>,
+  counts: { contactCount: number; requestCount: number }
+): ClientProfileSummary {
+  return {
+    id: String(row.id),
+    user_id: String(row.user_id),
+    talent_name: String(row.talent_name),
+    last_used_at: row.last_used_at ? String(row.last_used_at) : null,
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+    contact_count: counts.contactCount,
+    request_count: counts.requestCount
+  };
+}
+
+export async function listClientProfileSummaries(): Promise<ClientProfileSummary[]> {
+  const userId = await getCurrentUserId();
+  if (!userId) return [];
+
+  const mockRows = listMockProfiles();
+  if (!isSupabaseConfigured()) {
+    return mockRows;
+  }
+
+  const supabase = createServiceRoleClient();
+  if (!supabase) {
+    return mockRows;
+  }
+
+  const { data: profileRows, error: profileError } = await supabase
+    .from("client_profiles")
+    .select("id,user_id,talent_name,last_used_at,created_at,updated_at")
+    .eq("user_id", userId)
+    .order("last_used_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false });
+
+  if (profileError || !profileRows) {
+    return mockRows;
+  }
+
+  if (!profileRows.length) {
+    return [];
+  }
+
+  const profileIds = profileRows.map((row) => String(row.id));
+
+  const [{ data: contactRows }, { data: requestRows }] = await Promise.all([
+    supabase
+      .from("brand_contacts")
+      .select("client_profile_id")
+      .in("client_profile_id", profileIds)
+      .eq("is_active", true),
+    supabase
+      .from("requests")
+      .select("client_profile_id")
+      .in("client_profile_id", profileIds)
+      .eq("user_id", userId)
+  ]);
+
+  const contactCounts = new Map<string, number>();
+  for (const row of contactRows ?? []) {
+    const key = String(row.client_profile_id);
+    contactCounts.set(key, (contactCounts.get(key) ?? 0) + 1);
+  }
+
+  const requestCounts = new Map<string, number>();
+  for (const row of requestRows ?? []) {
+    if (!row.client_profile_id) continue;
+    const key = String(row.client_profile_id);
+    requestCounts.set(key, (requestCounts.get(key) ?? 0) + 1);
+  }
+
+  return profileRows.map((row) =>
+    mapProfileSummary(row as Record<string, unknown>, {
+      contactCount: contactCounts.get(String(row.id)) ?? 0,
+      requestCount: requestCounts.get(String(row.id)) ?? 0
+    })
+  );
 }
 
 export async function getProfileDetail(
@@ -107,9 +196,48 @@ export async function getProfileDetail(
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  const requests: RequestSummary[] = (requestRows ?? []).map((r) =>
-    mapRequest(r as unknown as Record<string, unknown>)
-  );
+  const normalizedRequestRows = (requestRows ?? []) as unknown as Record<string, unknown>[];
+  const requestIds = normalizedRequestRows.map((row) => String(row.id));
+  let requestCounts = new Map<
+    string,
+    { selected_count: number; sent_count: number; opened_count: number; responded_count: number }
+  >();
+
+  if (requestIds.length > 0) {
+    const { data: requestContactRows } = await supabase
+      .from("request_contacts")
+      .select("request_id,selected,email_sent,opened,responded")
+      .in("request_id", requestIds);
+
+    requestCounts = (requestContactRows ?? []).reduce((acc, row) => {
+      const key = String(row.request_id);
+      const current = acc.get(key) ?? {
+        selected_count: 0,
+        sent_count: 0,
+        opened_count: 0,
+        responded_count: 0
+      };
+      if (row.selected) current.selected_count += 1;
+      if (row.email_sent) current.sent_count += 1;
+      if (row.opened) current.opened_count += 1;
+      if (row.responded) current.responded_count += 1;
+      acc.set(key, current);
+      return acc;
+    }, new Map<string, { selected_count: number; sent_count: number; opened_count: number; responded_count: number }>());
+  }
+
+  const requests: RequestSummary[] = normalizedRequestRows.map((r) => {
+    const mapped = mapRequest(r);
+    const counts = requestCounts.get(mapped.id);
+    if (!counts) return mapped;
+    return {
+      ...mapped,
+      selected_count: counts.selected_count,
+      sent_count: counts.sent_count,
+      opened_count: counts.opened_count,
+      responded_count: counts.responded_count
+    };
+  });
 
   return { source: "supabase", profile, contacts, requests };
 }
