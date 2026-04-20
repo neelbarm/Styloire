@@ -6,19 +6,19 @@ import type { ReactNode } from "react";
 import { StyloireAppShell } from "@/components/styloire/app-shell";
 
 const topNav = [
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/dashboard", label: "My portal" },
-  { href: "/faqs", label: "FAQs" },
-  { href: "/contact", label: "Contact" },
-  { href: "/dashboard", label: "Account" }
+  { href: "/how-it-works", label: "How it works", match: "prefix" },
+  { href: "/dashboard", label: "My portal", match: "exact" },
+  { href: "/faqs", label: "FAQs", match: "prefix" },
+  { href: "/contact", label: "Contact", match: "prefix" },
+  { href: "/settings", label: "Account", match: "prefix" }
 ];
 
 const portalNav = [
-  { href: "/requests/new", label: "Send a new request" },
-  { href: "/dashboard?view=requests", label: "Existing requests" },
-  { href: "/roster", label: "Client profiles" },
-  { href: "/templates", label: "Templates" },
-  { href: "/dashboard", label: "account" }
+  { href: "/requests/new", label: "Send a new request", match: "prefix" },
+  { href: "/dashboard?view=requests", label: "Existing requests", match: "search" },
+  { href: "/roster", label: "Client profiles", match: "prefix" },
+  { href: "/templates", label: "Templates", match: "prefix" },
+  { href: "/settings", label: "Account", match: "prefix" }
 ];
 
 function pillClass(active: boolean) {
@@ -28,6 +28,20 @@ function pillClass(active: boolean) {
       ? "border-white/58 bg-white/24 text-white"
       : "border-white/46 bg-white/20 text-white/88 hover:border-white/65 hover:bg-white/26"
   ].join(" ");
+}
+
+function isNavActive(
+  item: { href: string; match: string },
+  pathname: string,
+  view: string | null
+): boolean {
+  if (item.match === "exact") return pathname === item.href;
+  if (item.match === "search") {
+    const [base, qs] = item.href.split("?");
+    const param = new URLSearchParams(qs ?? "");
+    return pathname === base && view === param.get("view");
+  }
+  return pathname.startsWith(item.href);
 }
 
 export function AppChrome({ children }: { children: ReactNode }) {
@@ -49,28 +63,28 @@ export function AppChrome({ children }: { children: ReactNode }) {
               Styloire
             </Link>
             <div className="flex flex-wrap justify-end gap-2.5">
-              {topNav.map((item) => {
-                const active = item.href === "/dashboard" ? pathname.startsWith("/dashboard") : pathname.startsWith(item.href);
-                return (
-                  <Link key={item.href} href={item.href} className={pillClass(active)}>
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {topNav.map((item) => (
+                <Link
+                  key={`top-${item.label}`}
+                  href={item.href}
+                  className={pillClass(isNavActive(item, pathname, view))}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
           {showPortalRow ? (
             <div className="flex flex-wrap gap-2.5 md:gap-3">
-              {portalNav.map((item) => {
-                const active = item.href.startsWith("/dashboard")
-                  ? pathname === "/dashboard"
-                  : pathname.startsWith(item.href);
-                return (
-                  <Link key={item.href} href={item.href} className={pillClass(active)}>
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {portalNav.map((item) => (
+                <Link
+                  key={`portal-${item.label}`}
+                  href={item.href}
+                  className={pillClass(isNavActive(item, pathname, view))}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           ) : null}
         </div>

@@ -8,7 +8,7 @@ export default function RosterPage() {
     <>
       <div className="mb-9 text-center">
         <h1 className="font-serif text-[clamp(2.8rem,6.2vw,5rem)] font-semibold uppercase leading-[0.94] tracking-[-0.01em] text-styloire-champagneLight">
-          Existing requests
+          Client profiles
         </h1>
       </div>
 

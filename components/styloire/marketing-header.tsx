@@ -5,7 +5,7 @@ const centerLinks = [
   { href: "/dashboard", label: "My Portal" },
   { href: "/faqs", label: "FAQs" },
   { href: "/contact", label: "Contact" },
-  { href: "/settings", label: "Account" }
+  { href: "/dashboard", label: "Account" }
 ];
 
 export function StyloireMarketingHeader() {

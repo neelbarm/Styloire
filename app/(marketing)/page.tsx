@@ -2,33 +2,37 @@ import Link from "next/link";
 import {
   StyloireBody,
   StyloireButton,
+  StyloireEyebrow,
   StyloireHeading,
   StyloireHero,
   StyloireImageSection,
   StyloireLead,
-  StyloireList,
   StyloireSection
 } from "@/components/styloire";
 
-const heroImage =
-  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
-
-const howImage =
-  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
-
-const whoImage =
-  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
+/**
+ * Image slots — copy the raw files from the conversation into public/images/:
+ *   public/images/hero.jpg          → runway / fashion show (wide landscape)
+ *   public/images/how-it-works.jpg  → stylist looking at shoes on rack
+ *   public/images/who-for.jpg       → heels walking (warm amber)
+ */
+const IMG_HERO = "url('/images/hero.jpeg')";
+const IMG_HOW = "url('/images/how-it-works.jpeg')";
+const IMG_WHO = "url('/images/who-for.jpeg')";
 
 const threeSteps = [
   {
+    index: "01",
     title: "Create your request",
     body: "Enter your talent and event. Styloire builds your subject lines automatically, in the exact format brands expect."
   },
   {
+    index: "02",
     title: "Upload your contacts",
-    body: "Drop in your brand PR list and create a client profile, setup once and have it saved. Just a simple spreadsheet."
+    body: "Drop in your brand PR list and create a client profile — set up once and saved forever. Just a simple spreadsheet."
   },
   {
+    index: "03",
     title: "And hit send",
     body: "Every email goes out on time and in seconds. Track sent, opened, and responded status for each request."
   }
@@ -44,136 +48,171 @@ const features = [
 export default function MarketingHomePage() {
   return (
     <>
-      <StyloireImageSection imageUrl={heroImage} position="center 18%" className="pt-24">
-        <StyloireHero className="max-w-[62rem] gap-7">
-          <p className="font-serif text-[clamp(4.4rem,10vw,7.6rem)] font-semibold uppercase leading-none tracking-[-0.02em] text-white">
+      {/* ─── HERO ───────────────────────────────────────────────────── */}
+      <StyloireImageSection
+        imageUrl={IMG_HERO}
+        overlay="heavy"
+        position="center 30%"
+        className="min-h-screen pt-28"
+      >
+        <StyloireHero className="max-w-[64rem] gap-6">
+          <p className="font-sans text-[clamp(0.62rem,1.1vw,0.78rem)] font-semibold uppercase tracking-[0.38em] text-white/60">
             Styloire
           </p>
-          <StyloireHeading as="h1" level="display" className="font-sans text-[clamp(1.8rem,3.5vw,2.7rem)] font-semibold tracking-[-0.01em] text-white">
-            Make Emailing Simple
-          </StyloireHeading>
-          <StyloireLead className="max-w-4xl text-[clamp(1.5rem,2.5vw,2.2rem)] not-italic text-white">
-            Pull request outreach but automated. Write one email, send it personalized to
-            every brand on your list in minutes.
+          <h1 className="font-serif text-[clamp(4.8rem,11vw,9rem)] font-semibold uppercase leading-none tracking-[-0.02em] text-white">
+            Make Emailing<br className="hidden sm:block" /> Simple.
+          </h1>
+          <StyloireLead className="max-w-[42rem] text-[clamp(1rem,1.8vw,1.25rem)] not-italic leading-relaxed text-white/80">
+            Pull request outreach but automated. Write one email, send it
+            personalized to every brand on your list in minutes.
           </StyloireLead>
           <StyloireButton
             href="/dashboard"
             variant="outline"
-            className="rounded-full border-white/60 bg-white/10 px-14 py-3 text-white hover:border-white hover:bg-white/20"
+            className="mt-2 border-white/55 bg-white/10 px-12 py-3 text-[0.63rem] tracking-[0.22em] text-white hover:border-white/85 hover:bg-white/18"
           >
-            LIVE CTA text
+            Get Started
           </StyloireButton>
         </StyloireHero>
       </StyloireImageSection>
 
-      <StyloireSection tone="solid" className="py-[clamp(5.5rem,10vw,8rem)]">
-        <div className="mx-auto max-w-styloire-narrow text-center">
-          <StyloireHeading as="h2" level="title">
-            The problem
-          </StyloireHeading>
-          <p className="mx-auto mt-10 max-w-styloire-prose font-sans text-[clamp(2rem,4vw,3rem)] font-light leading-[1.12] text-styloire-inkSoft">
-            The average stylist sends 100–500 emails per project. Most of them are copy and
-            paste.
+      {/* ─── THE PROBLEM ─────────────────────────────────────────────── */}
+      <StyloireSection tone="solid" className="py-[clamp(5rem,10vw,8rem)]">
+        <div className="mx-auto max-w-[52rem] text-center">
+          <StyloireEyebrow className="mb-8">The Problem</StyloireEyebrow>
+          <p className="font-serif text-[clamp(1.9rem,4.2vw,3.2rem)] font-light leading-[1.14] tracking-[-0.01em] text-styloire-inkSoft">
+            The average stylist sends{" "}
+            <span className="text-styloire-ink">100–500 emails</span> per
+            project. Most of them are copy and paste.
           </p>
-          <StyloireLead className="mt-12 text-[clamp(2rem,4vw,3rem)] text-styloire-champagneLight">
+          <p className="mt-10 font-serif text-[clamp(1.5rem,3vw,2.2rem)] font-light italic text-styloire-champagneLight">
             There&apos;s a better way.
-          </StyloireLead>
+          </p>
         </div>
       </StyloireSection>
 
-      <section
-        className="relative overflow-hidden py-[clamp(5rem,10vw,7.5rem)]"
-        style={{
-          backgroundImage: howImage,
-          backgroundSize: "cover",
-          backgroundPosition: "center 20%",
-        }}
+      {/* ─── HOW IT WORKS ────────────────────────────────────────────── */}
+      <StyloireImageSection
+        imageUrl={IMG_HOW}
+        overlay="heavy"
+        position="center 40%"
+        className="min-h-[min(90vh,50rem)] py-[clamp(5rem,10vw,8rem)]"
       >
-        <div className="absolute inset-0 bg-black/45" aria-hidden />
-        <div className="relative mx-auto max-w-styloire px-6 md:px-10">
-          <StyloireHeading level="title" className="text-center text-white">
-            How it works
-          </StyloireHeading>
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {threeSteps.map((col) => (
-              <article key={col.title} className="text-center">
-                <h3 className="font-serif text-[clamp(2rem,3.6vw,3.2rem)] font-semibold italic text-white">
-                  {col.title}
+        <div className="mx-auto w-full max-w-styloire px-6 md:px-10">
+          <div className="mb-12 text-center">
+            <StyloireEyebrow className="mb-3 text-white/55">How It Works</StyloireEyebrow>
+            <StyloireHeading level="title" className="text-white">
+              How it works
+            </StyloireHeading>
+          </div>
+          <div className="grid gap-10 md:grid-cols-3 md:gap-8">
+            {threeSteps.map((step) => (
+              <article key={step.index} className="text-center">
+                <p className="mb-4 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-white/45">
+                  {step.index}
+                </p>
+                <h3 className="font-serif text-[clamp(1.4rem,2.4vw,1.9rem)] font-semibold italic leading-[1.12] text-white">
+                  {step.title}
                 </h3>
-                <p className="mx-auto mt-4 max-w-sm font-sans text-[clamp(1.2rem,2vw,1.7rem)] font-light leading-tight text-white">
-                  {col.body}
+                <p className="mx-auto mt-4 max-w-[22rem] font-sans text-[clamp(0.9rem,1.5vw,1.05rem)] font-light leading-relaxed text-white/75">
+                  {step.body}
                 </p>
               </article>
             ))}
           </div>
         </div>
-      </section>
+      </StyloireImageSection>
 
-      <StyloireSection tone="solid">
-        <StyloireHero className="max-w-[58rem]">
-          <StyloireHeading level="title" className="text-styloire-ink">
+      {/* ─── FEATURES ────────────────────────────────────────────────── */}
+      <StyloireSection tone="deep" className="py-[clamp(5rem,10vw,8rem)]">
+        <StyloireHero className="max-w-[52rem]">
+          <StyloireEyebrow>Features</StyloireEyebrow>
+          <StyloireHeading level="title" className="text-styloire-champagneLight">
             Features
           </StyloireHeading>
-          <StyloireLead className="text-[clamp(2.1rem,4vw,3rem)] text-styloire-champagneLight">
+          <StyloireLead className="text-[clamp(1.05rem,2vw,1.35rem)] not-italic text-styloire-champagneLight">
             Everything you need. Nothing you don&apos;t.
           </StyloireLead>
-          <StyloireList
-            className="text-[clamp(1.8rem,2.8vw,2.45rem)] italic"
-            items={features.map((f) => `- ${f}`)}
-          />
+          <ul className="mt-2 w-full max-w-[38rem] space-y-4 text-left">
+            {features.map((f) => (
+              <li
+                key={f}
+                className="flex items-start gap-4 font-sans text-[clamp(0.9rem,1.6vw,1.05rem)] font-light leading-relaxed text-styloire-inkSoft"
+              >
+                <span
+                  className="mt-[0.2em] shrink-0 select-none font-serif text-styloire-champagne/70"
+                  aria-hidden
+                >
+                  —
+                </span>
+                {f}
+              </li>
+            ))}
+          </ul>
           <Link
             href="/how-it-works"
-            className="font-sans text-styloire-caption uppercase tracking-[0.2em] text-styloire-champagneMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-champagneLight"
+            className="mt-2 font-sans text-[0.63rem] font-semibold uppercase tracking-[0.22em] text-styloire-champagneMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-champagneLight"
           >
-            View full process
+            View full process →
           </Link>
         </StyloireHero>
       </StyloireSection>
 
-      <section
-        className="relative overflow-hidden py-[clamp(5rem,9vw,7rem)]"
-        style={{
-          backgroundImage: whoImage,
-          backgroundSize: "cover",
-          backgroundPosition: "center 24%",
-        }}
+      {/* ─── WHO IT'S FOR ────────────────────────────────────────────── */}
+      <StyloireImageSection
+        imageUrl={IMG_WHO}
+        overlay="heavy"
+        position="center 25%"
+        className="min-h-[min(80vh,42rem)] py-[clamp(5rem,10vw,8rem)]"
       >
-        <div className="absolute inset-0 bg-black/35" aria-hidden />
-        <div className="relative mx-auto max-w-styloire px-6 text-center md:px-10">
+        <div className="mx-auto max-w-[48rem] text-center">
+          <StyloireEyebrow className="mb-4 text-white/55">Who It&apos;s For</StyloireEyebrow>
           <StyloireHeading level="title" className="text-white">
             Who it&apos;s for
           </StyloireHeading>
-          <StyloireLead className="mt-5 text-[clamp(2.1rem,3.8vw,3rem)] text-white">
+          <StyloireLead className="mt-5 text-[clamp(1.05rem,2vw,1.3rem)] not-italic text-white/80">
             Built for stylists, by someone who gets it.
           </StyloireLead>
-          <StyloireBody className="mt-6 max-w-[56rem] text-[clamp(1.5rem,2.5vw,2rem)] leading-tight text-white">
-            Whether you&apos;re dressing talent for a red carpet, an editorial shoot, or a
-            commercial campaign, your time belongs on set, in the showroom, making selects -
-            not in your inbox. Styloire was built for the people behind the looks.
-          </StyloireBody>
+          <p className="mx-auto mt-5 max-w-[38rem] font-sans text-[clamp(0.88rem,1.5vw,1rem)] font-light leading-relaxed text-white/70">
+            Whether you&apos;re dressing talent for a red carpet, an editorial
+            shoot, or a commercial campaign — your time belongs on set, in the
+            showroom, making selects. Not in your inbox. Styloire was built for
+            the people behind the looks.
+          </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <StyloireButton href="/dashboard" variant="outline" className="rounded-full border-white/60 bg-white/10 text-white hover:border-white hover:bg-white/20">
-              My portal
+            <StyloireButton
+              href="/dashboard"
+              variant="outline"
+              className="border-white/55 bg-white/10 text-[0.63rem] tracking-[0.22em] text-white hover:border-white/85 hover:bg-white/18"
+            >
+              My Portal
             </StyloireButton>
-            <StyloireButton href="/contact" variant="outline" className="rounded-full border-white/60 bg-white/10 text-white hover:border-white hover:bg-white/20">
-              Contact
+            <StyloireButton
+              href="/contact"
+              variant="outline"
+              className="border-white/55 bg-white/10 text-[0.63rem] tracking-[0.22em] text-white hover:border-white/85 hover:bg-white/18"
+            >
+              Contact Us
             </StyloireButton>
           </div>
         </div>
-      </section>
+      </StyloireImageSection>
 
-      <StyloireSection id="get-started" tone="deep" className="scroll-mt-28 pb-28">
-        <StyloireHero>
-          <StyloireHeading level="display">Ready to send?</StyloireHeading>
-          <StyloireBody className="max-w-[44rem] text-[1.04rem] text-styloire-inkSoft">
-            Open your portal and send a new request in minutes.
+      {/* ─── BOTTOM CTA ──────────────────────────────────────────────── */}
+      <StyloireSection tone="solid" className="py-[clamp(5rem,10vw,8rem)]">
+        <StyloireHero className="max-w-[44rem]">
+          <StyloireHeading level="title" className="text-styloire-champagneLight">
+            Ready to Join?
+          </StyloireHeading>
+          <StyloireBody className="text-[clamp(0.92rem,1.6vw,1.05rem)] text-styloire-inkSoft">
+            Join today and send a new request in minutes.
           </StyloireBody>
           <div className="flex flex-wrap justify-center gap-4">
             <StyloireButton href="/dashboard" variant="solid" className="px-10">
-              My portal
+              Get Started
             </StyloireButton>
             <StyloireButton href="/contact" variant="outline" className="px-10">
-              Book a walkthrough
+              Book a Walkthrough
             </StyloireButton>
           </div>
         </StyloireHero>
