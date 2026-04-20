@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StyloireAppPageHeader } from "@/components/styloire/app-shell";
 import { StyloireButton } from "@/components/styloire/button";
 import { StyloirePanel } from "@/components/styloire/panel";
 import { getProfileWithContacts } from "@/lib/styloire/mock-data";
@@ -12,124 +11,119 @@ export default function RosterDetailPage({ params }: { params: { id: string } })
 
   return (
     <>
-      <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <StyloireAppPageHeader
-          title={profile.talent_name}
-          description="Manage profile: brand contacts and request history."
-        />
-        <div className="flex flex-wrap gap-3">
-          <StyloireButton type="button" variant="outline" disabled>
-            Add contact
-          </StyloireButton>
-          <StyloireButton type="button" variant="outline" disabled>
-            Upload CSV
-          </StyloireButton>
-          <StyloireButton href="/requests/new" variant="solid">
-            Send a new request
-          </StyloireButton>
-        </div>
+      <div className="mb-10 text-center">
+        <h1 className="font-serif text-[clamp(2.8rem,6.2vw,5rem)] font-semibold uppercase leading-[0.94] tracking-[-0.01em] text-styloire-champagneLight">
+          Manage profile
+        </h1>
       </div>
 
-      <Link
-        href="/roster"
-        className="mb-8 inline-block font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-4 transition-colors hover:text-styloire-ink hover:underline"
-      >
-        Back to client profiles
-      </Link>
+      <div className="mx-auto max-w-6xl">
+        <Link
+          href="/roster"
+          className="mb-2 inline-block font-sans text-[1.08rem] font-semibold text-styloire-champagneLight/90 hover:text-styloire-champagneLight"
+        >
+          &larr; Back to My Roster
+        </Link>
 
-      <div className="mb-10 border-b border-styloire-lineSubtle">
-        <div className="flex gap-5">
-          <span className="border-b border-styloire-ink pb-3 font-sans text-[0.65rem] uppercase tracking-styloireWide text-styloire-ink">
-            Brand contacts
-          </span>
-          <span className="pb-3 font-sans text-[0.65rem] uppercase tracking-styloireWide text-styloire-inkMuted">
-            Request history
-          </span>
+        <h2 className="font-serif text-[clamp(2.4rem,5vw,3.7rem)] leading-[0.92] text-styloire-champagneLight">
+          {profile.talent_name}
+        </h2>
+        <p className="mt-2 font-sans text-[1.18rem] font-semibold text-white/76">
+          {contacts.length} brand contacts · {requests.length} past requests
+        </p>
+
+        <div className="mt-5 border-b border-white/42">
+          <div className="flex gap-6">
+            <span className="border-b border-styloire-champagneLight pb-2 font-sans text-[1.08rem] font-semibold text-styloire-champagneLight">
+              Brand Contacts
+            </span>
+            <span className="pb-2 font-sans text-[1.08rem] font-semibold text-white/72">Request History</span>
+          </div>
         </div>
-      </div>
 
-      <StyloirePanel className="mb-10">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-serif text-xl text-styloire-champagne">Brand contacts</h2>
+        <div className="mt-6">
           <input
             readOnly
             value=""
-            placeholder="Search brand or contact"
-            className="w-full max-w-xs border border-styloire-lineSubtle bg-transparent px-4 py-2 font-sans text-sm text-styloire-ink md:w-auto"
+            placeholder="Search brand or contact name...."
+            className="w-full rounded-full border border-white/48 bg-white/10 px-6 py-2.5 text-center font-sans text-[1.05rem] text-styloire-champagneLight placeholder:text-white/62"
           />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-styloire-lineSubtle font-sans text-[0.65rem] uppercase tracking-styloireWide text-styloire-inkMuted">
-                <th className="pb-3 pr-4">Brand</th>
-                <th className="pb-3 pr-4">PR contact</th>
-                <th className="pb-3 pr-4">Email</th>
-                <th className="pb-3 pr-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="font-sans font-light text-styloire-inkSoft">
-              {contacts.map((c) => (
-                <tr key={c.id} className="border-b border-styloire-lineSubtle">
-                  <td className="py-3 pr-4 text-styloire-ink">{c.brand_name}</td>
-                  <td className="py-3 pr-4">{c.contact_name ?? "—"}</td>
-                  <td className="py-3 pr-4">{c.email}</td>
-                  <td className="py-3 pr-4 text-styloire-caption uppercase tracking-styloireNav">
-                    Edit · Delete
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td className="pt-4 pr-4">
-                  <input
-                    placeholder="Brand name"
-                    className="w-full border border-styloire-lineSubtle bg-transparent px-3 py-2 font-sans text-sm"
-                  />
-                </td>
-                <td className="pt-4 pr-4">
-                  <input
-                    placeholder="PR contact (optional)"
-                    className="w-full border border-styloire-lineSubtle bg-transparent px-3 py-2 font-sans text-sm"
-                  />
-                </td>
-                <td className="pt-4 pr-4">
-                  <input
-                    placeholder="Email"
-                    className="w-full border border-styloire-lineSubtle bg-transparent px-3 py-2 font-sans text-sm"
-                  />
-                </td>
-                <td className="pt-4 pr-4">
-                  <button className="rounded-sm border border-styloire-line px-4 py-2 font-sans text-[0.65rem] uppercase tracking-styloireNav">
-                    Add
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </StyloirePanel>
 
-      <StyloirePanel>
-        <h2 className="font-serif text-xl text-styloire-champagne">Request history</h2>
-        <ul className="mt-6 space-y-4 font-sans text-sm text-styloire-inkSoft">
-          {requests.map((r) => (
-            <li
-              key={r.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-styloire-lineSubtle pb-4"
-            >
-              <span>
-                {r.event_name} · {r.selected_count} contacts · {r.responded_count} responded
-              </span>
-              <Link
-                href={`/requests/${r.id}`}
-                className="text-styloire-caption uppercase tracking-styloireNav text-styloire-ink underline-offset-4 hover:underline"
-              >
-                Open request
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </StyloirePanel>
+        <div className="mt-7 rounded-[2px] border border-white/35 bg-white/[0.03] p-1">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left">
+              <thead>
+                <tr className="border-b border-white/35 font-sans text-[1.85rem] leading-none text-styloire-champagneLight">
+                  <th className="px-5 py-4">Brand</th>
+                  <th className="px-5 py-4">PR Contact</th>
+                  <th className="px-5 py-4">Email</th>
+                  <th className="px-5 py-4 text-right"> </th>
+                </tr>
+              </thead>
+              <tbody className="font-sans text-[1.05rem] text-white/84">
+                {contacts.map((c) => (
+                  <tr key={c.id} className="border-b border-white/28 align-top">
+                    <td className="px-5 py-3.5">{c.brand_name}</td>
+                    <td className="px-5 py-3.5">{c.contact_name ?? "N/A"}</td>
+                    <td className="px-5 py-3.5">{c.email}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex justify-end gap-2">
+                        <button className="rounded-full border border-white/52 bg-white/18 px-4 py-1 font-sans text-[0.58rem] uppercase tracking-[0.12em] text-white/92">
+                          Edit
+                        </button>
+                        <button className="rounded-full border border-white/52 bg-white/10 px-4 py-1 font-sans text-[0.58rem] uppercase tracking-[0.12em] text-white/82">
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="px-5 py-3 font-sans text-[1rem] font-semibold italic text-white/72">
+            + {Math.max(0, contacts.length * 8 - contacts.length)} more contacts
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]">
+          <input
+            placeholder="Brand Name"
+            className="w-full rounded-[0.55rem] border border-white/45 bg-white/18 px-4 py-2.5 font-sans text-[1.02rem] text-styloire-champagneLight placeholder:text-white/62"
+          />
+          <input
+            placeholder="PR Contact (Optional)"
+            className="w-full rounded-[0.55rem] border border-white/45 bg-white/18 px-4 py-2.5 font-sans text-[1.02rem] text-styloire-champagneLight placeholder:text-white/62"
+          />
+          <input
+            placeholder="Email Address"
+            className="w-full rounded-[0.55rem] border border-white/45 bg-white/18 px-4 py-2.5 font-sans text-[1.02rem] text-styloire-champagneLight placeholder:text-white/62"
+          />
+          <StyloireButton type="button" variant="outline" className="px-8">
+            Add
+          </StyloireButton>
+        </div>
+
+        {requests.length ? (
+          <div className="mt-8 border-t border-white/25 pt-5">
+            <p className="font-sans text-[0.7rem] uppercase tracking-[0.14em] text-white/62">
+              Recent requests
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {requests.map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/requests/${r.id}`}
+                  className="rounded-full border border-white/35 bg-white/8 px-4 py-1.5 font-sans text-[0.62rem] uppercase tracking-[0.1em] text-white/82 transition-colors duration-styloire ease-styloire hover:border-white/55 hover:bg-white/15"
+                >
+                  {r.event_name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

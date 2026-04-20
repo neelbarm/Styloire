@@ -24,7 +24,7 @@ export function StyloireAppShell({
       {...rest}
     >
       {sidebar ? (
-        <aside className="hidden w-72 shrink-0 border-r border-styloire-lineSubtle bg-[linear-gradient(180deg,rgba(42,32,22,0.55),rgba(6,5,4,0.97))] lg:block">
+        <aside className="hidden w-72 shrink-0 border-r border-styloire-lineSubtle bg-[linear-gradient(180deg,rgba(29,31,38,0.92),rgba(18,20,25,0.98))] md:block">
           {sidebar}
         </aside>
       ) : null}

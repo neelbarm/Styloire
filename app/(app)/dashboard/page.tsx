@@ -47,21 +47,9 @@ export default async function DashboardPage({
           description="Your request workspace."
           className="mx-auto text-center"
         />
-        <div className="mx-auto mt-3 flex max-w-sm flex-col items-center gap-3">
+        <div className="mt-3 flex justify-center">
           <StyloireButton href="/requests/new" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Send a new request
-          </StyloireButton>
-          <StyloireButton href="#requests" variant="outline" className="min-w-[220px] bg-white/10 text-white">
-            Existing requests
-          </StyloireButton>
-          <StyloireButton href="/roster" variant="outline" className="min-w-[220px] bg-white/10 text-white">
-            Client profiles
-          </StyloireButton>
-          <StyloireButton href="/templates" variant="outline" className="min-w-[220px] bg-white/10 text-white">
-            Templates
-          </StyloireButton>
-          <StyloireButton href="/settings" variant="outline" className="min-w-[220px] bg-white/10 text-white">
-            Account
           </StyloireButton>
         </div>
       </div>
@@ -77,7 +65,7 @@ export default async function DashboardPage({
             <Link
               key={item.value}
               href={href}
-              className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color] duration-styloire ease-styloire ${
+              className={`rounded-full border px-5 py-1.5 font-sans text-[0.62rem] font-medium uppercase tracking-[0.12em] transition-[color,background-color,border-color] duration-styloire ease-styloire ${
                 active
                   ? "border-styloire-champagne/55 bg-styloire-champagne/[0.08] text-styloire-champagneLight"
                   : "border-styloire-line text-styloire-inkMuted hover:border-styloire-champagne/40 hover:text-styloire-champagneLight"

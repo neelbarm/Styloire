@@ -23,7 +23,7 @@ const portalNav = [
 
 function pillClass(active: boolean) {
   return [
-    "rounded-full border px-6 py-2 font-sans text-[0.63rem] font-semibold uppercase tracking-[0.13em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
+    "rounded-full border px-5 py-1.5 font-sans text-[0.6rem] font-semibold uppercase tracking-[0.12em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
     active
       ? "border-white/70 bg-white/22 text-white"
       : "border-white/42 bg-white/9 text-white/90 hover:border-white/65 hover:bg-white/17"
@@ -40,10 +40,28 @@ export function AppChrome({ children }: { children: ReactNode }) {
 
   return (
     <StyloireAppShell
-      sidebar={null}
+      sidebar={
+        <div className="flex h-full flex-col border-r border-white/14 bg-black/18 p-5">
+          <p className="mb-4 font-sans text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-white/60">
+            My portal
+          </p>
+          <nav className="space-y-2.5" aria-label="Portal">
+            {portalNav.map((item) => {
+              const active = item.href.startsWith("/dashboard")
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
+              return (
+                <Link key={item.href} href={item.href} className={`${pillClass(active)} w-full justify-center`}>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      }
       topBar={
-        <div className="space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-5 border-b border-white/30 pb-5">
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-5">
             <Link
               href="/"
               className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.3em] text-white/90"
@@ -63,18 +81,6 @@ export function AppChrome({ children }: { children: ReactNode }) {
                 Sign out
               </button>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {portalNav.map((item) => {
-              const active = item.href.startsWith("/dashboard")
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
-              return (
-                <Link key={item.href} href={item.href} className={pillClass(active)}>
-                  {item.label}
-                </Link>
-              );
-            })}
           </div>
         </div>
       }
