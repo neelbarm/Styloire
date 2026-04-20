@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StyloireButton } from "@/components/styloire/button";
 import { listDashboardRequestSummaries } from "@/lib/data/request-queries";
+import { listProfiles } from "@/lib/styloire/mock-data";
 
 export default async function DashboardPage({
   searchParams
@@ -11,6 +12,7 @@ export default async function DashboardPage({
   const showRequests = view === "requests";
   const requestData = showRequests ? await listDashboardRequestSummaries("all") : null;
   const requestRows = requestData?.rows ?? [];
+  const profiles = listProfiles();
 
   if (showRequests) {
     return (
@@ -20,25 +22,34 @@ export default async function DashboardPage({
         </h1>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {requestRows.map((request) => (
+          {profiles.map((profile) => (
             <Link
-              key={request.id}
-              href={`/requests/${request.id}`}
+              key={profile.id}
+              href={`/roster/${profile.id}`}
               className="min-h-[18.8rem] rounded-[1.9rem] border border-white/45 bg-white/26 px-6 py-8 transition-[border-color,background-color] duration-styloire ease-styloire hover:border-white/60 hover:bg-white/30"
             >
               <p className="font-sans text-[2.8rem] font-medium leading-[0.96] text-styloire-champagneLight">
-                {request.talent_name}
+                {profile.talent_name}
               </p>
               <p className="mt-6 font-serif text-[3.15rem] leading-none text-styloire-champagneLight">
-                {request.selected_count}
+                {profile.contact_count}
               </p>
               <p className="mt-1 font-sans text-[1.18rem] text-white/76">Contacts</p>
               <div className="mt-3 h-px w-full bg-white/35" />
               <p className="mt-4 font-sans text-[1.08rem] font-medium text-styloire-champagneLight">
-                Open request &rarr;
+                Manage profile &rarr;
               </p>
             </Link>
           ))}
+
+          <Link
+            href="/requests/new"
+            className="flex min-h-[18.8rem] items-center justify-center rounded-[1.9rem] border border-white/45 bg-white/26 p-6 text-center transition-[border-color,background-color] duration-styloire ease-styloire hover:border-white/60 hover:bg-white/30"
+          >
+            <span className="font-sans text-[1.45rem] font-semibold uppercase tracking-[0.11em] text-styloire-champagneLight">
+              + Add new profile
+            </span>
+          </Link>
         </div>
       </div>
     );

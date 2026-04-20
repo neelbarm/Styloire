@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { StyloireAppShell } from "@/components/styloire/app-shell";
 
@@ -10,7 +10,7 @@ const topNav = [
   { href: "/dashboard", label: "My portal" },
   { href: "/faqs", label: "FAQs" },
   { href: "/contact", label: "Contact" },
-  { href: "/settings", label: "Account" }
+  { href: "/dashboard", label: "Account" }
 ];
 
 const portalNav = [
@@ -18,7 +18,7 @@ const portalNav = [
   { href: "/dashboard?view=requests", label: "Existing requests" },
   { href: "/roster", label: "Client profiles" },
   { href: "/templates", label: "Templates" },
-  { href: "/settings", label: "account" }
+  { href: "/dashboard", label: "account" }
 ];
 
 function pillClass(active: boolean) {
@@ -32,7 +32,9 @@ function pillClass(active: boolean) {
 
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const showPortalRow = pathname !== "/dashboard";
+  const search = useSearchParams();
+  const view = search.get("view");
+  const showPortalRow = pathname !== "/dashboard" || view === "requests";
 
   return (
     <StyloireAppShell
