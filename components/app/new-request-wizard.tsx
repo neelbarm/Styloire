@@ -226,22 +226,24 @@ export function NewRequestWizard() {
 
   return (
     <div className="space-y-7">
-      <div className="inline-flex overflow-hidden rounded-[0.58rem] border border-white/16 bg-black/22">
-        {wizardTabs.map(([label, n], index) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => setStep(n)}
-            className={`px-4 py-2 font-sans text-[0.87rem] font-semibold tracking-[-0.005em] transition-colors ${
-              step === n
-                ? "bg-stone-100 text-stone-900"
-                : "bg-transparent text-white/66 hover:text-white/85"
-            } ${index > 0 ? "border-l border-white/14" : ""}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {step !== 2 ? (
+        <div className="inline-flex overflow-hidden rounded-[0.58rem] border border-white/16 bg-black/22">
+          {wizardTabs.map(([label, n], index) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setStep(n)}
+              className={`px-4 py-2 font-sans text-[0.87rem] font-semibold tracking-[-0.005em] transition-colors ${
+                step === n
+                  ? "bg-stone-100 text-stone-900"
+                  : "bg-transparent text-white/66 hover:text-white/85"
+              } ${index > 0 ? "border-l border-white/14" : ""}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {step === 1 ? (
         <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
@@ -313,133 +315,68 @@ export function NewRequestWizard() {
       ) : null}
 
       {step === 2 ? (
-        <StyloirePanel className="overflow-hidden border-white/10 bg-[linear-gradient(180deg,rgba(59,59,57,0.46),rgba(43,43,42,0.46))] p-0">
-          <div className="p-6 md:p-7">
-            <div className="grid gap-3 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => {
-                  if (matchedProfile) {
-                    setRequestType("existing");
-                    setProfileId(matchedProfile.id);
-                    loadProfileContacts(matchedProfile.id);
-                  } else {
-                    loadPreviousContacts();
-                  }
-                }}
-                className={`rounded-[0.6rem] border px-4 py-3 text-left transition-colors ${
-                  requestType === "existing"
-                    ? "border-white/42 bg-white/10"
-                    : "border-white/16 bg-black/10 hover:border-white/28"
-                }`}
-              >
-                <p className="font-sans text-[1.45rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                  Use existing profile
-                </p>
-                <p className="mt-1 font-sans text-[1rem] font-medium text-white/62">
-                  {matchedProfile
-                    ? `${matchedProfile.talent_name} — ${Object.keys(groups).length || 148} saved contacts`
-                    : "Client Name — saved contacts"}
-                </p>
-              </button>
-
-              <label className="cursor-pointer rounded-[0.6rem] border border-white/16 bg-black/10 px-4 py-3 text-left transition-colors hover:border-white/28">
-                <p className="font-sans text-[1.45rem] font-semibold tracking-[-0.01em] text-styloire-champagneLight">
-                  Upload new list
-                </p>
-                <p className="mt-1 font-sans text-[1rem] font-medium text-white/62">
-                  Upload a .csv or .xlsx file
-                </p>
-                <input
-                  type="file"
-                  accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  className="hidden"
-                  onChange={handleFile}
-                  onClick={() => {
-                    setRequestType("new");
-                    setProfileId("");
-                  }}
-                />
-              </label>
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded-[0.6rem] border border-white/14 bg-black/10">
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                <p className="font-sans text-[1.25rem] font-semibold text-styloire-champagneLight">
-                  Select contacts
-                </p>
-                <p className="font-sans text-[1rem] font-semibold text-white/72">
-                  {selectedCount} of {brands.length || 148} selected
-                </p>
-              </div>
-
-              <div className="px-4 py-3">
-                <input
-                  value={contactSearch}
-                  onChange={(e) => setContactSearch(e.target.value)}
-                  placeholder="Search brands..."
-                  className="w-full rounded-[0.5rem] border border-white/10 bg-black/12 px-3 py-2.5 font-sans text-[1rem] text-styloire-champagneLight placeholder:text-white/45"
-                />
-              </div>
-
-              <div className="border-t border-white/10 px-4 py-2.5">
-                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 font-sans text-[0.95rem] font-semibold text-white/50">
-                  <span>Brand Name</span>
-                  <span className="justify-self-end"># of Contacts</span>
-                  <span className="w-8" />
-                </div>
-              </div>
-
-              <ul className="divide-y divide-white/10">
-                {(filteredBrands.length ? filteredBrands : brands).slice(0, 2).map((brand) => (
-                  <li key={brand} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-3.5">
-                    <span className="font-sans text-[1.02rem] text-white/72">{brand || "Brand Name"}</span>
-                    <span className="justify-self-end font-sans text-[0.98rem] text-white/55">
-                      {groups[brand]?.length ?? "# of Contacts"}
-                    </span>
-                    <label className="inline-flex w-8 cursor-pointer justify-end">
-                      <input
-                        type="checkbox"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => toggleBrand(brand)}
-                        className="h-5 w-5 appearance-none rounded-full border border-white/30 bg-white/12 checked:border-emerald-400 checked:bg-emerald-400"
-                      />
-                    </label>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="px-4 py-2.5 font-sans text-[1rem] font-semibold italic text-white/62">
-                + {Math.max(0, (brands.length || 148) - 2)} more contacts
-              </p>
-            </div>
-
-            {parseError ? <p className="mt-3 font-sans text-xs text-red-300">{parseError}</p> : null}
+        <div className="mx-auto w-full max-w-5xl space-y-6 pt-1">
+          <div className="text-center">
+            <h2 className="font-serif text-[clamp(3rem,6.4vw,5.15rem)] font-semibold uppercase leading-[0.92] tracking-[-0.012em] text-styloire-champagneLight">
+              Select contact to include
+            </h2>
+            <p className="mt-2 font-sans text-[1.08rem] font-medium text-white/70">
+              All contacts are selected by default. Toggle off any brands you don&apos;t want to reach out to for this request.
+            </p>
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/12 px-6 py-4 md:px-7">
-            <StyloireButton
-              type="button"
-              variant="outline"
-              onClick={() => setStep(1)}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
-            >
-              Back
-            </StyloireButton>
+          <div className="mx-auto max-w-[55rem]">
+            <input
+              value={contactSearch}
+              onChange={(e) => setContactSearch(e.target.value)}
+              placeholder="Search brand or contact name...."
+              className="w-full rounded-full border border-white/42 bg-white/8 px-6 py-3 text-center font-sans text-[1.06rem] text-styloire-champagneLight placeholder:text-white/52 focus:border-white/55 focus:outline-none"
+            />
+          </div>
+
+          <div className="mx-auto max-w-[50rem] overflow-hidden rounded-[2px] border border-white/34 bg-transparent">
+            <ul className="divide-y divide-white/30">
+              {(filteredBrands.length ? filteredBrands : brands).slice(0, 4).map((brand) => (
+                <li key={brand} className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3.5">
+                  <span className="font-sans text-[1.08rem] font-medium uppercase tracking-[0.02em] text-white/82">
+                    {brand}
+                  </span>
+                  <label className="inline-flex cursor-pointer items-center justify-end">
+                    <input
+                      type="checkbox"
+                      checked={selectedBrands.includes(brand)}
+                      onChange={() => toggleBrand(brand)}
+                      className="peer sr-only"
+                    />
+                    <span className="relative inline-flex h-6 w-12 items-center rounded-full border border-white/45 bg-white/30 transition-colors peer-checked:bg-emerald-500/85">
+                      <span className="h-4 w-4 translate-x-1 rounded-full bg-[rgb(34,34,36)] transition-transform peer-checked:translate-x-6" />
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <p className="px-4 py-3 font-sans text-[1.06rem] font-semibold italic text-white/72">
+              + {Math.max(0, (brands.length || 148) - 4)} more contacts
+            </p>
+          </div>
+
+          <div className="flex justify-center">
             <StyloireButton
               type="button"
               variant="outline"
               disabled={!brands.length || !selectedCount}
               onClick={() => setStep(3)}
-              className="border-white/24 bg-transparent px-5 py-2.5 text-[0.72rem] tracking-[0.05em] text-white/90 hover:bg-white/10"
+              className="border-white/28 bg-transparent px-7 py-2.5 text-[0.72rem] tracking-[0.08em] text-white/90 hover:bg-white/10"
             >
               <span className="inline-flex items-center gap-2">
-                Continue with {selectedCount} contacts
+                Continue
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </StyloireButton>
           </div>
-        </StyloirePanel>
+
+          {parseError ? <p className="mt-2 text-center font-sans text-xs text-red-300">{parseError}</p> : null}
+        </div>
       ) : null}
 
       {step === 3 ? (
