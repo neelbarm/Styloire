@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { StyloireButton } from "@/components/styloire/button";
 import type { ConnectedAccount } from "@/lib/styloire/types";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -357,7 +356,7 @@ export function SettingsManager({
       {/* ── STATUS NOTE ─────────────────────────────────────────────────── */}
       {note ? (
         <div
-          className={`rounded-[0.55rem] border px-4 py-3 font-sans text-[0.8rem] ${
+          className={`flex items-start gap-3 rounded-[0.55rem] border px-4 py-3 font-sans text-[0.8rem] leading-relaxed ${
             note.toLowerCase().includes("error") ||
             note.toLowerCase().includes("fail") ||
             note.toLowerCase().includes("could not") ||
@@ -366,11 +365,11 @@ export function SettingsManager({
               : "border-emerald-400/28 bg-emerald-500/10 text-emerald-300"
           }`}
         >
-          {note}
+          <span className="flex-1">{note}</span>
           <button
             type="button"
             onClick={() => setNote("")}
-            className="ml-3 font-semibold opacity-60 hover:opacity-100"
+            className="shrink-0 font-semibold leading-none opacity-60 hover:opacity-100"
           >
             ×
           </button>
@@ -387,7 +386,7 @@ export function SettingsManager({
           {editingProfile === "name" ? (
             <div>
               <p className={labelCls + " mb-2"}>Name</p>
-              <div className="flex gap-2.5">
+              <div className="flex items-center gap-2.5">
                 <input
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
@@ -421,7 +420,7 @@ export function SettingsManager({
           {editingProfile === "email" ? (
             <div>
               <p className={labelCls + " mb-2"}>Email</p>
-              <div className="flex gap-2.5">
+              <div className="flex items-center gap-2.5">
                 <input
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
@@ -438,7 +437,7 @@ export function SettingsManager({
                 </button>
               </div>
               <p className="mt-2 font-sans text-[0.72rem] text-white/38">
-                Supabase sends a confirmation link to both your current and new address. Your email changes only after both are confirmed.
+                A confirmation link is sent to both addresses. Your email only changes after both are clicked.
               </p>
             </div>
           ) : (
@@ -637,7 +636,7 @@ export function SettingsManager({
                     onClick={() => testConnection(account.id)}
                     className={smActionBtn}
                   >
-                    {busy ? "…" : "Test send"}
+                    Test send
                   </button>
                   <button
                     type="button"
@@ -696,7 +695,7 @@ export function SettingsManager({
 
         <div className={rowCls}>
           <p className={labelCls + " mb-2"}>Add an address</p>
-          <div className="flex gap-2.5">
+          <div className="flex items-center gap-2.5">
             <input
               value={ccInput}
               onChange={(e) => setCcInput(e.target.value)}
@@ -721,7 +720,7 @@ export function SettingsManager({
           </div>
         </div>
 
-        <div className="px-5 py-4">
+        <div className={rowCls}>
           <button type="button" disabled={busy} onClick={saveCc} className={smSolidBtn}>
             {busy ? "Saving…" : "Save CC list"}
           </button>
@@ -754,7 +753,7 @@ export function SettingsManager({
 
         {/* Cancel confirmation inline */}
         {cancelConfirm ? (
-          <div className={rowCls + " border-red-400/14 bg-red-500/[0.04]"}>
+          <div className="border-t border-red-400/18 bg-red-500/[0.04] px-5 py-4">
             <p className="mb-3 font-sans text-[0.82rem] text-white/60">
               This will open the Stripe billing portal where you can confirm cancellation. Your
               access continues until the end of your current billing period.
