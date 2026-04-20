@@ -15,7 +15,7 @@ const topNav = [
 
 const portalNav = [
   { href: "/requests/new", label: "Send a new request" },
-  { href: "/roster", label: "Existing requests" },
+  { href: "/dashboard?view=requests", label: "Existing requests" },
   { href: "/roster", label: "Client profiles" },
   { href: "/templates", label: "Templates" },
   { href: "/settings", label: "account" }
