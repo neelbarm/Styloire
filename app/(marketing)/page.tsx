@@ -11,13 +11,13 @@ import {
 } from "@/components/styloire";
 
 const heroImage =
-  "url('https://images.unsplash.com/photo-1539109140684-da3eeaafa257?auto=format&fit=crop&w=2400&q=82')";
+  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
 
 const howImage =
-  "url('https://images.unsplash.com/photo-1539109140684-da3eeaafa257?auto=format&fit=crop&w=2400&q=82')";
+  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
 
 const whoImage =
-  "url('https://images.unsplash.com/photo-1539109140684-da3eeaafa257?auto=format&fit=crop&w=2400&q=82')";
+  "url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=2400&q=82')";
 
 const threeSteps = [
   {
@@ -30,7 +30,7 @@ const threeSteps = [
   },
   {
     title: "And hit send",
-    body: "Every email goes out on time and in seconds. Follow ups scheduled automatically for anyone who doesn't respond."
+    body: "Every email goes out on time and in seconds. Track sent, opened, and responded status for each request."
   }
 ];
 
@@ -38,7 +38,6 @@ const features = [
   "Auto-generated subject lines in industry format",
   "Personalized emails per brand — no copy and paste",
   "Pre-written pull request templates",
-  "Follow-up scheduling for non-responses",
   "Dashboard to track opens, responses, and status per project"
 ];
 

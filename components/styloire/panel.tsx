@@ -7,7 +7,7 @@ export type StyloirePanelProps = HTMLAttributes<HTMLDivElement> & {
 export function StyloirePanel({ className = "", children, ...rest }: StyloirePanelProps) {
   return (
     <div
-      className={`rounded-[2px] border border-styloire-lineSubtle bg-styloire-canvasDeep/55 p-7 shadow-[0_16px_44px_rgba(0,0,0,0.32)] ring-1 ring-styloire-champagne/[0.06] backdrop-blur-[2px] md:p-9 ${className}`.trim()}
+      className={`rounded-[2px] border border-styloire-lineSubtle bg-styloire-canvasDeep/55 p-6 shadow-[0_16px_44px_rgba(0,0,0,0.32)] ring-1 ring-styloire-champagne/[0.06] backdrop-blur-[2px] md:p-7 ${className}`.trim()}
       {...rest}
     >
       {children}

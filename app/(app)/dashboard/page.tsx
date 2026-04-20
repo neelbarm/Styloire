@@ -41,26 +41,26 @@ export default async function DashboardPage({
 
   return (
     <>
-      <div className="mb-12 text-center">
+      <div className="mb-10 text-center">
         <StyloireAppPageHeader
           title="My portal"
           description="Your request workspace."
           className="mx-auto text-center"
         />
-        <div className="mx-auto mt-2 flex max-w-md flex-col gap-4">
-          <StyloireButton href="/requests/new" variant="outline" className="rounded-full bg-white/10 text-white">
+        <div className="mx-auto mt-3 flex max-w-sm flex-col items-center gap-3">
+          <StyloireButton href="/requests/new" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Send a new request
           </StyloireButton>
-          <StyloireButton href="#requests" variant="outline" className="rounded-full bg-white/10 text-white">
+          <StyloireButton href="#requests" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Existing requests
           </StyloireButton>
-          <StyloireButton href="/roster" variant="outline" className="rounded-full bg-white/10 text-white">
+          <StyloireButton href="/roster" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Client profiles
           </StyloireButton>
-          <StyloireButton href="/templates" variant="outline" className="rounded-full bg-white/10 text-white">
+          <StyloireButton href="/templates" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Templates
           </StyloireButton>
-          <StyloireButton href="/settings" variant="outline" className="rounded-full bg-white/10 text-white">
+          <StyloireButton href="/settings" variant="outline" className="min-w-[220px] bg-white/10 text-white">
             Account
           </StyloireButton>
         </div>
@@ -123,11 +123,6 @@ export default async function DashboardPage({
                     >
                       {request.status}
                     </span>
-                    {request.followup_date ? (
-                      <p className="font-sans text-xs text-styloire-inkMuted">
-                        Follow up {request.followup_date}
-                      </p>
-                    ) : null}
                   </div>
                 </div>
               </StyloirePanel>

@@ -43,11 +43,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "Can I save templates?",
-        a: "Yes. Styloire ships with two defaults (standard pull + follow up). You can create, edit, and delete your own templates with merge fields like {{brand_name}} and {{contact_name}}."
-      },
-      {
-        q: "How do follow-ups work?",
-        a: "Optionally schedule a follow-up date when you create a Request. A daily job sends follow-ups only to contacts who have not been marked as responded."
+        a: "Yes. Styloire ships with a default pull template, and you can create, edit, and delete your own templates with merge fields like {{brand_name}} and {{contact_name}}."
       },
       {
         q: "What are client profiles?",

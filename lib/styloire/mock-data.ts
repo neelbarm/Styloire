@@ -9,7 +9,6 @@ import type {
   ConnectedAccount
 } from "./types";
 import {
-  DEFAULT_TEMPLATE_FOLLOW_UP,
   DEFAULT_TEMPLATE_STANDARD_PULL
 } from "./default-templates";
 
@@ -119,8 +118,8 @@ export const MOCK_REQUESTS: RequestSummary[] = [
     email_subject_template: "{talent} / {event} / {brand_name}",
     email_body: bodyStandard,
     status: "active",
-    followup_date: "2026-04-18",
-    followup_body: DEFAULT_TEMPLATE_FOLLOW_UP.body,
+    followup_date: null,
+    followup_body: null,
     followup_sent: false,
     sent_at: "2026-04-09T15:30:00.000Z",
     created_at: now,
@@ -257,14 +256,6 @@ export const MOCK_TEMPLATES: Template[] = [
     user_id: null,
     name: DEFAULT_TEMPLATE_STANDARD_PULL.name,
     body: DEFAULT_TEMPLATE_STANDARD_PULL.body,
-    is_default: true,
-    created_at: now
-  },
-  {
-    id: "tpl_default_follow",
-    user_id: null,
-    name: DEFAULT_TEMPLATE_FOLLOW_UP.name,
-    body: DEFAULT_TEMPLATE_FOLLOW_UP.body,
     is_default: true,
     created_at: now
   },

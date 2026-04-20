@@ -45,12 +45,7 @@ export default function HowItWorksPage() {
             {
               index: "04",
               title: "Watch it go: Hit send",
-              body: "Every email lands personalized, professional, and on time. Styloire handles the rest — tracking opens, responses, and flagging who still needs a follow up."
-            },
-            {
-              index: "05",
-              title: "Stay on top: Schedule your follow up",
-              body: "Pick a date. Styloire sends a follow up automatically to every brand that has not responded."
+              body: "Every email lands personalized, professional, and on time. Styloire tracks sent, opened, and responded status so your team can stay aligned."
             }
           ]}
         />

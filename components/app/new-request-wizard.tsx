@@ -8,15 +8,9 @@ import { getProfileWithContacts, listProfiles } from "@/lib/styloire/mock-data";
 import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
 import {
   type GroupedContacts,
-  parseBrandContactsCsvDetailed,
   parseBrandContactsFileDetailed
 } from "@/lib/styloire/parse-contacts";
 import { renderTemplate } from "@/lib/styloire/template-render";
-
-const demoCsv = `brand_name,email,first_name
-PRADA,sally@prada.com,Sally
-PRADA,katie@prada.com,Katie
-CHANEL,sophie@chanel.com,Sophie`;
 
 export function NewRequestWizard() {
   const router = useRouter();
@@ -28,7 +22,6 @@ export function NewRequestWizard() {
   const [groups, setGroups] = useState<GroupedContacts>({});
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [contactSearch, setContactSearch] = useState("");
-  const [followup, setFollowup] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>(DEFAULT_TEMPLATE_STANDARD_PULL.body);
   const [submitState, setSubmitState] = useState<"idle" | "saving" | "error">("idle");
@@ -60,11 +53,25 @@ export function NewRequestWizard() {
       ? `${talent} / ${eventName} / ${previewBrand}`
       : "{{talent}} / {{event}} / {{brand_name}}";
 
-  const loadCsv = (text: string) => {
-    const parsed = parseBrandContactsCsvDetailed(text);
-    setGroups(parsed.groups);
-    setSelectedBrands(Object.keys(parsed.groups).sort());
-    setParseError(parsed.errors[0] ?? "");
+  const loadPreviousContacts = () => {
+    const target = talent.trim().toLowerCase();
+    if (!target) {
+      setParseError("Enter a talent/client name first, then load previous contacts.");
+      return;
+    }
+    const matched =
+      profiles.find((profile) => profile.talent_name.trim().toLowerCase() === target) ??
+      profiles.find((profile) =>
+        profile.talent_name.trim().toLowerCase().includes(target),
+      );
+    if (!matched) {
+      setParseError(`No saved profile found for "${talent.trim()}".`);
+      return;
+    }
+    setRequestType("existing");
+    setProfileId(matched.id);
+    loadProfileContacts(matched.id);
+    setParseError("");
   };
 
   const loadProfileContacts = (nextProfileId: string) => {
@@ -128,8 +135,7 @@ export function NewRequestWizard() {
         profileId: profileId || undefined,
         contacts: contactsPayload,
         selectedBrands,
-        emailBody,
-        followupDate: followup || null
+        emailBody
       })
     });
     const data = (await response.json().catch(() => ({}))) as {
@@ -188,23 +194,22 @@ export function NewRequestWizard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap gap-1 rounded-sm border border-styloire-lineSubtle bg-black/30 p-1">
+      <div className="flex flex-wrap gap-1 rounded-full border border-styloire-lineSubtle bg-black/26 p-1">
         {(
           [
             ["1 Details", 1],
             ["2 Contacts", 2],
             ["3 Email", 3],
-            ["4 Review", 4],
-            ["5 Send", 4]
+            ["4 Send", 4]
           ] as const
         ).map(([label, n]) => (
           <button
             key={label}
             type="button"
             onClick={() => setStep(n)}
-            className={`rounded-sm border px-4 py-1.5 font-sans text-[0.65rem] font-semibold tracking-[0.06em] transition-colors ${
+            className={`rounded-full border px-4 py-1.5 font-sans text-[0.63rem] font-semibold tracking-[0.08em] transition-colors ${
               step === n
-                ? "border-stone-200 bg-stone-100 text-stone-900"
+                ? "border-white/65 bg-white/85 text-stone-900"
                 : "border-transparent bg-transparent text-styloire-inkMuted hover:border-styloire-line"
             }`}
           >
@@ -330,8 +335,8 @@ export function NewRequestWizard() {
                   onChange={handleFile}
                 />
               </label>
-              <StyloireButton type="button" variant="outline" onClick={() => loadCsv(demoCsv)}>
-                Load sample CSV
+              <StyloireButton type="button" variant="outline" onClick={loadPreviousContacts}>
+                Load previous contacts
               </StyloireButton>
             </div>
           ) : (
@@ -447,7 +452,7 @@ export function NewRequestWizard() {
               Back
             </StyloireButton>
             <StyloireButton type="button" variant="solid" onClick={() => setStep(4)}>
-              Scheduling
+              Continue
             </StyloireButton>
           </div>
         </StyloirePanel>
@@ -458,19 +463,8 @@ export function NewRequestWizard() {
           <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
           <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Optional follow-up date. This creates and sends the request immediately.
+            Review and send the request immediately.
           </p>
-          <label className="mt-8 block max-w-xs space-y-2">
-            <span className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
-              Follow-up date
-            </span>
-            <input
-              type="date"
-              value={followup}
-              onChange={(e) => setFollowup(e.target.value)}
-              className="w-full rounded-sm border border-styloire-lineSubtle bg-black/25 px-4 py-2.5 font-sans text-sm text-styloire-ink"
-            />
-          </label>
           <div className="mt-10 flex flex-wrap gap-4">
             <StyloireButton type="button" variant="outline" onClick={() => setStep(3)}>
               Back

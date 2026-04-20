@@ -30,11 +30,11 @@ export function StyloireAppShell({
       ) : null}
       <div className="flex min-h-screen flex-1 flex-col">
         {topBar ? (
-          <div className="border-b border-styloire-lineSubtle bg-styloire-canvas/95 px-6 py-5 backdrop-blur md:px-10">
+          <div className="border-b border-styloire-lineSubtle bg-styloire-canvas/96 px-6 py-5 backdrop-blur md:px-10">
             {topBar}
           </div>
         ) : null}
-        <main className="flex-1 px-6 py-12 md:px-10 md:py-16">{children}</main>
+        <main className="flex-1 px-6 py-10 md:px-10 md:py-12">{children}</main>
       </div>
     </div>
   );
@@ -52,8 +52,8 @@ export function StyloireAppPageHeader({
   ...rest
 }: StyloireAppPageHeaderProps) {
   return (
-    <div className={`mb-14 max-w-2xl space-y-5 ${className}`.trim()} {...rest}>
-      <h1 className="font-serif text-[clamp(2rem,3.6vw,2.9rem)] font-normal tracking-wide text-styloire-champagne">
+    <div className={`mb-10 max-w-2xl space-y-4 ${className}`.trim()} {...rest}>
+      <h1 className="font-serif text-[clamp(2rem,3.6vw,2.9rem)] font-normal tracking-wide text-styloire-champagneLight">
         {title}
       </h1>
       {description ? (

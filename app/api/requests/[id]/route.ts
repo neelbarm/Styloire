@@ -4,7 +4,6 @@ import { getAuthedServiceRoleClient } from "@/lib/supabase/server";
 
 type PatchPayload = {
   status?: "draft" | "active" | "archived";
-  followupDate?: string | null;
 };
 
 export async function PATCH(
@@ -24,7 +23,6 @@ export async function PATCH(
 
   const patch: Record<string, unknown> = {};
   if (body.status) patch.status = body.status;
-  if (Object.hasOwn(body, "followupDate")) patch.followup_date = body.followupDate;
 
   const { error } = await supabase
     .from("requests")

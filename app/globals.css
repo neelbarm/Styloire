@@ -4,18 +4,18 @@
 
 :root {
   color-scheme: dark;
-  --styloire-canvas: #0c0b09;
-  --styloire-canvas-deep: #060504;
-  --styloire-ink: #f4f1eb;
-  --styloire-ink-soft: #d2ccc0;
-  --styloire-ink-muted: #918476;
-  --styloire-line: rgba(212, 202, 186, 0.28);
-  --styloire-overlay: rgba(8, 6, 4, 0.58);
-  --styloire-overlay-heavy: rgba(5, 4, 3, 0.76);
-  --styloire-champagne: #c9aa6e;
-  --styloire-champagne-light: #e4d4b0;
-  --styloire-champagne-muted: #9e8a5e;
-  --styloire-champagne-fg: #1a1814;
+  --styloire-canvas: #1f2127;
+  --styloire-canvas-deep: #14161b;
+  --styloire-ink: #ece8dc;
+  --styloire-ink-soft: #c3c0b7;
+  --styloire-ink-muted: #8f9197;
+  --styloire-line: rgba(173, 177, 190, 0.34);
+  --styloire-overlay: rgba(21, 23, 29, 0.6);
+  --styloire-overlay-heavy: rgba(14, 16, 21, 0.78);
+  --styloire-champagne: #b4a684;
+  --styloire-champagne-light: #dfd6c1;
+  --styloire-champagne-muted: #9a9588;
+  --styloire-champagne-fg: #1f1f21;
 }
 
 @layer base {
@@ -29,8 +29,8 @@
   }
 
   ::selection {
-    background-color: rgba(201, 170, 110, 0.42);
-    color: rgb(244, 241, 235);
+    background-color: rgba(180, 166, 132, 0.36);
+    color: rgb(236, 232, 220);
   }
 }
 

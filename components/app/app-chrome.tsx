@@ -23,10 +23,10 @@ const portalNav = [
 
 function pillClass(active: boolean) {
   return [
-    "rounded-full border px-6 py-2 font-sans text-[0.65rem] font-semibold uppercase tracking-[0.12em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
+    "rounded-full border px-6 py-2 font-sans text-[0.63rem] font-semibold uppercase tracking-[0.13em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
     active
-      ? "border-white/65 bg-white/22 text-white"
-      : "border-white/45 bg-white/10 text-white/90 hover:border-white/70 hover:bg-white/20"
+      ? "border-white/70 bg-white/22 text-white"
+      : "border-white/42 bg-white/9 text-white/90 hover:border-white/65 hover:bg-white/17"
   ].join(" ");
 }
 
@@ -42,8 +42,8 @@ export function AppChrome({ children }: { children: ReactNode }) {
     <StyloireAppShell
       sidebar={null}
       topBar={
-        <div className="space-y-8">
-          <div className="flex flex-wrap items-center justify-between gap-5 border-b border-white/35 pb-5">
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-5 border-b border-white/30 pb-5">
             <Link
               href="/"
               className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.3em] text-white/90"

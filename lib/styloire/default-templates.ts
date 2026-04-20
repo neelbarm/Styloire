@@ -12,18 +12,6 @@ We would love to request a pull from {{brand_name}} for consideration. Please le
 Thank you so much for your time.`
 } as const;
 
-export const DEFAULT_TEMPLATE_FOLLOW_UP = {
-  name: "Follow Up",
-  subjectHint: "Following Up — {{talent}} / {{event}} / {{brand_name}}",
-  body: `Hi {{contact_name}},
-
-I wanted to follow up on my previous email regarding a pull request for {{talent}} for {{event}}.
-
-Please let me know if you are able to accommodate. We would love to include {{brand_name}}.
-
-Thank you!`
-} as const;
-
 export const DYNAMIC_FIELD_HELP = [
   "{{brand_name}}",
   "{{contact_name}}",

@@ -16,7 +16,6 @@ type CreateRequestPayload = {
   contacts: ContactInput[];
   selectedBrands: string[];
   emailBody: string;
-  followupDate?: string | null;
 };
 
 function subjectTemplate(): string {
@@ -106,7 +105,6 @@ export async function POST(request: Request) {
       email_subject_template: subjectTemplate(),
       email_body: body.emailBody,
       status: "draft",
-      followup_date: body.followupDate || null,
       sent_at: null
     })
     .select("id")

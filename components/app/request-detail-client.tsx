@@ -28,7 +28,6 @@ export function RequestDetailClient({ request, rows }: Props) {
   const [requestState, setRequestState] = useState<RequestSummary>(request);
   const [contactRows, setContactRows] = useState<RequestContactDetail[]>(rows);
   const [busy, setBusy] = useState(false);
-  const [followupDate, setFollowupDate] = useState(request.followup_date ?? "");
   const [note, setNote] = useState("");
 
   const stats = useMemo(() => {
@@ -104,40 +103,12 @@ export function RequestDetailClient({ request, rows }: Props) {
     }
   }
 
-  async function saveFollowupDate(nextDate: string | null) {
-    setBusy(true);
-    const response = await fetch(`/api/requests/${requestState.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ followupDate: nextDate })
-    });
-    setBusy(false);
-    if (!response.ok) {
-      setNote("Could not update follow-up date.");
-      return;
-    }
-    setRequestState((prev) => ({ ...prev, followup_date: nextDate }));
-    setNote(nextDate ? "Follow-up date updated." : "Follow-up date canceled.");
-  }
-
-  async function sendFollowup() {
-    setBusy(true);
-    const response = await fetch(`/api/requests/${requestState.id}/follow-up`, { method: "POST" });
-    const data = (await response.json().catch(() => ({}))) as { sentCount?: number };
-    setBusy(false);
-    if (!response.ok) {
-      setNote("Could not send follow-ups.");
-      return;
-    }
-    setNote(`Follow-up processed for ${data.sentCount ?? 0} contacts.`);
-  }
-
   return (
     <>
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <StyloireAppPageHeader
           title={`${requestState.talent_name} / ${requestState.event_name}`}
-          description="Request performance, contact status, and follow-up controls."
+          description="Request performance and contact status."
         />
         <div className="flex flex-wrap gap-3">
           {requestState.status === "draft" && hasPendingSends ? (
@@ -152,9 +123,6 @@ export function RequestDetailClient({ request, rows }: Props) {
           ) : null}
           <StyloireButton type="button" variant="outline" disabled={busy} onClick={archiveRequest}>
             Mark archived
-          </StyloireButton>
-          <StyloireButton type="button" variant="solid" disabled={busy} onClick={sendFollowup}>
-            Send follow up
           </StyloireButton>
         </div>
       </div>
@@ -179,38 +147,6 @@ export function RequestDetailClient({ request, rows }: Props) {
           ))}
         </div>
 
-        <div className="mt-8 flex flex-wrap items-end gap-3">
-          <label className="space-y-2">
-            <span className="font-sans text-xs uppercase tracking-styloireWide text-styloire-inkMuted">
-              Follow-up date
-            </span>
-            <input
-              type="date"
-              value={followupDate}
-              onChange={(event) => setFollowupDate(event.target.value)}
-              className="border border-styloire-lineSubtle bg-transparent px-3 py-2 font-sans text-sm text-styloire-ink focus:border-styloire-champagne/60 focus:outline-none"
-            />
-          </label>
-          <StyloireButton
-            type="button"
-            variant="outline"
-            disabled={busy}
-            onClick={() => saveFollowupDate(followupDate || null)}
-          >
-            Save date
-          </StyloireButton>
-          <StyloireButton
-            type="button"
-            variant="outline"
-            disabled={busy || !requestState.followup_date}
-            onClick={() => {
-              setFollowupDate("");
-              void saveFollowupDate(null);
-            }}
-          >
-            Cancel date
-          </StyloireButton>
-        </div>
         {note ? <p className="mt-4 font-sans text-xs text-styloire-inkSoft">{note}</p> : null}
       </StyloirePanel>
 
