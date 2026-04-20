@@ -10,19 +10,19 @@ const labelCls =
   "font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/48";
 // Full-size input for the add-contact form and toolbar
 const inputCls =
-  "w-full rounded-[0.55rem] border border-white/16 bg-black/12 px-3 py-2 font-sans text-[0.85rem] text-styloire-champagneLight placeholder:text-white/32 focus:border-white/30 focus:outline-none transition-colors duration-styloire";
+  "w-full rounded-full border border-white/28 bg-white/10 px-5 py-3 font-sans text-[0.95rem] text-styloire-champagneLight placeholder:text-white/42 focus:border-white/42 focus:outline-none transition-colors duration-styloire";
 // Compact input for inside table edit rows — keeps row height stable
 const cellInputCls =
-  "w-full rounded-[0.4rem] border border-white/16 bg-black/12 px-2.5 py-1.5 font-sans text-[0.82rem] text-styloire-champagneLight placeholder:text-white/32 focus:border-white/30 focus:outline-none transition-colors duration-styloire";
+  "w-full rounded-[0.35rem] border border-white/18 bg-black/10 px-2.5 py-2 font-sans text-[0.82rem] text-styloire-champagneLight placeholder:text-white/32 focus:border-white/30 focus:outline-none transition-colors duration-styloire";
 const thCls =
-  "px-4 py-3 text-left font-sans text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-white/42";
-const tdCls = "px-3 py-2.5 font-sans text-[0.85rem] text-white/78 align-middle";
+  "px-5 py-4 text-left font-sans text-[0.8rem] font-medium text-white/78";
+const tdCls = "px-5 py-4 font-sans text-[0.92rem] text-white/78 align-middle";
 const smBtn =
-  "rounded-full border border-white/20 bg-white/8 px-3 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white/70 transition-colors hover:border-white/36 hover:bg-white/14 hover:text-white/92 disabled:opacity-40";
+  "rounded-full border border-white/28 bg-white/16 px-4 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white/78 transition-colors hover:border-white/40 hover:bg-white/20 hover:text-white disabled:opacity-40";
 const dangerBtn =
-  "rounded-full border border-white/14 bg-transparent px-3 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white/44 transition-colors hover:border-red-400/28 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40";
+  "rounded-full border border-white/20 bg-transparent px-4 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white/52 transition-colors hover:border-red-400/28 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40";
 const solidBtn =
-  "rounded-full border border-styloire-champagne/40 bg-styloire-champagne/90 px-3 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-styloire-champagneFg transition-colors hover:bg-styloire-champagneLight disabled:opacity-40";
+  "rounded-full border border-white/32 bg-white/20 px-4 py-1.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white transition-colors hover:bg-white/28 disabled:opacity-40";
 
 type EditForm = { brand_name: string; contact_name: string; email: string };
 
@@ -301,7 +301,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
       ) : null}
 
       {/* ── TOOLBAR: Search + Upload ──────────────────────────────────── */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -326,7 +326,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
       </div>
 
       {/* ── CONTACTS TABLE ───────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-[0.55rem] border border-white/12 bg-black/8">
+      <div className="overflow-hidden rounded-[0.15rem] border border-white/24 bg-transparent">
         <div className="overflow-x-auto">
           {/* table-fixed + explicit col widths prevent column shifts on edit/delete */}
           <table className="w-full min-w-[560px] table-fixed text-left">
@@ -337,14 +337,14 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
               <col className="w-[18%]" />
             </colgroup>
             <thead>
-              <tr className="border-b border-white/10 bg-black/12">
+              <tr className="border-b border-white/18 bg-white/[0.02]">
                 <th className={thCls}>Brand</th>
                 <th className={thCls}>PR Contact</th>
                 <th className={thCls}>Email</th>
                 <th className={thCls} />
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/8">
+            <tbody className="divide-y divide-white/14">
               {filtered.map((c) => {
                 const isEditing = editingId === c.id;
                 const isConfirming = confirmDeleteId === c.id;
@@ -441,7 +441,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                       isDeleting ? "pointer-events-none opacity-40" : ""
                     }`}
                   >
-                    <td className={tdCls + " font-medium uppercase tracking-[0.03em] truncate"}>
+                      <td className={tdCls + " font-medium uppercase tracking-[0.03em] truncate"}>
                       {c.brand_name}
                     </td>
                     <td className={tdCls + " truncate text-white/55"}>
@@ -492,9 +492,8 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
 
       {/* ── ADD CONTACT FORM ─────────────────────────────────────────── */}
       <div>
-        <p className={labelCls + " mb-2"}>Add a contact</p>
         {/* 2-col on mobile so inputs pair up; 3-col + auto button on sm+ */}
-        <div className="grid grid-cols-2 items-center gap-2 sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-2.5">
+        <div className="grid grid-cols-2 items-center gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:gap-3">
           <input
             value={newBrand}
             onChange={(e) => setNewBrand(e.target.value)}
@@ -504,7 +503,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           <input
             value={newContact}
             onChange={(e) => setNewContact(e.target.value)}
-            placeholder="PR Contact"
+            placeholder="PR Contact (Optional)"
             className={inputCls}
           />
           <input

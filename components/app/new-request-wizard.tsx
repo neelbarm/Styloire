@@ -14,17 +14,17 @@ import { renderTemplate } from "@/lib/styloire/template-render";
 
 // ─── Shared style tokens ──────────────────────────────────────────────────────
 const labelCls =
-  "font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/55";
+  "font-sans text-[0.82rem] font-medium text-white/78";
 const inputCls =
-  "w-full rounded-[0.55rem] border border-white/16 bg-black/12 px-3.5 py-2.5 font-sans text-[0.92rem] text-styloire-champagneLight placeholder:text-white/32 focus:border-white/30 focus:outline-none transition-colors duration-styloire";
+  "w-full rounded-[0.35rem] border border-white/12 bg-black/10 px-3.5 py-3 font-sans text-[0.95rem] text-styloire-champagneLight placeholder:text-white/30 focus:border-white/28 focus:outline-none transition-colors duration-styloire";
 const panelGrad =
-  "overflow-hidden rounded-[0.55rem] border border-white/12 bg-[linear-gradient(160deg,rgba(55,53,49,0.52),rgba(38,37,35,0.54))]";
+  "overflow-hidden rounded-[0.2rem] border border-white/12 bg-[#323230]";
 const footerCls =
   "flex items-center justify-between border-t border-white/10 px-6 py-4 md:px-7";
 const ghostBtn =
-  "border-white/22 bg-transparent px-5 py-2 text-[0.65rem] tracking-[0.08em] text-white/75 hover:bg-white/8";
+  "border-white/26 bg-transparent px-5 py-2 text-[0.78rem] tracking-[0.01em] text-white/84 hover:bg-white/8";
 const filledBtn =
-  "border-white/32 bg-white/10 px-6 py-2 text-[0.65rem] tracking-[0.08em] text-white/92 hover:bg-white/16";
+  "border-white/30 bg-white/10 px-6 py-2 text-[0.82rem] tracking-[0.01em] text-white/92 hover:bg-white/16";
 
 type Props = {
   initialProfiles: ClientProfileSummary[];
@@ -286,21 +286,21 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     <div className="space-y-6">
 
       {/* ── STEP TAB BAR ── always visible ─────────────────────────────── */}
-      <div className="inline-flex overflow-hidden rounded-[0.6rem] border border-white/14 bg-black/20">
+      <div className="inline-flex overflow-hidden rounded-[0.2rem] border border-white/12 bg-black/10">
         {wizardTabs.map(({ label, n }, i) => (
           <button
             key={label}
             type="button"
             onClick={() => setStep(n)}
             className={[
-              "px-4 py-2 font-sans text-[0.78rem] font-semibold tracking-[0.01em] transition-colors duration-styloire",
+              "px-4 py-2 font-sans text-[0.82rem] font-medium tracking-[0.01em] transition-colors duration-styloire",
               i > 0 ? "border-l border-white/12" : "",
               step === n
-                ? "bg-styloire-champagneLight/90 text-styloire-champagneFg"
-                : "bg-transparent text-white/54 hover:text-white/80"
+                ? "bg-white text-[#2b2a28]"
+                : "bg-transparent text-white/64 hover:text-white/80"
             ].join(" ")}
           >
-            {n}&nbsp;&nbsp;{label}
+            {n} {label}
           </button>
         ))}
       </div>
@@ -333,7 +333,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             </div>
 
             {/* Profile status hint */}
-            <p className="font-sans text-[0.8rem] font-medium text-white/50">
+            <p className="font-sans text-[0.84rem] font-medium text-white/50">
               {matchedProfile
                 ? `Existing profile found for ${matchedProfile.talent_name} — saved contacts load automatically in step 2.`
                 : "No saved roster profile found yet — you can upload a contact file in step 2."}
@@ -342,17 +342,17 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             {/* Subject line preview */}
             <div className="space-y-2">
               <span className={labelCls}>Subject line preview</span>
-              <div className="rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
+              <div className="rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
                 <p className="font-sans text-[0.88rem] text-white/70">{subjectPreview}</p>
               </div>
-              <p className="font-sans text-[0.72rem] text-white/42">
+              <p className="font-sans text-[0.8rem] text-white/42">
                 Auto-generated per brand. Updates live as you type above.
               </p>
             </div>
           </div>
 
           <div className={footerCls}>
-            <p className={labelCls}>Step 1 of 5</p>
+            <p className="font-sans text-[0.95rem] font-medium text-white/72">Step 1 of 5</p>
             <StyloireButton
               type="button"
               variant="outline"
@@ -383,14 +383,14 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 {/* Saved profile card */}
                 <button
                   type="button"
                   onClick={loadPreviousContacts}
                   disabled={!matchedProfile}
                   className={[
-                    "rounded-[0.9rem] border p-5 text-left transition-[border-color,background-color] duration-styloire",
+                    "rounded-[0.45rem] border p-5 text-left transition-[border-color,background-color] duration-styloire",
                     matchedProfile
                       ? "cursor-pointer border-white/38 bg-white/8 hover:border-white/54 hover:bg-white/12"
                       : "cursor-not-allowed border-white/14 bg-white/4 opacity-50"
@@ -412,7 +412,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 </button>
 
                 {/* Upload new file card */}
-                <label className="cursor-pointer rounded-[0.9rem] border border-white/38 bg-white/8 p-5 transition-[border-color,background-color] duration-styloire hover:border-white/54 hover:bg-white/12">
+                <label className="cursor-pointer rounded-[0.45rem] border border-white/38 bg-white/8 p-5 transition-[border-color,background-color] duration-styloire hover:border-white/54 hover:bg-white/12">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -431,20 +431,20 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                     Columns: Brand Name, Email Address, PR Contact Name (optional)
                   </p>
                 </label>
-              </div>
-
-              {/* Template download */}
-              <p className="font-sans text-[0.76rem] text-white/42">
-                Need a template?{" "}
                 <button
                   type="button"
                   onClick={downloadTemplate}
-                  className="text-styloire-champagneMuted underline-offset-3 transition-colors hover:text-styloire-champagneLight"
+                  className="rounded-[0.45rem] border border-white/38 bg-white/8 p-5 text-left transition-[border-color,background-color] duration-styloire hover:border-white/54 hover:bg-white/12"
                 >
-                  Download xlsx template
-                </button>{" "}
-                — fill in your contacts and upload above.
-              </p>
+                  <p className={labelCls}>Need a brand contact template?</p>
+                  <p className="mt-2 font-sans text-[1.05rem] font-semibold text-styloire-champagneLight">
+                    Download our xlsx sheet
+                  </p>
+                  <p className="mt-1 font-sans text-[0.82rem] text-white/55">
+                    Fill in your contacts and upload the file here.
+                  </p>
+                </button>
+              </div>
 
               {parseError ? (
                 <p className="font-sans text-[0.78rem] text-red-300">{parseError}</p>
@@ -452,15 +452,15 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             </div>
           ) : (
             /* Loaded state — show toggle list */
-            <div className="space-y-5">
+            <StyloirePanel className={panelGrad}>
+              <div className="space-y-5 p-6 md:p-7">
               <div className="flex items-end justify-between">
                 <div>
                   <h2 className="font-sans text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-white/55">
-                    Contacts
+                    Select contacts
                   </h2>
                   <p className="mt-1 font-sans text-[0.85rem] text-white/50">
-                    {selectedCount} of {brands.length} contacts selected. Toggle off any brands to
-                    exclude from this request.
+                    {selectedCount} of {brands.length} selected
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -491,23 +491,26 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               />
 
               {/* Toggle list */}
-              <div className="overflow-hidden rounded-[0.55rem] border border-white/16 bg-transparent">
+              <div className="overflow-hidden rounded-[0.2rem] border border-white/12 bg-transparent">
                 <ul className="divide-y divide-white/10">
+                  <li className="grid grid-cols-[1.2fr_0.8fr_auto] gap-3 border-b border-white/10 px-5 py-3 font-sans text-[0.82rem] font-medium text-white/58">
+                    <span>Brand Name</span>
+                    <span># of Contacts</span>
+                    <span />
+                  </li>
                   {filteredBrands.map((brand) => (
                     <li
                       key={brand}
-                      className="grid grid-cols-[1fr_auto] items-center gap-3 px-5 py-3"
+                      className="grid grid-cols-[1.2fr_0.8fr_auto] items-center gap-3 px-5 py-3"
                     >
                       <div>
-                        <p className="font-sans text-[0.9rem] font-medium uppercase tracking-[0.04em] text-white/82">
+                        <p className="font-sans text-[0.9rem] font-medium text-white/82">
                           {brand}
                         </p>
-                        {groups[brand]?.[0]?.email ? (
-                          <p className="font-sans text-[0.74rem] text-white/42">
-                            {groups[brand][0].email}
-                          </p>
-                        ) : null}
                       </div>
+                      <p className="font-sans text-[0.88rem] text-white/62">
+                        {groups[brand]?.length ?? 0}
+                      </p>
                       <label className="inline-flex cursor-pointer items-center">
                         <input
                           type="checkbox"
@@ -532,7 +535,8 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               {parseError ? (
                 <p className="font-sans text-[0.78rem] text-red-300">{parseError}</p>
               ) : null}
-            </div>
+              </div>
+            </StyloirePanel>
           )}
 
           {/* Footer */}
@@ -568,7 +572,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             {/* Subject preview */}
             <div className="space-y-2">
               <span className={labelCls}>Subject line preview</span>
-              <div className="rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
+              <div className="rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
                 <p className="font-sans text-[0.88rem] text-white/70">{subjectPreview}</p>
               </div>
               <p className="font-sans text-[0.72rem] text-white/38">
@@ -591,10 +595,10 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             {/* Sending from */}
             <div className="space-y-2">
               <span className={labelCls}>Sending from</span>
-              <div className="flex flex-wrap items-center gap-3 rounded-[0.55rem] border border-white/10 bg-black/18 px-4 py-3">
-                <span className="font-sans text-[0.88rem] text-white/58">Your connected email</span>
-                <span className="rounded-full border border-emerald-400/40 bg-emerald-500/14 px-2.5 py-0.5 font-sans text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-emerald-300">
-                  Connected
+              <div className="flex flex-wrap items-center gap-3 rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
+                <span className="font-sans text-[0.88rem] text-white/78">User&apos;s email</span>
+                <span className="font-sans text-[0.82rem] font-medium text-emerald-300/85">
+                  Connected via Gmail
                 </span>
               </div>
             </div>
@@ -620,7 +624,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   onClick={() => setCcRecipients((prev) => [...prev, ""])}
                   className="font-sans text-[0.82rem] font-semibold text-white/48 transition-colors hover:text-white/72"
                 >
-                  + Add
+                  + Add another
                 </button>
               </div>
               <p className="font-sans text-[0.72rem] text-white/38">
@@ -659,12 +663,12 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div>
               <span className={labelCls}>Review your request</span>
               <p className="mt-1 font-sans text-[0.8rem] text-white/45">
-                Double-check everything before sending. Emails go out individually — one per brand.
+                Double-check everything before sending. Emails go out individually - one per brand.
               </p>
             </div>
 
             {/* Request summary */}
-            <div className="rounded-[0.55rem] border border-white/12 bg-black/16 divide-y divide-white/8">
+            <div className="rounded-[0.35rem] border border-white/12 bg-black/16 divide-y divide-white/8">
               <div className="px-5 py-4">
                 <p className={labelCls + " mb-2"}>Request details</p>
                 <p className="font-sans text-[0.95rem] font-semibold text-styloire-champagneLight">
@@ -727,7 +731,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
         <StyloirePanel className={panelGrad}>
           {submitState === "success" ? (
             /* ── Success state ── */
-            <div className="flex flex-col items-center py-10 text-center">
+            <div className="flex flex-col items-center py-14 text-center">
               <div className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/16">
                 <Check className="h-5 w-5 text-emerald-300" />
               </div>

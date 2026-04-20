@@ -30,11 +30,11 @@ export function StyloireAppShell({
       ) : null}
       <div className="flex min-h-screen flex-1 flex-col">
         {topBar ? (
-          <div className="border-b border-styloire-lineSubtle bg-styloire-canvas/96 px-6 py-5 backdrop-blur md:px-10">
+          <div className="border-b border-white/10 bg-[#2a2a2b] px-6 py-7 md:px-10">
             {topBar}
           </div>
         ) : null}
-        <main className="flex-1 px-6 py-10 md:px-10 md:py-12">{children}</main>
+        <main className="flex-1 bg-[#2a2a2b] px-6 py-10 md:px-10 md:py-12">{children}</main>
       </div>
     </div>
   );

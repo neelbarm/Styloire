@@ -16,17 +16,15 @@ const topNav = [
 const portalNav = [
   { href: "/requests/new", label: "Send a new request", match: "prefix" },
   { href: "/dashboard?view=requests", label: "Existing requests", match: "search" },
-  { href: "/roster", label: "Client profiles", match: "prefix" },
-  { href: "/templates", label: "Templates", match: "prefix" },
-  { href: "/settings", label: "Account", match: "prefix" }
+  { href: "/roster", label: "Client profiles", match: "prefix" }
 ];
 
 function pillClass(active: boolean) {
   return [
-    "rounded-full border px-5 py-1.5 font-sans text-[0.84rem] font-medium normal-case tracking-[0.01em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
+    "rounded-full border px-5 py-2 font-sans text-[0.75rem] font-medium normal-case tracking-[0.01em] transition-[color,background-color,border-color] duration-styloire ease-styloire",
     active
-      ? "border-white/58 bg-white/24 text-white"
-      : "border-white/46 bg-white/20 text-white/88 hover:border-white/65 hover:bg-white/26"
+      ? "border-white/55 bg-white/28 text-white"
+      : "border-white/38 bg-white/18 text-white/86 hover:border-white/55 hover:bg-white/24"
   ].join(" ");
 }
 
@@ -48,17 +46,16 @@ export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const search = useSearchParams();
   const view = search.get("view");
-  const showPortalRow = pathname !== "/dashboard" || view === "requests";
 
   return (
     <StyloireAppShell
       sidebar={null}
       topBar={
-        <div className="mx-auto w-full max-w-6xl space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/32 pb-5">
+        <div className="mx-auto w-full max-w-[72rem] space-y-7">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/28 pb-5">
             <Link
               href="/"
-              className="font-sans text-[1.06rem] font-semibold uppercase tracking-[0.18em] text-styloire-champagneLight"
+              className="font-sans text-[0.95rem] font-semibold uppercase tracking-[0.24em] text-styloire-champagneLight"
             >
               Styloire
             </Link>
@@ -74,19 +71,17 @@ export function AppChrome({ children }: { children: ReactNode }) {
               ))}
             </div>
           </div>
-          {showPortalRow ? (
-            <div className="flex flex-wrap gap-2.5 md:gap-3">
-              {portalNav.map((item) => (
-                <Link
-                  key={`portal-${item.label}`}
-                  href={item.href}
-                  className={pillClass(isNavActive(item, pathname, view))}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          ) : null}
+          <div className="flex flex-wrap justify-center gap-3">
+            {portalNav.map((item) => (
+              <Link
+                key={`portal-${item.label}`}
+                href={item.href}
+                className={`min-w-[11rem] text-center ${pillClass(isNavActive(item, pathname, view))}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       }
     >

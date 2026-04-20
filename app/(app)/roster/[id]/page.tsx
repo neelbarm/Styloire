@@ -46,39 +46,39 @@ export default async function RosterDetailPage({
   return (
     <>
       {/* ── PAGE HEADER ─────────────────────────────────────────────────── */}
-      <div className="mb-7 text-center">
-        <h1 className="font-serif text-[clamp(1.9rem,3.8vw,2.8rem)] font-semibold uppercase leading-[0.94] tracking-[-0.01em] text-styloire-champagneLight">
+      <div className="mb-8 text-center">
+        <h1 className="font-serif text-[clamp(4rem,8vw,6.9rem)] font-semibold uppercase leading-[0.88] tracking-[-0.035em] text-styloire-champagneLight">
           Manage profile
         </h1>
       </div>
 
-      <div className="mx-auto max-w-[54rem]">
+      <div className="mx-auto max-w-[66rem]">
         {/* ── BACK LINK ───────────────────────────────────────────────── */}
         <Link
           href="/roster"
-          className="mb-4 inline-flex items-center gap-1 font-sans text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-white/42 transition-colors duration-styloire hover:text-styloire-champagneLight"
+          className="mb-4 inline-flex items-center gap-1 font-sans text-[0.92rem] font-medium text-white/68 transition-colors duration-styloire hover:text-styloire-champagneLight"
         >
           ← Back to My Roster
         </Link>
 
         {/* ── PROFILE IDENTITY ────────────────────────────────────────── */}
         <div className="mb-5">
-          <h2 className="font-serif text-[clamp(1.5rem,3vw,2.2rem)] font-semibold leading-[1.05] text-styloire-champagneLight">
+          <h2 className="font-serif text-[clamp(2.5rem,4.6vw,4rem)] font-medium leading-[1.02] text-styloire-champagneLight">
             {profile.talent_name}
           </h2>
-          <p className="mt-1 font-sans text-[0.8rem] text-white/48">
+          <p className="mt-2 font-sans text-[1rem] text-white/56">
             {contacts.length} brand contact{contacts.length !== 1 ? "s" : ""} ·{" "}
             {requests.length} past request{requests.length !== 1 ? "s" : ""}
           </p>
         </div>
 
         {/* ── TAB BAR ─────────────────────────────────────────────────── */}
-        <div className="border-b border-white/14">
+        <div className="border-b border-white/24">
           <div className="flex gap-6">
             <Link
               href={`/roster/${params.id}?tab=contacts`}
               className={[
-                "pb-2.5 font-sans text-[0.8rem] font-semibold transition-colors duration-styloire",
+                "pb-2.5 font-sans text-[1.15rem] font-medium transition-colors duration-styloire",
                 tab === "contacts"
                   ? "border-b-2 border-styloire-champagneLight text-styloire-champagneLight"
                   : "text-white/40 hover:text-white/68"
@@ -89,7 +89,7 @@ export default async function RosterDetailPage({
             <Link
               href={`/roster/${params.id}?tab=history`}
               className={[
-                "pb-2.5 font-sans text-[0.8rem] font-semibold transition-colors duration-styloire",
+                "pb-2.5 font-sans text-[1.15rem] font-medium transition-colors duration-styloire",
                 tab === "history"
                   ? "border-b-2 border-styloire-champagneLight text-styloire-champagneLight"
                   : "text-white/40 hover:text-white/68"
@@ -108,12 +108,12 @@ export default async function RosterDetailPage({
           />
         ) : (
           /* ══ REQUEST HISTORY TAB — static server render ═══════════════ */
-          <div className="mt-5">
-            <div className="overflow-hidden rounded-[0.55rem] border border-white/12 bg-black/8">
+          <div className="mt-6">
+            <div className="overflow-hidden rounded-[0.2rem] border border-white/26 bg-transparent">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[680px] text-left">
+                <table className="w-full min-w-[760px] text-left">
                   <thead>
-                    <tr className="border-b border-white/10 bg-black/12">
+                    <tr className="border-b border-white/20 bg-white/[0.02]">
                       <th className={thCls}>Event / Publication</th>
                       <th className={thCls}>Sent</th>
                       <th className={thCls}>Contacts</th>
@@ -121,7 +121,7 @@ export default async function RosterDetailPage({
                       <th className={thCls}>Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/8">
+                  <tbody className="divide-y divide-white/16">
                     {requests.length > 0 ? (
                       requests.map((r) => (
                         <tr
