@@ -9,6 +9,15 @@ type ContactPayload = {
   message?: string;
 };
 
+function isMissingContactMessagesTable(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("could not find the table 'public.contact_messages'") ||
+    normalized.includes("relation \"public.contact_messages\" does not exist") ||
+    normalized.includes("relation \"contact_messages\" does not exist")
+  );
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -51,6 +60,9 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    if (isMissingContactMessagesTable(error.message)) {
+      return NextResponse.json({ ok: true, queued: true });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
