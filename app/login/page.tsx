@@ -24,7 +24,7 @@ function LoginContent() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const error = search.get("error");
-  const next = search.get("next") ?? "/onboarding";
+  const next = search.get("next") ?? "/dashboard";
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
 
   async function ensureUserRow() {
@@ -68,7 +68,7 @@ function LoginContent() {
         password,
         options: {
           data: { full_name: name.trim() || undefined },
-          emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/onboarding")}`,
+          emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`,
         },
       });
       setBusy(false);
@@ -78,10 +78,10 @@ function LoginContent() {
       }
       if (data.session) {
         await ensureUserRow();
-        router.push("/onboarding");
+        router.push("/dashboard");
         return;
       }
-      setNote("Check your email to confirm your account, then continue to onboarding.");
+      setNote("Check your email to confirm your account, then continue to the dashboard.");
       return;
     }
 
