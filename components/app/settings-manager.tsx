@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StyloireButton } from "@/components/styloire/button";
 import type { ConnectedAccount } from "@/lib/styloire/types";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 // ─── Shared style tokens (matches wizard + roster) ───────────────────────────
 const labelCls =
@@ -25,6 +26,8 @@ type Props = {
   defaultEmail: string;
   connected: string | null;
   emailError: string | null;
+  subscriptionStatus: string;
+  hasStripeCustomer: boolean;
 };
 
 type SmtpForm = {
@@ -44,35 +47,56 @@ const emptySmtp: SmtpForm = {
   password: "",
   fromEmail: "",
   displayName: "",
-  secure: false,
+  secure: false
 };
 
-export function SettingsManager({ defaultName, defaultEmail, connected, emailError }: Props) {
+export function SettingsManager({
+  defaultName,
+  defaultEmail,
+  connected,
+  emailError,
+  subscriptionStatus,
+  hasStripeCustomer
+}: Props) {
   const router = useRouter();
 
-  // ── All state preserved exactly ──────────────────────────────────────────
+  // ── Data state ────────────────────────────────────────────────────────────
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [ccInput, setCcInput] = useState("");
   const [ccEmails, setCcEmails] = useState<string[]>([]);
-  const [busy, setBusy] = useState(false);
   const [smtpOpen, setSmtpOpen] = useState(false);
   const [smtp, setSmtp] = useState<SmtpForm>({
     ...emptySmtp,
     fromEmail: defaultEmail,
-    displayName: defaultName,
+    displayName: defaultName
   });
   const [note, setNote] = useState("");
 
+  // ── Per-action busy flags ─────────────────────────────────────────────────
+  const [busy, setBusy] = useState(false);          // general email/CC actions
+  const [pwBusy, setPwBusy] = useState(false);      // password reset
+  const [portalBusy, setPortalBusy] = useState(false);     // billing portal
+  const [cancelBusy, setCancelBusy] = useState(false);     // cancel subscription
+  const [cancelConfirm, setCancelConfirm] = useState(false); // confirm step
+
+  // ── Profile editing ───────────────────────────────────────────────────────
+  const [editingProfile, setEditingProfile] = useState<"name" | "email" | null>(null);
+  const [nameInput, setNameInput] = useState(defaultName);
+  const [emailInput, setEmailInput] = useState(defaultEmail);
+  const [profileSaving, setProfileSaving] = useState(false);
+
   const activeAccount = useMemo(
     () => accounts.find((a) => a.is_sending_active) ?? null,
-    [accounts],
+    [accounts]
   );
 
-  // ── All handlers preserved exactly ──────────────────────────────────────
+  const isActive = subscriptionStatus === "active" || subscriptionStatus === "trialing";
+
+  // ── Data loading ──────────────────────────────────────────────────────────
   async function loadAll() {
     const [accRes, ccRes] = await Promise.all([
       fetch("/api/email/accounts"),
-      fetch("/api/settings/cc-emails"),
+      fetch("/api/settings/cc-emails")
     ]);
     const accData = (await accRes.json().catch(() => ({}))) as {
       accounts?: ConnectedAccount[];
@@ -88,7 +112,9 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     if (!ccRes.ok) setNote(ccData.error ?? "Could not load CC addresses.");
   }
 
-  useEffect(() => { void loadAll(); }, []);
+  useEffect(() => {
+    void loadAll();
+  }, []);
 
   useEffect(() => {
     if (connected) {
@@ -98,17 +124,21 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     }
   }, [connected, emailError]);
 
+  // ── CC helpers ────────────────────────────────────────────────────────────
   async function saveCc() {
     setBusy(true);
     setNote("");
     const response = await fetch("/api/settings/cc-emails", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emails: ccEmails }),
+      body: JSON.stringify({ emails: ccEmails })
     });
     const data = (await response.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    if (!response.ok) { setNote(data.error ?? "Could not save CC emails."); return; }
+    if (!response.ok) {
+      setNote(data.error ?? "Could not save CC emails.");
+      return;
+    }
     setNote("CC emails saved.");
   }
 
@@ -120,6 +150,7 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     setCcInput("");
   }
 
+  // ── Email account helpers ─────────────────────────────────────────────────
   async function connectSmtp() {
     setBusy(true);
     setNote("");
@@ -133,12 +164,15 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
         password: smtp.password,
         fromEmail: smtp.fromEmail.trim().toLowerCase(),
         displayName: smtp.displayName.trim() || null,
-        secure: smtp.secure,
-      }),
+        secure: smtp.secure
+      })
     });
     const data = (await response.json().catch(() => ({}))) as { id?: string; error?: string };
     setBusy(false);
-    if (!response.ok || !data.id) { setNote(data.error ?? "Could not add SMTP account."); return; }
+    if (!response.ok || !data.id) {
+      setNote(data.error ?? "Could not add SMTP account.");
+      return;
+    }
     setNote("SMTP account saved. Run test send before marking active.");
     setSmtpOpen(false);
     setSmtp((prev) => ({ ...emptySmtp, fromEmail: prev.fromEmail, displayName: prev.displayName }));
@@ -151,11 +185,14 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     const response = await fetch("/api/email/test-send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId }),
+      body: JSON.stringify({ accountId })
     });
     const data = (await response.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    if (!response.ok) { setNote(data.error ?? "Connection test failed."); return; }
+    if (!response.ok) {
+      setNote(data.error ?? "Connection test failed.");
+      return;
+    }
     setNote("Test send succeeded. You can now set this account active.");
     await loadAll();
   }
@@ -166,11 +203,14 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     const response = await fetch("/api/email/set-active", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId }),
+      body: JSON.stringify({ accountId })
     });
     const data = (await response.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    if (!response.ok) { setNote(data.error ?? "Could not set active account."); return; }
+    if (!response.ok) {
+      setNote(data.error ?? "Could not set active account.");
+      return;
+    }
     setNote("Active sending account updated.");
     await loadAll();
   }
@@ -181,13 +221,133 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
     const response = await fetch("/api/email/disconnect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId }),
+      body: JSON.stringify({ accountId })
     });
     const data = (await response.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    if (!response.ok) { setNote(data.error ?? "Could not disconnect account."); return; }
+    if (!response.ok) {
+      setNote(data.error ?? "Could not disconnect account.");
+      return;
+    }
     setNote("Account disconnected.");
     await loadAll();
+  }
+
+  // ── Password / magic-link reset ───────────────────────────────────────────
+  async function sendLoginLink() {
+    if (!defaultEmail) return;
+    setPwBusy(true);
+    setNote("");
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: defaultEmail,
+        options: {
+          shouldCreateUser: false
+        }
+      });
+      if (error) {
+        setNote(`Could not send login link: ${error.message}`);
+      } else {
+        setNote(`Login link sent to ${defaultEmail}. Check your inbox.`);
+      }
+    } catch {
+      setNote("Could not send login link. Please try again.");
+    } finally {
+      setPwBusy(false);
+    }
+  }
+
+  // ── Profile save: name ───────────────────────────────────────────────────
+  async function saveProfileName() {
+    const name = nameInput.trim();
+    if (!name) { setNote("Name cannot be empty."); return; }
+    setProfileSaving(true);
+    setNote("");
+    try {
+      const supabase = createBrowserSupabaseClient();
+      // 1. Update Supabase auth user_metadata (what the server component reads)
+      const { error: authErr } = await supabase.auth.updateUser({
+        data: { full_name: name }
+      });
+      if (authErr) { setNote(`Error: ${authErr.message}`); return; }
+
+      // 2. Sync to the public users table
+      const res = await fetch("/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) {
+        const d = (await res.json().catch(() => ({}))) as { error?: string };
+        setNote(d.error ?? "Profile update failed.");
+        return;
+      }
+      setNote("Display name updated.");
+      setEditingProfile(null);
+      router.refresh(); // re-run server component so header reflects new name
+    } catch {
+      setNote("Network error — please try again.");
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
+  // ── Profile save: email ───────────────────────────────────────────────────
+  async function saveProfileEmail() {
+    const email = emailInput.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNote("Enter a valid email address.");
+      return;
+    }
+    if (email === defaultEmail.toLowerCase()) {
+      setEditingProfile(null);
+      return;
+    }
+    setProfileSaving(true);
+    setNote("");
+    try {
+      const supabase = createBrowserSupabaseClient();
+      // Supabase sends a confirmation link to both old and new addresses.
+      // The email is NOT changed until both addresses confirm.
+      const { error } = await supabase.auth.updateUser({ email });
+      if (error) { setNote(`Error: ${error.message}`); return; }
+      setNote(
+        `Confirmation emails sent to ${defaultEmail} and ${email}. ` +
+        "Your email will only change after both links are clicked."
+      );
+      setEditingProfile(null);
+    } catch {
+      setNote("Network error — please try again.");
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
+  // ── Billing portal ────────────────────────────────────────────────────────
+  async function openBillingPortal(flow?: "cancel") {
+    const setter = flow === "cancel" ? setCancelBusy : setPortalBusy;
+    setter(true);
+    setNote("");
+    setCancelConfirm(false);
+
+    try {
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flow: flow ?? null })
+      });
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setNote(data.error ?? "Could not open billing portal.");
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setNote("Network error — could not open billing portal.");
+    } finally {
+      setter(false);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -196,12 +356,24 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
 
       {/* ── STATUS NOTE ─────────────────────────────────────────────────── */}
       {note ? (
-        <div className={`rounded-[0.55rem] border px-4 py-3 font-sans text-[0.8rem] ${
-          note.toLowerCase().includes("error") || note.toLowerCase().includes("fail")
-            ? "border-red-400/28 bg-red-500/10 text-red-300"
-            : "border-emerald-400/28 bg-emerald-500/10 text-emerald-300"
-        }`}>
+        <div
+          className={`rounded-[0.55rem] border px-4 py-3 font-sans text-[0.8rem] ${
+            note.toLowerCase().includes("error") ||
+            note.toLowerCase().includes("fail") ||
+            note.toLowerCase().includes("could not") ||
+            note.toLowerCase().includes("invalid")
+              ? "border-red-400/28 bg-red-500/10 text-red-300"
+              : "border-emerald-400/28 bg-emerald-500/10 text-emerald-300"
+          }`}
+        >
           {note}
+          <button
+            type="button"
+            onClick={() => setNote("")}
+            className="ml-3 font-semibold opacity-60 hover:opacity-100"
+          >
+            ×
+          </button>
         </div>
       ) : null}
 
@@ -210,19 +382,94 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
         <div className="px-5 py-4">
           <p className={labelCls}>Profile</p>
         </div>
+        {/* Name row */}
         <div className={rowCls}>
-          <p className={labelCls + " mb-1"}>Name</p>
-          <p className="font-sans text-[0.9rem] text-styloire-champagneLight">{defaultName}</p>
+          {editingProfile === "name" ? (
+            <div>
+              <p className={labelCls + " mb-2"}>Name</p>
+              <div className="flex gap-2.5">
+                <input
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void saveProfileName(); } if (e.key === "Escape") setEditingProfile(null); }}
+                  autoFocus
+                  className={inputCls}
+                />
+                <button type="button" disabled={profileSaving} onClick={saveProfileName} className={smSolidBtn + " shrink-0"}>
+                  {profileSaving ? "Saving…" : "Save"}
+                </button>
+                <button type="button" disabled={profileSaving} onClick={() => { setNameInput(defaultName); setEditingProfile(null); }} className={smActionBtn + " shrink-0"}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className={labelCls + " mb-1"}>Name</p>
+                <p className="font-sans text-[0.9rem] text-styloire-champagneLight">{defaultName}</p>
+              </div>
+              <button type="button" onClick={() => { setNameInput(defaultName); setEditingProfile("name"); }} className={smActionBtn + " shrink-0"}>
+                Edit
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Email row */}
+        <div className={rowCls}>
+          {editingProfile === "email" ? (
+            <div>
+              <p className={labelCls + " mb-2"}>Email</p>
+              <div className="flex gap-2.5">
+                <input
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void saveProfileEmail(); } if (e.key === "Escape") setEditingProfile(null); }}
+                  type="email"
+                  autoFocus
+                  className={inputCls}
+                />
+                <button type="button" disabled={profileSaving} onClick={saveProfileEmail} className={smSolidBtn + " shrink-0"}>
+                  {profileSaving ? "Sending…" : "Update"}
+                </button>
+                <button type="button" disabled={profileSaving} onClick={() => { setEmailInput(defaultEmail); setEditingProfile(null); }} className={smActionBtn + " shrink-0"}>
+                  Cancel
+                </button>
+              </div>
+              <p className="mt-2 font-sans text-[0.72rem] text-white/38">
+                Supabase sends a confirmation link to both your current and new address. Your email changes only after both are confirmed.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className={labelCls + " mb-1"}>Email</p>
+                <p className="font-sans text-[0.9rem] text-styloire-champagneLight">{defaultEmail}</p>
+              </div>
+              <button type="button" onClick={() => { setEmailInput(defaultEmail); setEditingProfile("email"); }} className={smActionBtn + " shrink-0"}>
+                Edit
+              </button>
+            </div>
+          )}
         </div>
         <div className={rowCls}>
-          <p className={labelCls + " mb-1"}>Email</p>
-          <p className="font-sans text-[0.9rem] text-styloire-champagneLight">{defaultEmail}</p>
-        </div>
-        <div className={rowCls}>
-          <p className={labelCls + " mb-1"}>Password</p>
-          <p className="font-sans text-[0.82rem] text-white/40">
-            Managed via your Supabase account. Use the magic link login to reset.
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className={labelCls + " mb-1"}>Login link</p>
+              <p className="font-sans text-[0.8rem] text-white/42">
+                Styloire uses magic link sign-in. Send a new login link to your email to re-authenticate or share access.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={sendLoginLink}
+              disabled={pwBusy}
+              className={smActionBtn + " shrink-0"}
+            >
+              {pwBusy ? "Sending…" : "Send link"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -346,7 +593,7 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
                   onClick={connectSmtp}
                   className={smSolidBtn}
                 >
-                  Save SMTP account
+                  {busy ? "Saving…" : "Save SMTP account"}
                 </button>
               </div>
             </div>
@@ -369,9 +616,7 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
                     </p>
                     <p className="mt-0.5 font-sans text-[0.72rem] text-white/40 capitalize">
                       {account.provider}
-                      {account.is_sending_active
-                        ? " · Active sender"
-                        : ` · ${account.status}`}
+                      {account.is_sending_active ? " · Active sender" : ` · ${account.status}`}
                     </p>
                     {account.last_error_message ? (
                       <p className="mt-0.5 font-sans text-[0.72rem] text-red-300/80">
@@ -392,7 +637,7 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
                     onClick={() => testConnection(account.id)}
                     className={smActionBtn}
                   >
-                    Test send
+                    {busy ? "…" : "Test send"}
                   </button>
                   <button
                     type="button"
@@ -455,7 +700,12 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
             <input
               value={ccInput}
               onChange={(e) => setCcInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCcEmail(); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCcEmail();
+                }
+              }}
               placeholder="colleague@example.com"
               type="email"
               className={inputCls}
@@ -472,13 +722,8 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
         </div>
 
         <div className="px-5 py-4">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={saveCc}
-            className={smSolidBtn}
-          >
-            Save CC list
+          <button type="button" disabled={busy} onClick={saveCc} className={smSolidBtn}>
+            {busy ? "Saving…" : "Save CC list"}
           </button>
         </div>
       </div>
@@ -487,8 +732,14 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
       <div className={cardCls}>
         <div className="flex items-center justify-between px-5 py-4">
           <p className={labelCls}>Subscription</p>
-          <span className="rounded-full border border-emerald-400/38 bg-emerald-500/12 px-2.5 py-0.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-emerald-300">
-            Active
+          <span
+            className={`rounded-full border px-2.5 py-0.5 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.1em] ${
+              isActive
+                ? "border-emerald-400/38 bg-emerald-500/12 text-emerald-300"
+                : "border-white/18 bg-white/6 text-white/40"
+            }`}
+          >
+            {isActive ? subscriptionStatus : subscriptionStatus === "unknown" ? "—" : subscriptionStatus}
           </span>
         </div>
         <div className={rowCls}>
@@ -500,18 +751,50 @@ export function SettingsManager({ defaultName, defaultEmail, connected, emailErr
             No tiers, no usage limits. Cancel anytime.
           </p>
         </div>
+
+        {/* Cancel confirmation inline */}
+        {cancelConfirm ? (
+          <div className={rowCls + " border-red-400/14 bg-red-500/[0.04]"}>
+            <p className="mb-3 font-sans text-[0.82rem] text-white/60">
+              This will open the Stripe billing portal where you can confirm cancellation. Your
+              access continues until the end of your current billing period.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={cancelBusy}
+                onClick={() => openBillingPortal("cancel")}
+                className={smDangerBtn + " border-red-400/30 bg-red-500/12 text-red-300 hover:bg-red-500/22"}
+              >
+                {cancelBusy ? "Redirecting…" : "Yes, continue to cancel"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCancelConfirm(false)}
+                className={smActionBtn}
+              >
+                Keep subscription
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <div className={rowCls + " flex flex-wrap gap-2"}>
           <button
             type="button"
-            disabled
+            disabled={portalBusy || !hasStripeCustomer}
+            onClick={() => openBillingPortal()}
             className={smActionBtn}
+            title={!hasStripeCustomer ? "No billing account linked to this user." : undefined}
           >
-            Open billing portal
+            {portalBusy ? "Redirecting…" : "Open billing portal"}
           </button>
           <button
             type="button"
-            disabled
+            disabled={cancelBusy || !hasStripeCustomer || cancelConfirm}
+            onClick={() => setCancelConfirm(true)}
             className={smDangerBtn}
+            title={!hasStripeCustomer ? "No billing account linked to this user." : undefined}
           >
             Cancel subscription
           </button>

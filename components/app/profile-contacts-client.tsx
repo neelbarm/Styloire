@@ -3,8 +3,9 @@
 import { ChangeEvent, useRef, useState } from "react";
 import type { BrandContact } from "@/lib/styloire/types";
 import { parseBrandContactsFileDetailed } from "@/lib/styloire/parse-contacts";
+import type { ImportResult } from "@/app/api/brand-contacts/import/route";
 
-// ─── Style tokens (matches wizard + roster) ──────────────────────────────────
+// ─── Style tokens ─────────────────────────────────────────────────────────────
 const labelCls =
   "font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/48";
 const inputCls =
@@ -27,10 +28,10 @@ type Props = {
 };
 
 export function ProfileContactsClient({ profileId, initialContacts }: Props) {
-  // ── Contact list — all mutations are local state ─────────────────────────
+  // ── Contacts — local state, initially from server props ──────────────────
   const [contacts, setContacts] = useState<BrandContact[]>(initialContacts);
 
-  // ── Search ──────────────────────────────────────────────────────────────
+  // ── Search ────────────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
   const filtered = contacts.filter((c) => {
     if (!query.trim()) return true;
@@ -41,20 +42,36 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
     );
   });
 
-  // ── Inline edit ──────────────────────────────────────────────────────────
+  // ── Inline edit ───────────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>({ brand_name: "", contact_name: "", email: "" });
+  const [editForm, setEditForm] = useState<EditForm>({
+    brand_name: "",
+    contact_name: "",
+    email: ""
+  });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
 
   function startEdit(c: BrandContact) {
     setConfirmDeleteId(null);
+    setEditError("");
     setEditingId(c.id);
-    setEditForm({ brand_name: c.brand_name, contact_name: c.contact_name ?? "", email: c.email });
+    setEditForm({
+      brand_name: c.brand_name,
+      contact_name: c.contact_name ?? "",
+      email: c.email
+    });
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editingId) return;
-    setContacts((prev) =>
-      prev.map((c) =>
+    setEditSaving(true);
+    setEditError("");
+
+    // Optimistic update
+    const prev = contacts;
+    setContacts((cs) =>
+      cs.map((c) =>
         c.id === editingId
           ? {
               ...c,
@@ -66,60 +83,126 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           : c
       )
     );
-    setEditingId(null);
+
+    try {
+      const res = await fetch(`/api/brand-contacts/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_name: editForm.brand_name,
+          email: editForm.email,
+          contact_name: editForm.contact_name || null
+        })
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setContacts(prev); // revert
+        setEditError((json as { error?: string }).error ?? "Save failed.");
+        return;
+      }
+      setEditingId(null);
+    } catch {
+      setContacts(prev);
+      setEditError("Network error — please try again.");
+    } finally {
+      setEditSaving(false);
+    }
   }
 
   function cancelEdit() {
     setEditingId(null);
+    setEditError("");
   }
 
-  // ── Delete confirmation ──────────────────────────────────────────────────
+  // ── Delete confirmation ───────────────────────────────────────────────────
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
 
-  function confirmDelete(id: string) {
+  function openDeleteConfirm(id: string) {
     setEditingId(null);
+    setDeleteError("");
     setConfirmDeleteId(id);
   }
 
-  function executeDelete(id: string) {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
+  async function executeDelete(id: string) {
+    setDeletingId(id);
+    setDeleteError("");
+
+    // Optimistic remove
+    const prev = contacts;
+    setContacts((cs) => cs.filter((c) => c.id !== id));
     setConfirmDeleteId(null);
+
+    try {
+      const res = await fetch(`/api/brand-contacts/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setContacts(prev); // revert
+        setDeleteError((json as { error?: string }).error ?? "Delete failed.");
+      }
+    } catch {
+      setContacts(prev);
+      setDeleteError("Network error — please try again.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
-  // ── Add contact ──────────────────────────────────────────────────────────
+  // ── Add contact ───────────────────────────────────────────────────────────
   const [newBrand, setNewBrand] = useState("");
   const [newContact, setNewContact] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [addError, setAddError] = useState("");
+  const [addSaving, setAddSaving] = useState(false);
 
-  function addContact() {
-    const brand = newBrand.trim().toUpperCase();
-    const email = newEmail.trim().toLowerCase();
+  async function addContact() {
+    const brand = newBrand.trim();
+    const email = newEmail.trim();
     if (!brand || !email) { setAddError("Brand name and email are required."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAddError("Invalid email address."); return; }
-    if (contacts.some((c) => c.email === email)) { setAddError("This email already exists."); return; }
-    setContacts((prev) => [
-      ...prev,
-      {
-        id: `bc_new_${Date.now()}`,
-        client_profile_id: profileId,
-        brand_name: brand,
-        contact_name: newContact.trim() || null,
-        email,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ]);
-    setNewBrand("");
-    setNewContact("");
-    setNewEmail("");
+    if (contacts.some((c) => c.email.toLowerCase() === email.toLowerCase())) {
+      setAddError("This email already exists.");
+      return;
+    }
+
+    setAddSaving(true);
     setAddError("");
+
+    try {
+      const res = await fetch("/api/brand-contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile_id: profileId,
+          brand_name: brand,
+          email,
+          contact_name: newContact.trim() || null
+        })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAddError((json as { error?: string }).error ?? "Failed to add contact.");
+        return;
+      }
+      const { contact } = json as { contact: BrandContact };
+      setContacts((cs) => [...cs, contact]);
+      setNewBrand("");
+      setNewContact("");
+      setNewEmail("");
+    } catch {
+      setAddError("Network error — please try again.");
+    } finally {
+      setAddSaving(false);
+    }
   }
 
-  // ── CSV / XLSX upload ────────────────────────────────────────────────────
+  // ── CSV / XLSX upload ─────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadNote, setUploadNote] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [uploadNote, setUploadNote] = useState<{
+    type: "ok" | "err";
+    text: string;
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
 
   async function handleUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -128,46 +211,65 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
     setUploading(true);
     setUploadNote(null);
 
-    const result = await parseBrandContactsFileDetailed(file);
+    // Parse on the client (handles both CSV and XLSX via the existing parser)
+    const parsed = await parseBrandContactsFileDetailed(file);
     e.currentTarget.value = "";
-    setUploading(false);
 
-    if (result.errors.length > 0 && result.contacts.length === 0) {
-      setUploadNote({ type: "err", text: result.errors[0] });
+    if (parsed.errors.length > 0 && parsed.contacts.length === 0) {
+      setUploadNote({ type: "err", text: parsed.errors[0] });
+      setUploading(false);
       return;
     }
 
-    // Deduplicate against existing contacts by email
-    const existingEmails = new Set(contacts.map((c) => c.email.toLowerCase()));
-    const toAdd: BrandContact[] = result.contacts
-      .filter((c) => !existingEmails.has(c.email.toLowerCase()))
-      .map((c) => ({
-        id: `bc_csv_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        client_profile_id: profileId,
-        brand_name: c.brand_name,
-        contact_name: c.contact_name || null,
-        email: c.email,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
+    // POST parsed contacts to server for ownership verification + DB insert
+    try {
+      const res = await fetch("/api/brand-contacts/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_id: profileId, contacts: parsed.contacts })
+      });
+      const json = (await res.json().catch(() => ({}))) as ImportResult & { error?: string };
 
-    const skipped = result.contacts.length - toAdd.length;
-    setContacts((prev) => [...prev, ...toAdd]);
+      if (!res.ok) {
+        setUploadNote({ type: "err", text: json.error ?? "Import failed." });
+        return;
+      }
 
-    const parts: string[] = [];
-    if (toAdd.length > 0) parts.push(`${toAdd.length} contact${toAdd.length !== 1 ? "s" : ""} added`);
-    if (skipped > 0) parts.push(`${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped`);
-    if (result.errors.length > 0) parts.push(`${result.errors.length} row error${result.errors.length !== 1 ? "s" : ""}`);
-    setUploadNote({
-      type: result.errors.length > 0 && toAdd.length === 0 ? "err" : "ok",
-      text: parts.join(" · ")
-    });
+      // Merge newly inserted contacts into local state (already deduplicated by server)
+      if (json.contacts.length > 0) {
+        setContacts((cs) => [...cs, ...json.contacts]);
+      }
+
+      const parts: string[] = [];
+      if (json.added > 0) parts.push(`${json.added} contact${json.added !== 1 ? "s" : ""} added`);
+      if (json.skipped > 0)
+        parts.push(`${json.skipped} duplicate${json.skipped !== 1 ? "s" : ""} skipped`);
+      if (json.errors.length > 0)
+        parts.push(`${json.errors.length} row error${json.errors.length !== 1 ? "s" : ""}`);
+
+      const hasOnlyErrors = json.added === 0 && json.errors.length > 0;
+      setUploadNote({
+        type: hasOnlyErrors ? "err" : "ok",
+        text: parts.join(" · ") || "Nothing to import."
+      });
+    } catch {
+      setUploadNote({ type: "err", text: "Network error — please try again." });
+    } finally {
+      setUploading(false);
+    }
   }
 
-  // ────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="mt-5 space-y-5">
+
+      {/* Floating error banners for delete/edit API failures */}
+      {deleteError ? (
+        <div className="rounded-[0.45rem] border border-red-400/28 bg-red-500/10 px-3.5 py-2.5 font-sans text-[0.78rem] text-red-300">
+          {deleteError}
+          <button type="button" onClick={() => setDeleteError("")} className="ml-3 font-semibold opacity-60 hover:opacity-100">×</button>
+        </div>
+      ) : null}
 
       {/* ── TOOLBAR: Search + Upload ──────────────────────────────────── */}
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -177,7 +279,11 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           placeholder="Search brand or contact name..."
           className={inputCls + " flex-1"}
         />
-        <label className={`${smBtn} cursor-pointer whitespace-nowrap ${uploading ? "opacity-40 pointer-events-none" : ""}`}>
+        <label
+          className={`${smBtn} cursor-pointer whitespace-nowrap ${
+            uploading ? "pointer-events-none opacity-40" : ""
+          }`}
+        >
           <input
             ref={fileInputRef}
             type="file"
@@ -192,11 +298,13 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
 
       {/* Upload feedback */}
       {uploadNote ? (
-        <div className={`rounded-[0.45rem] border px-3.5 py-2.5 font-sans text-[0.78rem] ${
-          uploadNote.type === "ok"
-            ? "border-emerald-400/28 bg-emerald-500/10 text-emerald-300"
-            : "border-red-400/28 bg-red-500/10 text-red-300"
-        }`}>
+        <div
+          className={`rounded-[0.45rem] border px-3.5 py-2.5 font-sans text-[0.78rem] ${
+            uploadNote.type === "ok"
+              ? "border-emerald-400/28 bg-emerald-500/10 text-emerald-300"
+              : "border-red-400/28 bg-red-500/10 text-red-300"
+          }`}
+        >
           {uploadNote.text}
           <button
             type="button"
@@ -223,7 +331,8 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
             <tbody className="divide-y divide-white/8">
               {filtered.map((c) => {
                 const isEditing = editingId === c.id;
-                const isConfirmingDelete = confirmDeleteId === c.id;
+                const isConfirming = confirmDeleteId === c.id;
+                const isDeleting = deletingId === c.id;
 
                 if (isEditing) {
                   return (
@@ -239,7 +348,9 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                       <td className={tdCls}>
                         <input
                           value={editForm.contact_name}
-                          onChange={(e) => setEditForm((f) => ({ ...f, contact_name: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({ ...f, contact_name: e.target.value }))
+                          }
                           placeholder="Optional"
                           className={inputCls}
                         />
@@ -253,11 +364,26 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                         />
                       </td>
                       <td className={tdCls + " text-right"}>
+                        {editError ? (
+                          <p className="mb-1 text-right font-sans text-[0.7rem] text-red-300">
+                            {editError}
+                          </p>
+                        ) : null}
                         <div className="inline-flex gap-1.5">
-                          <button type="button" onClick={saveEdit} className={solidBtn}>
-                            Save
+                          <button
+                            type="button"
+                            onClick={saveEdit}
+                            disabled={editSaving}
+                            className={solidBtn}
+                          >
+                            {editSaving ? "Saving…" : "Save"}
                           </button>
-                          <button type="button" onClick={cancelEdit} className={smBtn}>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            disabled={editSaving}
+                            className={smBtn}
+                          >
                             Cancel
                           </button>
                         </div>
@@ -266,20 +392,23 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                   );
                 }
 
-                if (isConfirmingDelete) {
+                if (isConfirming) {
                   return (
                     <tr key={c.id} className="bg-red-500/[0.04]">
                       <td colSpan={3} className={tdCls + " text-white/60"}>
                         Delete{" "}
-                        <span className="font-semibold text-white/80">{c.brand_name}</span>?
-                        {" "}This cannot be undone.
+                        <span className="font-semibold text-white/80">{c.brand_name}</span>?{" "}
+                        This cannot be undone.
                       </td>
                       <td className={tdCls + " text-right"}>
                         <div className="inline-flex gap-1.5">
                           <button
                             type="button"
                             onClick={() => executeDelete(c.id)}
-                            className={dangerBtn + " border-red-400/30 bg-red-500/12 text-red-300 hover:bg-red-500/22"}
+                            className={
+                              dangerBtn +
+                              " border-red-400/30 bg-red-500/12 text-red-300 hover:bg-red-500/22"
+                            }
                           >
                             Delete
                           </button>
@@ -297,7 +426,12 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                 }
 
                 return (
-                  <tr key={c.id} className="transition-colors duration-100 hover:bg-white/[0.025]">
+                  <tr
+                    key={c.id}
+                    className={`transition-colors duration-100 hover:bg-white/[0.025] ${
+                      isDeleting ? "opacity-40 pointer-events-none" : ""
+                    }`}
+                  >
                     <td className={tdCls + " font-medium uppercase tracking-[0.03em]"}>
                       {c.brand_name}
                     </td>
@@ -310,7 +444,11 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
                         <button type="button" onClick={() => startEdit(c)} className={smBtn}>
                           Edit
                         </button>
-                        <button type="button" onClick={() => confirmDelete(c.id)} className={dangerBtn}>
+                        <button
+                          type="button"
+                          onClick={() => openDeleteConfirm(c.id)}
+                          className={dangerBtn}
+                        >
                           Delete
                         </button>
                       </div>
@@ -321,8 +459,13 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
 
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center font-sans text-[0.82rem] text-white/30">
-                    {query ? `No contacts matching "${query}".` : "No contacts yet — add one below."}
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center font-sans text-[0.82rem] text-white/30"
+                  >
+                    {query
+                      ? `No contacts matching "${query}".`
+                      : "No contacts yet — add one below."}
                   </td>
                 </tr>
               ) : null}
@@ -359,25 +502,31 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
             onChange={(e) => setNewEmail(e.target.value)}
             placeholder="Email Address"
             type="email"
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addContact(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addContact();
+              }
+            }}
             className={inputCls}
           />
           <button
             type="button"
             onClick={addContact}
-            className="rounded-full border border-white/22 bg-white/8 px-6 py-2 font-sans text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-styloire-champagneLight transition-colors hover:border-white/36 hover:bg-white/14"
+            disabled={addSaving}
+            className="rounded-full border border-white/22 bg-white/8 px-6 py-2 font-sans text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-styloire-champagneLight transition-colors hover:border-white/36 hover:bg-white/14 disabled:opacity-40"
           >
-            Add
+            {addSaving ? "Adding…" : "Add"}
           </button>
         </div>
         {addError ? (
           <p className="mt-1.5 font-sans text-[0.75rem] text-red-300">{addError}</p>
         ) : null}
         <p className="mt-1.5 font-sans text-[0.72rem] text-white/28">
-          Expected columns for CSV upload: <code className="text-white/42">brand_name, email, first_name</code>
+          Expected columns for CSV upload:{" "}
+          <code className="text-white/42">brand_name, email, first_name</code>
         </p>
       </div>
-
     </div>
   );
 }

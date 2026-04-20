@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProfileWithContacts } from "@/lib/styloire/mock-data";
+import { getProfileDetail } from "@/lib/data/profile-queries";
 import { ProfileContactsClient } from "@/components/app/profile-contacts-client";
 
 // ─── Shared style tokens ──────────────────────────────────────────────────────
@@ -15,14 +15,14 @@ function formatSendDate(value: string | null) {
   return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function RosterDetailPage({
+export default async function RosterDetailPage({
   params,
   searchParams
 }: {
   params: { id: string };
   searchParams?: Record<string, string | string[] | undefined>;
 }) {
-  const bundle = getProfileWithContacts(params.id);
+  const bundle = await getProfileDetail(params.id);
   if (!bundle) notFound();
   const { profile, contacts, requests } = bundle;
   const rawTab = searchParams?.tab;
