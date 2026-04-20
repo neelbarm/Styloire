@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAuthedServiceRoleClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/service";
 import { MOCK_CONTACTS } from "@/lib/styloire/mock-data";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertProfileOwnership(supabase: any, profileId: string, userId: string): Promise<boolean> {
+async function assertProfileOwnership(
+  supabase: SupabaseClient,
+  profileId: string,
+  userId: string
+): Promise<boolean> {
   const { data, error } = await supabase
     .from("client_profiles")
     .select("id")
