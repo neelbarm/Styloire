@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 const centerLinks = [
-  { href: "/how-it-works", label: "How it works" },
+  { href: "/how-it-works", label: "Services" },
+  { href: "/dashboard", label: "My clients" },
   { href: "/faqs", label: "FAQs" },
   { href: "/contact", label: "Contact" }
 ];
@@ -21,7 +22,7 @@ export function StyloireMarketingHeader() {
             href="/dashboard"
             className="rounded-sm border border-styloire-champagne/40 bg-gradient-to-b from-styloire-champagneLight to-styloire-champagne px-5 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-champagneFg shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] transition-[color,background-color,border-color,transform] duration-styloire ease-styloire hover:-translate-y-[1px] hover:border-styloire-champagneLight hover:from-styloire-champagneLight hover:to-styloire-champagneLight md:hidden"
           >
-            Get started
+            My portal
           </Link>
         </div>
 
@@ -45,7 +46,7 @@ export function StyloireMarketingHeader() {
             href="/dashboard"
             className="rounded-sm border border-styloire-champagne/40 bg-gradient-to-b from-styloire-champagneLight to-styloire-champagne px-6 py-2 font-sans text-[0.65rem] font-medium uppercase tracking-styloireNav text-styloire-champagneFg shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] transition-[color,background-color,border-color,transform] duration-styloire ease-styloire hover:-translate-y-[1px] hover:border-styloire-champagneLight hover:from-styloire-champagneLight hover:to-styloire-champagneLight"
           >
-            Get started
+            My portal
           </Link>
         </div>
       </div>

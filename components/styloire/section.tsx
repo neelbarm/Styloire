@@ -89,7 +89,7 @@ export type StyloireHeroProps = HTMLAttributes<HTMLElement> & {
 export function StyloireHero({ className = "", children, ...rest }: StyloireHeroProps) {
   return (
     <div
-      className={`mx-auto flex max-w-styloire-narrow flex-col items-center gap-8 text-center ${className}`.trim()}
+      className={`mx-auto flex max-w-styloire-narrow flex-col items-center gap-10 text-center ${className}`.trim()}
       {...rest}
     >
       {children}

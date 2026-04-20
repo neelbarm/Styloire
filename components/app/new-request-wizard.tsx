@@ -191,9 +191,9 @@ export function NewRequestWizard() {
       <div className="flex flex-wrap gap-3">
         {(
           [
-            ["Talent & event", 1],
-            ["Contacts", 2],
-            ["Template", 3],
+            ["Start here", 1],
+            ["Select contacts", 2],
+            ["Write once", 3],
             ["Follow up & send", 4]
           ] as const
         ).map(([label, n]) => (
@@ -215,10 +215,10 @@ export function NewRequestWizard() {
       {step === 1 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 1</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Talent &amp; event</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Create a request</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
-            Start with the talent and event. Then choose a new upload or an existing roster
-            profile.
+            Give your project a name. Add your talent and event, then choose a new upload or an
+            existing client profile.
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <label className="flex items-center gap-3 border border-styloire-lineSubtle px-4 py-3">
@@ -311,7 +311,7 @@ export function NewRequestWizard() {
       {step === 2 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 2</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Upload contacts</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Upload your contacts</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
             {requestType === "new"
               ? "Upload CSV for a new profile. Expected columns: brand_name, email, first_name."
@@ -408,7 +408,7 @@ export function NewRequestWizard() {
       {step === 3 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 3</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Write once</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Write your email once</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
             Default pull-request copy. Placeholders fill from your first selected row.
           </p>
@@ -455,7 +455,7 @@ export function NewRequestWizard() {
       {step === 4 ? (
         <StyloirePanel>
           <StyloireEyebrow className="mb-4">Step 4</StyloireEyebrow>
-          <h2 className="font-serif text-2xl text-styloire-champagne">Follow up &amp; send</h2>
+          <h2 className="font-serif text-2xl text-styloire-champagne">Hit send</h2>
           <p className="mt-2 font-sans text-sm font-light text-styloire-inkSoft">
             Optional follow-up date. This creates and sends the request immediately.
           </p>

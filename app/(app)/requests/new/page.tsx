@@ -5,8 +5,8 @@ export default function NewRequestPage() {
   return (
     <>
       <StyloireAppPageHeader
-        title="New request"
-        description="Choose a new upload or existing roster profile, toggle contacts, preview templates, then schedule send."
+        title="Send a new request"
+        description="Create your request, upload contacts, write once, then schedule follow-up and send."
       />
       <NewRequestWizard />
     </>

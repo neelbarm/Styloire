@@ -14,8 +14,8 @@ export default async function SettingsPage({
   return (
     <>
       <StyloireAppPageHeader
-        title="Account settings"
-        description="Profile, connected sending account, CC defaults, and subscription controls."
+        title="Account"
+        description="Connected sending account, CC defaults, and subscription controls."
       />
       <SettingsManager
         defaultName={defaultName}

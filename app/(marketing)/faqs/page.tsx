@@ -10,7 +10,7 @@ export default function FaqsPage() {
           FAQs
         </StyloireHeading>
         <p className="mt-6 font-sans text-sm font-light text-styloire-inkSoft">
-          Core answers on product use, pricing, and privacy.
+          Everything you need to know before you get started.
         </p>
       </div>
       <FaqPageContent />

@@ -13,11 +13,10 @@ export default function ContactPage() {
         <div className="mx-auto max-w-styloire-narrow text-center">
           <StyloireEyebrow>Styloire studio</StyloireEyebrow>
           <StyloireHeading as="h1" level="display">
-            Get in touch.
+            Get in touch
           </StyloireHeading>
           <StyloireBody>
-            Questions about the product, billing, partnerships, or press — send a note. We
-            respond within 24–48 hours.
+            Have a question, a suggestion, or just want to say hi? We would love to hear from you.
           </StyloireBody>
         </div>
       </StyloireSection>

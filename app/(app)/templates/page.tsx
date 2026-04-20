@@ -12,7 +12,7 @@ export default function TemplatesPage() {
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <StyloireAppPageHeader
           title="Templates"
-          description="House defaults first; yours follow. Merge fields stay visible while you edit."
+          description="Pre-written pull request templates plus your custom versions."
         />
         <StyloireButton type="button" variant="solid" disabled>
           Create template

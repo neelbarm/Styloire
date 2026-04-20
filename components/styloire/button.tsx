@@ -9,7 +9,7 @@ export type StyloireButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  "inline-flex items-center justify-center rounded-sm border px-7 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-styloireNav transition-[color,background-color,border-color,opacity,transform] duration-styloire ease-styloire focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-styloire-champagne/55 disabled:pointer-events-none disabled:opacity-35";
+  "inline-flex items-center justify-center rounded-sm border px-8 py-2.5 font-sans text-styloire-caption font-medium uppercase tracking-[0.18em] transition-[color,background-color,border-color,opacity,transform] duration-styloire ease-styloire focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-styloire-champagne/55 disabled:pointer-events-none disabled:opacity-35";
 
 const variants: Record<StyloireButtonVariant, string> = {
   outline:

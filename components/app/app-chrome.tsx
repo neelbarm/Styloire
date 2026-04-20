@@ -8,9 +8,9 @@ import { StyloireButton } from "@/components/styloire/button";
 import { StyloireEyebrow } from "@/components/styloire/typography";
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/requests/new", label: "New request" },
-  { href: "/roster", label: "My roster" },
+  { href: "/dashboard", label: "Existing requests" },
+  { href: "/requests/new", label: "Send a new request" },
+  { href: "/roster", label: "Client profiles" },
   { href: "/templates", label: "Templates" },
   { href: "/settings", label: "Account" }
 ];
@@ -35,14 +35,14 @@ export function AppChrome({ children }: { children: ReactNode }) {
   return (
     <StyloireAppShell
       sidebar={
-        <div className="flex h-full flex-col gap-12 px-6 py-10">
+        <div className="flex h-full flex-col gap-14 px-7 py-11">
           <Link
             href="/"
             className="font-sans text-styloire-caption font-medium uppercase tracking-[0.38em] text-styloire-champagne"
           >
             Styloire
           </Link>
-          <nav className="flex flex-col gap-2.5" aria-label="App">
+          <nav className="flex flex-col gap-3" aria-label="App">
             {nav.map((item) => {
               const active =
                 item.href === "/dashboard"
@@ -60,12 +60,12 @@ export function AppChrome({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="mt-auto space-y-5 border-t border-styloire-lineSubtle pt-10">
-            <StyloireEyebrow className="text-left">Tools</StyloireEyebrow>
+            <StyloireEyebrow className="text-left">My portal</StyloireEyebrow>
             <p className="font-sans text-xs font-light leading-relaxed text-styloire-inkMuted">
               Start a fresh request or continue from your saved roster profiles.
             </p>
             <StyloireButton variant="outline" className="w-full" href="/requests/new">
-              New request
+              Send a new request
             </StyloireButton>
           </div>
         </div>

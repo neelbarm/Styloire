@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   StyloireBody,
   StyloireButton,
-  StyloireEyebrow,
   StyloireHeading,
   StyloireHero,
   StyloireImageSection,
@@ -27,11 +26,11 @@ const threeSteps = [
   },
   {
     title: "Upload your contacts",
-    body: "Drop in your brand PR list and create a client profile — set up once and have it saved. Just a simple spreadsheet."
+    body: "Drop in your brand PR list and create a client profile, setup once and have it saved. Just a simple spreadsheet."
   },
   {
     title: "And hit send",
-    body: "Every email goes out on time and in seconds. Follow-ups are scheduled automatically for anyone who does not respond."
+    body: "Every email goes out on time and in seconds. Follow ups scheduled automatically for anyone who doesn't respond."
   }
 ];
 
@@ -48,20 +47,15 @@ export default function MarketingHomePage() {
     <>
       <StyloireImageSection imageUrl={heroImage} position="center 26%">
         <StyloireHero>
-          <StyloireEyebrow>Letters, not dashboards</StyloireEyebrow>
           <StyloireHeading as="h1" level="display">
-            Make emailing simple.
+            Make Emailing Simple
           </StyloireHeading>
           <StyloireLead className="text-styloire-inkSoft">
-            One letter. Every house addressed as it should be — without losing the afternoon
-            to paste and pray.
+            Pull request outreach but automated. Write one email, send it personalized to
+            every brand on your list in minutes.
           </StyloireLead>
-          <StyloireBody className="text-styloire-inkSoft">
-            For stylists and assistants who still live inside pull requests, Styloire is the
-            quiet layer between your sentence and their inbox.
-          </StyloireBody>
           <StyloireButton href="/dashboard" variant="solid">
-            Get started
+            My portal
           </StyloireButton>
         </StyloireHero>
       </StyloireImageSection>
@@ -71,26 +65,22 @@ export default function MarketingHomePage() {
           <StyloireHeading as="h2" level="title">
             The problem
           </StyloireHeading>
-          <StyloireBody className="mt-10">
+          <p className="mx-auto mt-10 max-w-styloire-prose font-sans text-[clamp(1.45rem,3vw,2.2rem)] font-light leading-tight text-styloire-inkSoft">
             The average stylist sends 100–500 emails per project. Most of them are copy and
             paste.
-          </StyloireBody>
+          </p>
           <StyloireLead className="mt-10">There&apos;s a better way.</StyloireLead>
         </div>
       </StyloireSection>
 
       <StyloireSection tone="deep">
         <div className="mx-auto mb-20 max-w-styloire-narrow text-center">
-          <StyloireEyebrow>Process</StyloireEyebrow>
           <StyloireHeading level="title">How it works</StyloireHeading>
-          <StyloireBody className="mt-4">
-            Three movements here. The full sequence lives on its own page.
-          </StyloireBody>
           <Link
             href="/how-it-works"
             className="mt-8 inline-block font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-champagneMuted underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-champagneLight"
           >
-            The five steps
+            View all steps
           </Link>
         </div>
         <div className="mx-auto grid max-w-styloire gap-12 md:grid-cols-3">
@@ -132,7 +122,7 @@ export default function MarketingHomePage() {
           </StyloireLead>
           <StyloireBody className="text-styloire-inkSoft">
             Whether you&apos;re dressing talent for a red carpet, an editorial shoot, or a
-            commercial campaign, your time belongs on set, in the showroom, making selects —
+            commercial campaign, your time belongs on set, in the showroom, making selects -
             not in your inbox. Styloire was built for the people behind the looks.
           </StyloireBody>
         </StyloireHero>
@@ -140,14 +130,17 @@ export default function MarketingHomePage() {
 
       <StyloireSection id="get-started" tone="deep" className="scroll-mt-28 pb-28">
         <StyloireHero>
-          <StyloireHeading level="display">Start when you&apos;re ready.</StyloireHeading>
-          <StyloireLead>Open your workspace and run a pull in minutes.</StyloireLead>
+          <StyloireHeading level="display">Be the first to know.</StyloireHeading>
+          <StyloireBody className="text-styloire-inkSoft">
+            Styloire is currently in development. Join our early access list for product updates
+            and founding member pricing.
+          </StyloireBody>
           <div className="flex flex-wrap justify-center gap-4">
-            <StyloireButton href="/dashboard" variant="solid">
-              Get started
+            <StyloireButton href="/contact" variant="solid">
+              Contact us
             </StyloireButton>
             <StyloireButton href="/contact" variant="outline">
-              Contact
+              Book a walkthrough
             </StyloireButton>
           </div>
         </StyloireHero>

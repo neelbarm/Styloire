@@ -137,7 +137,7 @@ export function RequestDetailClient({ request, rows }: Props) {
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <StyloireAppPageHeader
           title={`${requestState.talent_name} / ${requestState.event_name}`}
-          description="Outreach at a glance — counts, contact statuses, and follow-up controls."
+          description="Request performance, contact status, and follow-up controls."
         />
         <div className="flex flex-wrap gap-3">
           {requestState.status === "draft" && hasPendingSends ? (
@@ -147,14 +147,14 @@ export function RequestDetailClient({ request, rows }: Props) {
               disabled={busy}
               onClick={sendPendingOutreach}
             >
-              Send pending emails
+              Hit send
             </StyloireButton>
           ) : null}
           <StyloireButton type="button" variant="outline" disabled={busy} onClick={archiveRequest}>
             Mark archived
           </StyloireButton>
           <StyloireButton type="button" variant="solid" disabled={busy} onClick={sendFollowup}>
-            Send follow-up
+            Send follow up
           </StyloireButton>
         </div>
       </div>
@@ -221,7 +221,7 @@ export function RequestDetailClient({ request, rows }: Props) {
             href="/dashboard"
             className="font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkSoft underline-offset-4 hover:text-styloire-ink hover:underline"
           >
-            Back to dashboard
+            Back to existing requests
           </Link>
         </div>
 

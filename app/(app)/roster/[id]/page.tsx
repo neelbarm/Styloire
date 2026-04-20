@@ -15,7 +15,7 @@ export default function RosterDetailPage({ params }: { params: { id: string } })
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <StyloireAppPageHeader
           title={profile.talent_name}
-          description="Brand contacts and request history for this talent profile."
+          description="Manage profile: brand contacts and request history."
         />
         <div className="flex flex-wrap gap-3">
           <StyloireButton type="button" variant="outline" disabled>
@@ -25,10 +25,17 @@ export default function RosterDetailPage({ params }: { params: { id: string } })
             Upload CSV
           </StyloireButton>
           <StyloireButton href="/requests/new" variant="solid">
-            New request
+            Send a new request
           </StyloireButton>
         </div>
       </div>
+
+      <Link
+        href="/roster"
+        className="mb-8 inline-block font-sans text-styloire-caption uppercase tracking-styloireNav text-styloire-inkMuted underline-offset-4 transition-colors hover:text-styloire-ink hover:underline"
+      >
+        Back to client profiles
+      </Link>
 
       <div className="mb-10 border-b border-styloire-lineSubtle">
         <div className="flex gap-5">

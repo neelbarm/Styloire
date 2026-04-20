@@ -17,7 +17,7 @@ export function MarketingFooter() {
           href="/dashboard"
           className="underline-offset-[5px] transition-colors duration-styloire ease-styloire hover:text-styloire-ink hover:underline"
         >
-          Workspace
+          My portal
         </Link>
         <span className="text-styloire-line" aria-hidden>
           |

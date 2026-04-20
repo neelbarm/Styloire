@@ -10,12 +10,12 @@ export default function RosterPage() {
   return (
     <>
       <StyloireAppPageHeader
-        title="My roster"
-        description="Each profile is a talent: saved brand contacts, request history, and quick actions."
+        title="Client profiles"
+        description="Saved contacts, request history, and quick actions for each talent."
       />
       <div className="mb-8">
         <StyloireButton href="/requests/new" variant="solid">
-          Add new profile
+          + Add new profile
         </StyloireButton>
       </div>
       <div className="grid gap-6 md:grid-cols-2">
@@ -36,7 +36,7 @@ export default function RosterPage() {
                 Manage profile
               </StyloireButton>
               <StyloireButton href="/requests/new" variant="solid">
-                New request
+                Send request
               </StyloireButton>
             </div>
           </StyloirePanel>

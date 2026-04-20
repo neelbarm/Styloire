@@ -43,11 +43,11 @@ export default async function DashboardPage({
     <>
       <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
         <StyloireAppPageHeader
-          title="Dashboard"
-          description="Requests in reverse chronological order. Filter by state when the list grows long."
+          title="Existing requests"
+          description="Every active or archived pull request in one place."
         />
         <StyloireButton href="/requests/new" variant="solid">
-          New request
+          Send a new request
         </StyloireButton>
       </div>
 
@@ -82,7 +82,7 @@ export default async function DashboardPage({
           </p>
           <div className="mt-10 flex justify-center">
             <StyloireButton href="/requests/new" variant="outline">
-              New request
+              Send a new request
             </StyloireButton>
           </div>
         </StyloirePanel>
@@ -98,8 +98,8 @@ export default async function DashboardPage({
                       <span className="text-styloire-inkMuted">/</span> {request.event_name}
                     </p>
                     <p className="mt-3 font-sans text-[0.65rem] uppercase tracking-styloireWide text-styloire-inkMuted">
-                      {request.selected_count} selected · {request.sent_count} sent ·{" "}
-                      {request.responded_count} replied
+                      {request.selected_count} contacts · {request.sent_count} sent ·{" "}
+                      {request.responded_count} responses
                     </p>
                   </div>
                   <div className="flex flex-col items-start gap-3 md:items-end">
