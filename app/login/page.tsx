@@ -27,6 +27,14 @@ function LoginContent() {
   const next = search.get("next") ?? "/dashboard";
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
 
+  function formatEmailDeliveryError(message: string) {
+    const normalized = message.toLowerCase();
+    if (normalized.includes("rate limit")) {
+      return "Email delivery is temporarily throttled. Use password sign-in if you already have an account, or wait a minute and try again.";
+    }
+    return message;
+  }
+
   async function ensureUserRow() {
     await fetch("/api/auth/ensure-user", { method: "POST" });
   }
@@ -44,10 +52,32 @@ function LoginContent() {
     });
     setBusy(false);
     if (otpError) {
-      setNote(otpError.message);
+      setNote(formatEmailDeliveryError(otpError.message));
       return;
     }
     setNote("Check your email for the secure sign-in link.");
+  }
+
+  async function handlePasswordReset() {
+    if (!email.trim()) {
+      setNote("Enter your email first, then use reset password.");
+      return;
+    }
+    setBusy(true);
+    setNote("");
+    const origin = window.location.origin;
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      {
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+      },
+    );
+    setBusy(false);
+    if (resetError) {
+      setNote(formatEmailDeliveryError(resetError.message));
+      return;
+    }
+    setNote("Check your email for the password reset link.");
   }
 
   async function handlePasswordAuth(event: FormEvent<HTMLFormElement>) {
@@ -225,6 +255,18 @@ function LoginContent() {
                 className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
               />
             </label>
+            {authMode === "signin" ? (
+              <div className="-mt-2 text-right">
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  disabled={busy}
+                  className="font-sans text-[0.72rem] uppercase tracking-[0.12em] text-styloire-champagneMuted hover:text-styloire-champagneLight disabled:opacity-40"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-3">
               <StyloireButton type="submit" variant="solid" disabled={busy}>
                 {authMode === "signup" ? "Create account" : "Sign in"}

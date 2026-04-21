@@ -53,6 +53,9 @@ export async function GET(request: Request) {
       );
     }
     await ensureAuthedPublicUser(supabase);
+    if (type === "recovery") {
+      return NextResponse.redirect(`${base}/reset-password`);
+    }
     return NextResponse.redirect(`${base}${redirectTo}`);
   }
 
