@@ -164,7 +164,10 @@ export async function getProfileDetail(
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (profileErr || !profileRow) return null;
+  if (profileErr || !profileRow) {
+    if (!mock) return null;
+    return { source: "mock", ...mock };
+  }
 
   const profile: ClientProfile = {
     id: String(profileRow.id),
