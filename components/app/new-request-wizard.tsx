@@ -111,10 +111,9 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     });
   }, [emailBody, previewBrand, previewContact, talent, eventName]);
 
-  const subjectPreview =
-    talent && eventName && previewBrand
-      ? `${talent} / ${eventName} / ${previewBrand.toUpperCase()}`
-      : `{{talent}} / {{event}} / BRAND NAME`;
+  const subjectPreview = `${talent.trim() || "{{talent}}"} / ${
+    eventName.trim() || "{{event}}"
+  } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
 
   // ── All handlers preserved exactly ──────────────────────────────────────
   const loadPreviousContacts = async () => {
