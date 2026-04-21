@@ -505,6 +505,21 @@ export function SettingsManager({
             </button>
           </div>
         </div>
+        <div className={rowCls}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className={labelCls + " mb-1"}>Sign out</p>
+              <p className="font-sans text-[0.8rem] text-white/42">
+                End your current session and return to the login screen.
+              </p>
+            </div>
+            <form action="/auth/logout" method="post">
+              <button type="submit" className={smDangerBtn + " shrink-0"}>
+                Sign out
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
 
       {/* ══ CONNECTED EMAIL ACCOUNT ═════════════════════════════════════ */}
