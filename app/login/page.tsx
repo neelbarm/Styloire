@@ -62,26 +62,34 @@ function LoginContent() {
     }
 
     if (authMode === "signup") {
-      const origin = window.location.origin;
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setBusy(false);
+        setNote(payload.error ?? "Could not create your account.");
+        return;
+      }
+
+      const { error: signInAfterSignupError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
-        options: {
-          data: { full_name: name.trim() || undefined },
-          emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`,
-        },
       });
       setBusy(false);
-      if (signUpError) {
-        setNote(signUpError.message);
+      if (signInAfterSignupError) {
+        setNote(signInAfterSignupError.message);
         return;
       }
-      if (data.session) {
-        await ensureUserRow();
-        router.push("/dashboard");
-        return;
-      }
-      setNote("Check your email to confirm your account, then continue to the dashboard.");
+
+      await ensureUserRow();
+      router.push("/dashboard");
       return;
     }
 
