@@ -7,24 +7,22 @@ const IMG_WHO = "url('/images/pearl-necklace.jpeg')";
 const threeSteps = [
   {
     title: "Create your request",
-    body: "Enter your talent and the event or publication. Styloire already knows how your subject line should read."
+    body: "Enter your talent and event. Styloire automatically formats your subject line."
   },
   {
     title: "Upload your contacts",
-    body: "Drop in your brand PR spreadsheet and optional contact name. No reformatting, no complicated imports."
+    body: "Drop in your brand list and create a client profile for easy future outreach. No sample spreadsheet setup or manual reformatting required."
   },
   {
     title: "And hit send",
-    body: "Every email goes out personalized and on time. Track sent, opened, and responded status per project."
+    body: "Every email goes out on time with each brand's contact. No manual send needed."
   }
 ];
 
 const features = [
   "Auto-generated subject lines in industry format",
   "Personalized emails per brand - no copy paste",
-  "Pre-written pull request templates",
-  "Follow up automation for non-responses",
-  "Dashboard to track opens, responses, and status per project"
+  "Contacts grouped into reusable client profiles"
 ];
 
 const sectionTitle =
@@ -36,8 +34,8 @@ export default function MarketingHomePage() {
       <section
         className="relative isolate overflow-hidden bg-[#1d1815] text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(14,10,9,0.28), rgba(14,10,9,0.28)), ${IMG_HERO}`,
-          backgroundPosition: "center center",
+          backgroundImage: `linear-gradient(rgba(14,10,9,0.18), rgba(14,10,9,0.18)), ${IMG_HERO}`,
+          backgroundPosition: "center 38%",
           backgroundSize: "cover"
         }}
       >
@@ -78,8 +76,8 @@ export default function MarketingHomePage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(11,9,9,0.24), rgba(11,9,9,0.24)), ${IMG_HOW}`,
-          backgroundPosition: "center 30%",
+          backgroundImage: `linear-gradient(rgba(11,9,9,0.14), rgba(11,9,9,0.14)), ${IMG_HOW}`,
+          backgroundPosition: "center 34%",
           backgroundSize: "cover"
         }}
       >
@@ -117,8 +115,8 @@ export default function MarketingHomePage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(96,74,56,0.18), rgba(15,12,10,0.24)), ${IMG_WHO}`,
-          backgroundPosition: "center center",
+          backgroundImage: `linear-gradient(rgba(96,74,56,0.08), rgba(15,12,10,0.14)), ${IMG_WHO}`,
+          backgroundPosition: "center 48%",
           backgroundSize: "cover"
         }}
       >

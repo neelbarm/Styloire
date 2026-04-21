@@ -6,17 +6,17 @@ import type { ReactNode } from "react";
 import { StyloireAppShell } from "@/components/styloire/app-shell";
 
 const topNav = [
-  { href: "/how-it-works", label: "How it works", match: "prefix" },
-  { href: "/dashboard", label: "My portal", match: "exact" },
+  { href: "/how-it-works", label: "how it works", match: "prefix" },
+  { href: "/dashboard", label: "my portal", match: "exact" },
   { href: "/faqs", label: "FAQs", match: "prefix" },
-  { href: "/contact", label: "Contact", match: "prefix" },
-  { href: "/settings", label: "Account", match: "prefix" }
+  { href: "/contact", label: "contact", match: "prefix" },
+  { href: "/settings", label: "account", match: "prefix" }
 ];
 
 const portalNav = [
-  { href: "/requests/new", label: "Send a new request", match: "prefix" },
-  { href: "/dashboard?view=requests", label: "Existing requests", match: "search" },
-  { href: "/roster", label: "Client profiles", match: "prefix" }
+  { href: "/requests/new", label: "send a new request", match: "prefix" },
+  { href: "/dashboard?view=requests", label: "existing requests", match: "search" },
+  { href: "/roster", label: "client profiles", match: "prefix" }
 ];
 
 function pillClass(active: boolean) {

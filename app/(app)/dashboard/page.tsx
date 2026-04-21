@@ -83,26 +83,26 @@ export default async function DashboardPage({
           )}
         </>
       ) : (
-        <div className="pt-6 text-center">
+        <div className="pt-2 text-center">
           <h1 className="font-serif text-[clamp(4.2rem,8.5vw,7.5rem)] font-semibold uppercase leading-[0.88] tracking-[-0.035em] text-styloire-champagneLight">
             {heading}
           </h1>
-          <div className="mx-auto mt-10 flex max-w-[22rem] flex-col gap-5">
+          <div className="mx-auto mt-8 flex max-w-[22rem] flex-col gap-5">
             <Link
               href="/requests/new"
-              className="rounded-full border border-white/38 bg-white/20 px-8 py-5 font-sans text-[0.9rem] font-medium uppercase tracking-[0.2em] text-white/88"
+              className="rounded-full border border-white/38 bg-white/20 px-8 py-4 font-sans text-[0.82rem] font-medium uppercase tracking-[0.2em] text-white/88"
             >
               Send a new request
             </Link>
             <Link
               href="/dashboard?view=requests"
-              className="rounded-full border border-white/38 bg-white/20 px-8 py-5 font-sans text-[0.9rem] font-medium uppercase tracking-[0.2em] text-white/88"
+              className="rounded-full border border-white/38 bg-white/20 px-8 py-4 font-sans text-[0.82rem] font-medium uppercase tracking-[0.2em] text-white/88"
             >
               Existing requests
             </Link>
             <Link
               href="/roster"
-              className="rounded-full border border-white/38 bg-white/20 px-8 py-5 font-sans text-[0.9rem] font-medium uppercase tracking-[0.2em] text-white/88"
+              className="rounded-full border border-white/38 bg-white/20 px-8 py-4 font-sans text-[0.82rem] font-medium uppercase tracking-[0.2em] text-white/88"
             >
               Client profiles
             </Link>

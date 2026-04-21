@@ -29,31 +29,25 @@ export default async function RosterPage() {
             key={profile.id}
             className="min-h-[18.8rem] rounded-[1.9rem] border border-white/42 bg-white/22 px-6 py-8 transition-[border-color,background-color] duration-styloire ease-styloire hover:border-white/55 hover:bg-white/26"
           >
-            <p className="font-sans text-[2.05rem] font-medium leading-[0.96] text-styloire-champagneLight">
+            <p className="font-sans text-[1.95rem] font-medium leading-[0.98] text-styloire-champagneLight">
               {profile.talent_name}
             </p>
-            <p className="mt-6 font-serif text-[2.9rem] leading-none text-styloire-champagneLight">
+            <p className="mt-8 font-serif text-[2.5rem] leading-none text-styloire-champagneLight">
               {profile.contact_count}
             </p>
-            <p className="mt-1 font-sans text-[1.05rem] text-white/76">Contacts</p>
-            <p className="mt-2 font-sans text-[0.92rem] text-white/58">
-              {profile.request_count} past request{profile.request_count === 1 ? "" : "s"}
-            </p>
-            <p className="mt-1 font-sans text-[0.78rem] text-white/42">
-              {formatLastUsed(profile.last_used_at)}
-            </p>
-            <div className="mt-3 h-px w-full bg-white/35" />
-            <div className="mt-4 flex flex-wrap items-center gap-4 font-sans text-[1rem] font-medium text-styloire-champagneLight">
-              <Link href={`/roster/${profile.id}`} className="hover:text-white">
+            <p className="mt-1 font-sans text-[1rem] text-white/76">Contacts</p>
+            <div className="mt-4 h-px w-full bg-white/35" />
+            <div className="mt-4 space-y-2">
+              <Link
+                href={`/roster/${profile.id}`}
+                className="block font-sans text-[0.98rem] font-medium text-styloire-champagneLight hover:text-white"
+              >
                 Manage profile &rarr;
               </Link>
-              <span className="text-white/34">·</span>
-              <Link
-                href={`/requests/new?profile=${profile.id}`}
-                className="hover:text-white"
-              >
-                New request &rarr;
-              </Link>
+              <p className="font-sans text-[0.78rem] text-white/42">
+                {profile.request_count} past request{profile.request_count === 1 ? "" : "s"} ·{" "}
+                {formatLastUsed(profile.last_used_at)}
+              </p>
             </div>
           </div>
         ))}

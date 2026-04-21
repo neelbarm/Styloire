@@ -13,10 +13,6 @@ const pricingItems = [
     a: "Styloire is $30 a month, flat. No tiers, no usage limits, no surprises."
   },
   {
-    q: "Is there a free trial?",
-    a: "If a free trial is available, you'll see it clearly before checkout."
-  },
-  {
     q: "Can I cancel anytime?",
     a: "Yes. No contracts, no commitments. Cancel whenever you want."
   }
@@ -39,8 +35,8 @@ export default function FaqsPage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(93,76,58,0.18), rgba(18,14,13,0.18)), ${IMG_HEADER}`,
-          backgroundPosition: "center center",
+          backgroundImage: `linear-gradient(rgba(93,76,58,0.12), rgba(18,14,13,0.12)), ${IMG_HEADER}`,
+          backgroundPosition: "center 18%",
           backgroundSize: "cover"
         }}
       >
@@ -61,8 +57,8 @@ export default function FaqsPage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(14,13,13,0.2), rgba(14,13,13,0.2)), ${IMG_PRICING}`,
-          backgroundPosition: "center center",
+          backgroundImage: `linear-gradient(rgba(14,13,13,0.1), rgba(14,13,13,0.1)), ${IMG_PRICING}`,
+          backgroundPosition: "center 36%",
           backgroundSize: "cover"
         }}
       >
@@ -108,8 +104,8 @@ export default function FaqsPage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(10,10,10,0.26), rgba(10,10,10,0.26)), ${IMG_CTA}`,
-          backgroundPosition: "center center",
+          backgroundImage: `linear-gradient(rgba(10,10,10,0.18), rgba(10,10,10,0.18)), ${IMG_CTA}`,
+          backgroundPosition: "center 55%",
           backgroundSize: "cover"
         }}
       >

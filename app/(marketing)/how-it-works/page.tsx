@@ -7,7 +7,7 @@ const steps = [
   {
     index: "01",
     title: "Start Here : Create a Request",
-    body: "Give your project a name. Add your talent and the event or publication. That's it - Styloire already knows how your subject line should read."
+    body: "Give your project a name. Add your talent and the event or publication. That's it - Styloire already knows how your subject lines should read."
   },
   {
     index: "02",
@@ -22,12 +22,7 @@ const steps = [
   {
     index: "04",
     title: "Watch It Go: Hit Send",
-    body: "Every email lands personalized, professional, and on time. Styloire handles the rest - tracking opens, responses, and flagging who still needs a follow up."
-  },
-  {
-    index: "05",
-    title: "Stay on Top: Schedule Your Follow Up",
-    body: "Pick a date Styloire sends a follow up automatically to every brand that hasn't responded. You don't have to think about it again until they reply."
+    body: "Every email lands personalized, professional, and on time. Styloire handles the rest."
   }
 ];
 
@@ -43,8 +38,8 @@ export default function HowItWorksPage() {
       <section
         className="relative isolate overflow-hidden text-white"
         style={{
-          backgroundImage: `linear-gradient(rgba(14,14,14,0.28), rgba(14,14,14,0.28)), ${IMG_STEPS}`,
-          backgroundPosition: "center top",
+          backgroundImage: `linear-gradient(rgba(14,14,14,0.18), rgba(14,14,14,0.18)), ${IMG_STEPS}`,
+          backgroundPosition: "center 12%",
           backgroundSize: "cover"
         }}
       >
@@ -101,7 +96,7 @@ export default function HowItWorksPage() {
         className="relative isolate overflow-hidden text-white"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)), ${IMG_STRIP}`,
-          backgroundPosition: "center center",
+          backgroundPosition: "center 42%",
           backgroundSize: "cover"
         }}
       >

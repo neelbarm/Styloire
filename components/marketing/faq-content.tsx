@@ -11,15 +11,15 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     items: [
       {
         q: "What is Styloire?",
-        a: "Styloire is a web-based email automation platform for fashion stylists and assistants. It automates pull request outreach so you write one email and send personalized messages to large brand PR lists in minutes."
+        a: "Styloire is an email automation platform built specifically for fashion stylists and their assistants. It automates pull request outreach - so instead of copy and pasting the same email over and over, you write it once and send personalized messages to large brand lists in minutes."
       },
       {
         q: "Who is Styloire for?",
-        a: "Stylists, styling assistants, and anyone managing pull request outreach for a client. Whether you're working editorial, red carpet, or commercial - if you're sending pull request emails, Styloire is for you."
+        a: "Stylists, styling assistants, and anyone managing pull request outreach for a talent. Whether you're writing red carpet, editorial, or commercial emails, if you're sending pull request emails, Styloire is for you."
       },
       {
         q: "Do I need to be tech-savvy to use it?",
-        a: "Not at all. You can put together a spreadsheet anywhere and still use Styloire. There's no technical setup, no complicated onboarding, and no learning curve. It fits into your workflow from the moment you sign in."
+        a: "Not at all. If you can put together a spreadsheet and write an email, you can use Styloire. There's no technical setup, no complicated onboarding. You'll be sending your first request in minutes."
       }
     ]
   },
@@ -29,23 +29,23 @@ export const FAQ_BLOCKS: FaqBlock[] = [
     items: [
       {
         q: "How do I import my brand contacts?",
-        a: "You upload a simple spreadsheet with two columns - Brand Name and Email. There's an optional third column for your PR contact's name if you want personalized greetings. That's it."
+        a: "You upload a simple spreadsheet with 3 columns - Brand Name and Email. There's an optional third column for your PR contact's first name if you want personalized greetings. That's it."
       },
       {
         q: "Does Styloire provide a database of brand PR contacts?",
-        a: "No - you bring your own contact list. Your contact list is what makes it yours, and we keep it that way. Styloire is the tool that makes using that list effortless."
+        a: "No - you bring your own contact list. Your relationships with brands are yours, and we keep it that way. Styloire is the tool that makes using that list effortless."
       },
       {
         q: "What does the subject line look like?",
-        a: "Styloire auto generates subject lines in the standard industry format: Talent Name / BRAND NAME / event or publication - with the contact or brand name already inserted - no manual editing required."
+        a: "Styloire auto generates subject lines in the standard industry format: Talent Name / BRAND NAME / event or publication. Every email goes out with the correct brand name already in the subject line. No manual editing required."
       },
       {
         q: "Can I use my own email copy?",
-        a: "Absolutely. You can use your own email from start to finish or choose from our saved pull request templates. Either way, the emails are personalized per brand."
+        a: "Absolutely. You write your own email from scratch and the email goes out personalized per brand."
       },
       {
         q: "What are client profiles?",
-        a: "Every time you upload contacts for a talent, Styloire saves them under that talent's client profile. The next time you're pulling for them, your brand list, response history, and previous requests are all already there. Everything is already there."
+        a: "Every time you upload a contact list, Styloire saves it as a client profile, under that talent's name. Your brand contacts, past responses, and response history all live in one place. So the next time you're pulling for the same client, everything is already there."
       }
     ]
   }

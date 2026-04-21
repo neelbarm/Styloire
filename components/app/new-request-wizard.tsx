@@ -92,12 +92,20 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   }, [initialProfileId, profiles]);
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
+  const totalContactCount = useMemo(
+    () => brands.reduce((sum, brand) => sum + (groups[brand]?.length ?? 0), 0),
+    [brands, groups]
+  );
   const filteredBrands = useMemo(() => {
     const q = contactSearch.trim().toLowerCase();
     if (!q) return brands;
     return brands.filter((b) => b.toLowerCase().includes(q));
   }, [brands, contactSearch]);
   const selectedCount = selectedBrands.length;
+  const selectedContactCount = useMemo(
+    () => selectedBrands.reduce((sum, brand) => sum + (groups[brand]?.length ?? 0), 0),
+    [groups, selectedBrands]
+  );
   const previewBrand = selectedBrands[0] ?? brands[0];
   const previewContact = previewBrand ? groups[previewBrand]?.[0] : undefined;
 
@@ -459,7 +467,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                     Select contacts
                   </h2>
                   <p className="mt-1 font-sans text-[0.85rem] text-white/50">
-                    {selectedCount} of {brands.length} selected
+                    {selectedContactCount} of {totalContactCount} selected
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -485,7 +493,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               <input
                 value={contactSearch}
                 onChange={(e) => setContactSearch(e.target.value)}
-                placeholder="Search brand or contact name..."
+                placeholder="Search brands..."
                 className="w-full rounded-full border border-white/18 bg-black/14 px-5 py-2.5 font-sans text-[0.88rem] text-styloire-champagneLight placeholder:text-white/35 focus:border-white/30 focus:outline-none"
               />
 
@@ -556,7 +564,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               className={filledBtn}
             >
               <span className="inline-flex items-center gap-2">
-                Continue with {selectedCount} contacts <ArrowRight className="h-3 w-3" />
+                Continue with {selectedContactCount} contacts <ArrowRight className="h-3 w-3" />
               </span>
             </StyloireButton>
           </div>
@@ -676,7 +684,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   {eventName || "—"}
                 </p>
                 <p className="mt-1 font-sans text-[0.82rem] text-white/52">
-                  {selectedCount} contacts selected
+                  {selectedContactCount} contacts selected
                 </p>
               </div>
               <div className="px-5 py-4">
@@ -735,7 +743,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 <Check className="h-5 w-5 text-emerald-300" />
               </div>
               <p className="mt-4 font-serif text-[1.5rem] font-semibold text-styloire-champagneLight">
-                {selectedCount} emails sent
+                {selectedContactCount} emails sent
               </p>
               <p className="mt-1 font-sans text-[0.85rem] text-white/52">
                 {talent} <span className="mx-2 text-white/30">/</span> {eventName}
@@ -761,7 +769,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div className="flex flex-col items-center py-10 text-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-styloire-champagneLight" />
               <p className="mt-4 font-sans text-[0.9rem] text-white/55">
-                Sending {selectedCount} emails…
+                Sending {selectedContactCount} emails…
               </p>
             </div>
           ) : (
@@ -769,7 +777,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div className="p-6 md:p-7">
               <span className={labelCls}>Ready to send</span>
               <p className="mt-2 font-sans text-[0.88rem] text-white/55">
-                {selectedCount} emails will go out individually — one per brand, personalized with
+                {selectedContactCount} emails will go out individually — one per brand, personalized with
                 their name.
               </p>
 
@@ -795,7 +803,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   onClick={submitRequest}
                   className="px-8 py-2 text-[0.65rem] tracking-[0.1em]"
                 >
-                  Send {selectedCount} emails
+                  Send {selectedContactCount} emails
                 </StyloireButton>
               </div>
             </div>
