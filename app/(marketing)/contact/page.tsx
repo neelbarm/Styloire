@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/marketing/contact-form";
 export default function ContactPage() {
   return (
     <>
-      <section className="px-6 pb-16 pt-8 md:px-10">
+      <section className="px-6 pb-16 pt-28 md:px-10 md:pt-32">
         <div className="mx-auto max-w-[52rem] text-center">
           <h1 className="font-serif text-[clamp(4rem,8vw,6.8rem)] font-semibold uppercase leading-[0.88] tracking-[-0.03em] text-styloire-champagneLight">
             Get in touch
