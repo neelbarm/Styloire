@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StyloireButton } from "@/components/styloire";
 
 const IMG_HERO = "url('/images/who-for.jpeg')";
@@ -149,6 +150,14 @@ export default function MarketingHomePage() {
           >
             Get Started
           </StyloireButton>
+          <p className="mt-5 font-sans text-[0.66rem] uppercase tracking-[0.18em] text-white/54">
+            <Link
+              href="/privacy"
+              className="underline-offset-4 transition-colors duration-styloire hover:text-white/82 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </p>
         </div>
       </section>
     </>
