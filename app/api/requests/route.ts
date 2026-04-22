@@ -22,10 +22,33 @@ function subjectTemplate(): string {
   return "{talent} / {event} / {brand_name}";
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function normalizeContact(contact: ContactInput): ContactInput | null {
+  const brand_name = contact.brand_name?.trim().toUpperCase();
+  const email = contact.email?.trim().toLowerCase();
+  const contact_name = contact.contact_name?.trim() ?? "";
+
+  if (!brand_name || !email || !isValidEmail(email)) {
+    return null;
+  }
+
+  return {
+    brand_name,
+    email,
+    contact_name
+  };
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as CreateRequestPayload;
-  if (!body.talent?.trim() || !body.eventName?.trim() || !body.contacts?.length) {
+  if (!body.talent?.trim() || !body.eventName?.trim()) {
     return NextResponse.json({ error: "Missing request fields." }, { status: 400 });
+  }
+  if (body.requestType !== "existing" && !body.contacts?.length) {
+    return NextResponse.json({ error: "At least one contact is required." }, { status: 400 });
   }
 
   const authed = await getAuthedServiceRoleClient();
@@ -34,7 +57,12 @@ export async function POST(request: Request) {
   }
 
   if (!isSupabaseConfigured()) {
-    return NextResponse.json({ ok: true, id: "req_local_preview", source: "mock" });
+    return NextResponse.json({
+      ok: true,
+      source: "mock",
+      previewOnly: true,
+      notice: "Supabase is not configured, so this request was not saved or sent."
+    });
   }
   const supabase = authed.client;
 
@@ -43,11 +71,23 @@ export async function POST(request: Request) {
   let contactRows: Array<{ id: string; brand_name: string }> = [];
 
   if (body.requestType === "existing" && body.profileId) {
-    clientProfileId = body.profileId;
+    const { data: profileRow, error: profileError } = await supabase
+      .from("client_profiles")
+      .select("id")
+      .eq("id", body.profileId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (profileError) {
+      return NextResponse.json({ error: profileError.message }, { status: 500 });
+    }
+    if (!profileRow) {
+      return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    }
+    clientProfileId = String(profileRow.id);
     const { data: existing, error: existingError } = await supabase
       .from("brand_contacts")
       .select("id,brand_name")
-      .eq("client_profile_id", body.profileId)
+      .eq("client_profile_id", clientProfileId)
       .eq("is_active", true);
     if (existingError) {
       return NextResponse.json({ error: existingError.message }, { status: 500 });
@@ -56,7 +96,24 @@ export async function POST(request: Request) {
       id: String(row.id),
       brand_name: String(row.brand_name)
     }));
+    if (!contactRows.length) {
+      return NextResponse.json(
+        { error: "This saved profile does not have any active contacts yet." },
+        { status: 400 }
+      );
+    }
   } else {
+    const normalizedContacts = body.contacts
+      .map(normalizeContact)
+      .filter((contact): contact is ContactInput => contact !== null);
+
+    if (!normalizedContacts.length) {
+      return NextResponse.json(
+        { error: "At least one valid contact with a brand name and email is required." },
+        { status: 400 }
+      );
+    }
+
     const { data: profile, error: profileError } = await supabase
       .from("client_profiles")
       .insert({
@@ -71,14 +128,15 @@ export async function POST(request: Request) {
     }
     clientProfileId = String(profile.id);
 
-    const dedupedByEmail = new Map<string, ContactInput>();
-    for (const contact of body.contacts) {
-      dedupedByEmail.set(contact.email.toLowerCase(), contact);
+    const dedupedByBrandAndEmail = new Map<string, ContactInput>();
+    for (const contact of normalizedContacts) {
+      const dedupeKey = `${contact.brand_name}::${contact.email}`;
+      dedupedByBrandAndEmail.set(dedupeKey, contact);
     }
-    const inserts = [...dedupedByEmail.values()].map((contact) => ({
+    const inserts = [...dedupedByBrandAndEmail.values()].map((contact) => ({
       client_profile_id: clientProfileId,
-      brand_name: contact.brand_name.toUpperCase(),
-      email: contact.email.toLowerCase(),
+      brand_name: contact.brand_name,
+      email: contact.email,
       contact_name: contact.contact_name || null,
       is_active: true
     }));

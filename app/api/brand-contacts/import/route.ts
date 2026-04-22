@@ -24,6 +24,10 @@ export type ImportResult = {
   contacts: BrandContact[];
 };
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as ImportPayload;
   const { profile_id, contacts } = body;
@@ -75,15 +79,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Profile not found." }, { status: 404 });
   }
 
-  // Fetch existing emails for this profile to deduplicate
+  // Fetch existing brand/email pairs for this profile to deduplicate
   const { data: existing } = await supabase
     .from("brand_contacts")
-    .select("email")
+    .select("brand_name,email")
     .eq("client_profile_id", profile_id)
     .eq("is_active", true);
 
-  const existingEmails = new Set(
-    (existing ?? []).map((r) => (r.email as string).toLowerCase())
+  const existingBrandEmails = new Set(
+    (existing ?? []).map(
+      (r) => `${String(r.brand_name).trim().toUpperCase()}::${String(r.email).toLowerCase()}`
+    )
   );
 
   const errors: string[] = [];
@@ -95,19 +101,29 @@ export async function POST(request: Request) {
     is_active: boolean;
   }> = [];
 
-  for (const c of contacts) {
-    const email = c.email?.trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push(`Skipped invalid email: ${c.email}`);
+  for (const [index, c] of contacts.entries()) {
+    const brand = typeof c.brand_name === "string" ? c.brand_name.trim().toUpperCase() : "";
+    const email = typeof c.email === "string" ? c.email.trim().toLowerCase() : "";
+    const contactName = typeof c.contact_name === "string" ? c.contact_name.trim() : "";
+
+    if (!brand) {
+      errors.push(`Row ${index + 1}: missing brand name.`);
       continue;
     }
-    if (existingEmails.has(email)) continue; // silent dedupe
-    existingEmails.add(email); // prevent duplicates within this batch
+    if (!email || !isValidEmail(email)) {
+      errors.push(
+        `Row ${index + 1}: invalid email "${typeof c.email === "string" ? c.email : ""}".`
+      );
+      continue;
+    }
+    const dedupeKey = `${brand}::${email}`;
+    if (existingBrandEmails.has(dedupeKey)) continue; // silent dedupe
+    existingBrandEmails.add(dedupeKey); // prevent duplicates within this batch
     toInsert.push({
       client_profile_id: profile_id,
-      brand_name: c.brand_name.trim().toUpperCase(),
+      brand_name: brand,
       email,
-      contact_name: c.contact_name?.trim() || null,
+      contact_name: contactName || null,
       is_active: true
     });
   }
