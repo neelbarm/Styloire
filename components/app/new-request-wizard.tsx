@@ -3,7 +3,6 @@
 import { ArrowRight, Check, Upload } from "lucide-react";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyloireButton, StyloirePanel } from "@/components/styloire";
-import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
 import type { BrandContact, ClientProfileSummary, ConnectedAccount } from "@/lib/styloire/types";
 import {
   type GroupedContacts,
@@ -62,7 +61,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
-  const [emailBody, setEmailBody] = useState<string>(DEFAULT_TEMPLATE_STANDARD_PULL.body);
+  const [emailBody, setEmailBody] = useState<string>("");
   const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
   const [accountSummary, setAccountSummary] = useState<{
     provider: ConnectedAccount["provider"];
