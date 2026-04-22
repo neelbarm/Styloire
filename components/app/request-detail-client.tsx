@@ -32,9 +32,8 @@ export function RequestDetailClient({ request, rows }: Props) {
 
   const stats = useMemo(() => {
     const sent = contactRows.filter((row) => row.email_sent).length;
-    const opened = contactRows.filter((row) => row.opened).length;
     const responded = contactRows.filter((row) => row.responded).length;
-    return { sent, opened, responded, noResponse: Math.max(0, sent - responded) };
+    return { sent, responded, noResponse: Math.max(0, sent - responded) };
   }, [contactRows]);
 
   const hasPendingSends = useMemo(
@@ -53,6 +52,7 @@ export function RequestDetailClient({ request, rows }: Props) {
       error?: string;
       sent?: number;
       failed?: number;
+      remaining?: number;
     };
     setBusy(false);
     if (response.status === 400) {
@@ -62,7 +62,7 @@ export function RequestDetailClient({ request, rows }: Props) {
     if (response.status === 207) {
       setNote(
         payload.error ??
-          `Partial send: ${payload.sent ?? 0} sent, ${payload.failed ?? 0} failed.`,
+          `Partial send: ${payload.sent ?? 0} sent, ${payload.failed ?? 0} failed, ${payload.remaining ?? 0} still queued.`,
       );
       router.refresh();
       return;
@@ -92,6 +92,7 @@ export function RequestDetailClient({ request, rows }: Props) {
   }
 
   async function toggleResponded(id: string, value: boolean) {
+    const prev = contactRows;
     setContactRows((prev) => prev.map((row) => (row.id === id ? { ...row, responded: value } : row)));
     const response = await fetch(`/api/request-contacts/${id}`, {
       method: "PATCH",
@@ -99,6 +100,7 @@ export function RequestDetailClient({ request, rows }: Props) {
       body: JSON.stringify({ responded: value })
     });
     if (!response.ok) {
+      setContactRows(prev);
       setNote("Could not update contact status.");
     }
   }
@@ -131,10 +133,9 @@ export function RequestDetailClient({ request, rows }: Props) {
         <p className="font-sans text-styloire-caption uppercase tracking-styloireWide text-styloire-inkMuted">
           Stats
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[
             ["Emails sent", String(stats.sent)],
-            ["Opened", String(stats.opened)],
             ["Responded", String(stats.responded)],
             ["No response", String(stats.noResponse)]
           ].map(([label, value]) => (
