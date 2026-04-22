@@ -62,7 +62,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>("");
-  const [emailSubject, setEmailSubject] = useState("{{talent}} / {{event}} / BRAND NAME");
+  const [emailSubject, setEmailSubject] = useState("BRAND NAME");
   const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
   const [accountSummary, setAccountSummary] = useState<{
     provider: ConnectedAccount["provider"];
@@ -189,14 +189,14 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     });
   }, [emailBody, previewBrand, previewContact, previewContactName, talent, eventName]);
 
-  const autoSubjectPreview = `${talent.trim() || "{{talent}}"} / ${
-    eventName.trim() || "{{event}}"
+  const autoSubjectPreview = `${talent.trim() || "Talent Name"} / ${
+    eventName.trim() || "Event"
   } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
   const subjectPreview = renderTemplate(emailSubject, {
-    talent: talent.trim() || "{{talent}}",
-    event: eventName.trim() || "{{event}}",
+    talent: talent.trim() || "Talent Name",
+    event: eventName.trim() || "Event",
     brand_name: previewBrand?.toUpperCase() || "BRAND NAME",
-    contact_name: previewContactName || "{{contact_name}}"
+    contact_name: previewContactName || "team"
   }).replace(/\{\{\s*brand_name\s*\}\}/gi, previewBrand?.toUpperCase() || "BRAND NAME");
 
   useEffect(() => {
