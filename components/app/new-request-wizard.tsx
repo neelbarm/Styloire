@@ -917,7 +917,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               <span className={labelCls}>Ready to send</span>
               <p className="mt-2 max-w-[42rem] pr-4 whitespace-normal break-words font-sans text-[0.88rem] leading-relaxed text-white/55">
                 {selectedCount} brand emails will go out, with all recipients for each selected
-                brand grouped together in To.
+                brand grouped together in one email.
               </p>
 
               {submitError ? (
