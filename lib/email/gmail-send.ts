@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
-import type { SendEmailInput, SendEmailResult } from "./types";
+import type { SendEmailInput, SendEmailRecipient, SendEmailResult } from "./types";
 
 function encodeMimeWord(s: string): string {
   if (/^[\x01-\x7F]*$/.test(s)) return s;
@@ -8,13 +8,17 @@ function encodeMimeWord(s: string): string {
   return `=?UTF-8?B?${b}?=`;
 }
 
+function formatRecipient(recipient: SendEmailRecipient): string {
+  return recipient.name
+    ? `${encodeMimeWord(recipient.name)} <${recipient.email}>`
+    : recipient.email;
+}
+
 function buildRfc822(m: SendEmailInput): string {
   const from = m.fromName
     ? `${encodeMimeWord(m.fromName)} <${m.fromEmail}>`
     : m.fromEmail;
-  const to = m.toName
-    ? `${encodeMimeWord(m.toName)} <${m.to}>`
-    : m.to;
+  const to = m.to.map(formatRecipient).join(", ");
   const lines = [`From: ${from}`, `To: ${to}`];
   if (m.cc.length) {
     lines.push(`Cc: ${m.cc.join(", ")}`);

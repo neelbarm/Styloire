@@ -1,11 +1,10 @@
 "use client";
 
 import { ArrowRight, Check, Upload } from "lucide-react";
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyloireButton, StyloirePanel } from "@/components/styloire";
 import { DEFAULT_TEMPLATE_STANDARD_PULL } from "@/lib/styloire/default-templates";
-import type { BrandContact, ClientProfileSummary } from "@/lib/styloire/types";
+import type { BrandContact, ClientProfileSummary, ConnectedAccount } from "@/lib/styloire/types";
 import {
   type GroupedContacts,
   parseBrandContactsFileDetailed
@@ -31,6 +30,16 @@ type Props = {
   initialProfileId?: string;
 };
 
+type AccountResponse = {
+  accounts?: ConnectedAccount[];
+  error?: string;
+};
+
+type CcResponse = {
+  emails?: string[];
+  error?: string;
+};
+
 function groupContacts(contacts: BrandContact[]): GroupedContacts {
   return contacts.reduce<GroupedContacts>((acc, row) => {
     const key = row.brand_name.trim().toUpperCase();
@@ -42,10 +51,10 @@ function groupContacts(contacts: BrandContact[]): GroupedContacts {
 }
 
 export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
-  const router = useRouter();
   // ── All state preserved exactly ──────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [requestType, setRequestType] = useState<"new" | "existing">("new");
+  const [contactSource, setContactSource] = useState<"none" | "profile" | "upload">("none");
   const [profileId, setProfileId] = useState("");
   const [talent, setTalent] = useState("");
   const [eventName, setEventName] = useState("");
@@ -54,25 +63,33 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>(DEFAULT_TEMPLATE_STANDARD_PULL.body);
-  const [ccRecipients, setCcRecipients] = useState<string[]>(["User's assistant email"]);
+  const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
+  const [accountSummary, setAccountSummary] = useState<{
+    provider: ConnectedAccount["provider"];
+    email: string;
+  } | null>(null);
+  const [accountError, setAccountError] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "saving" | "error" | "success">("idle");
+  const [submitMode, setSubmitMode] = useState<"sent" | "preview">("sent");
   const [submitError, setSubmitError] = useState("");
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileLoadSeqRef = useRef(0);
 
   // ── All derived state preserved exactly ─────────────────────────────────
   const matchedProfile = useMemo(() => {
     const target = talent.trim().toLowerCase();
     if (!target) return null;
-    return (
-      profiles.find((p) => p.talent_name.trim().toLowerCase() === target) ??
-      profiles.find((p) => p.talent_name.trim().toLowerCase().includes(target)) ??
-      null
-    );
+    return profiles.find((p) => p.talent_name.trim().toLowerCase() === target) ?? null;
   }, [profiles, talent]);
 
   useEffect(() => {
+    if (contactSource === "upload") {
+      setRequestType("new");
+      setProfileId("");
+      return;
+    }
     if (matchedProfile) {
       setRequestType("existing");
       setProfileId(matchedProfile.id);
@@ -80,7 +97,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     }
     setRequestType("new");
     setProfileId("");
-  }, [matchedProfile]);
+  }, [contactSource, matchedProfile]);
 
   useEffect(() => {
     if (!initialProfileId) return;
@@ -88,8 +105,55 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     if (!preselected) return;
     setTalent(preselected.talent_name);
     setProfileId(preselected.id);
+    setContactSource("profile");
     setRequestType("existing");
   }, [initialProfileId, profiles]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSendingSettings() {
+      try {
+        const [accountsRes, ccRes] = await Promise.all([
+          fetch("/api/email/accounts"),
+          fetch("/api/settings/cc-emails")
+        ]);
+
+        const accountsJson = (await accountsRes.json().catch(() => ({}))) as AccountResponse;
+        const ccJson = (await ccRes.json().catch(() => ({}))) as CcResponse;
+
+        if (cancelled) return;
+
+        if (accountsRes.ok) {
+          const active = (accountsJson.accounts ?? []).find((account) => account.is_sending_active) ?? null;
+          setAccountSummary(
+            active
+              ? {
+                  provider: active.provider,
+                  email: active.email
+                }
+              : null
+          );
+        } else {
+          setAccountError(accountsJson.error ?? "Could not load connected account details.");
+        }
+
+        if (ccRes.ok) {
+          setSavedCcRecipients(ccJson.emails ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setAccountError("Could not load sending settings.");
+        }
+      }
+    }
+
+    void loadSendingSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const brands = useMemo(() => Object.keys(groups).sort(), [groups]);
   const totalContactCount = useMemo(
@@ -107,21 +171,33 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     [groups, selectedBrands]
   );
   const previewBrand = selectedBrands[0] ?? brands[0];
-  const previewContact = previewBrand ? groups[previewBrand]?.[0] : undefined;
+  const previewBrandContacts = previewBrand ? groups[previewBrand] ?? [] : [];
+  const previewContact = previewBrandContacts[0];
+  const previewContactName =
+    previewBrandContacts.length > 1
+      ? "team"
+      : (previewContact?.contact_name ?? "");
 
   const mergedBody = useMemo(() => {
     if (!previewContact || !talent || !eventName) return emailBody;
     return renderTemplate(emailBody, {
       brand_name: previewBrand ?? "",
-      contact_name: previewContact.contact_name,
+      contact_name: previewContactName,
       talent,
       event: eventName
     });
-  }, [emailBody, previewBrand, previewContact, talent, eventName]);
+  }, [emailBody, previewBrand, previewContact, previewContactName, talent, eventName]);
 
   const subjectPreview = `${talent.trim() || "{{talent}}"} / ${
     eventName.trim() || "{{event}}"
   } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
+
+  const providerLabel = useMemo(() => {
+    if (!accountSummary) return "";
+    if (accountSummary.provider === "gmail") return "Gmail";
+    if (accountSummary.provider === "outlook") return "Outlook";
+    return "SMTP";
+  }, [accountSummary]);
 
   // ── All handlers preserved exactly ──────────────────────────────────────
   const loadPreviousContacts = async () => {
@@ -130,26 +206,27 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       setParseError("Enter a talent/client name first, then load previous contacts.");
       return;
     }
-    const matched =
-      profiles.find((p) => p.talent_name.trim().toLowerCase() === target) ??
-      profiles.find((p) => p.talent_name.trim().toLowerCase().includes(target));
+    const matched = profiles.find((p) => p.talent_name.trim().toLowerCase() === target);
     if (!matched) {
       setParseError(`No saved profile found for "${talent.trim()}".`);
       return;
     }
     setRequestType("existing");
+    setContactSource("profile");
     setProfileId(matched.id);
     await loadProfileContacts(matched.id);
     setParseError("");
   };
 
-  const loadProfileContacts = async (nextProfileId: string) => {
+  const loadProfileContacts = useCallback(async (nextProfileId: string) => {
+    const requestSeq = ++profileLoadSeqRef.current;
     try {
       const response = await fetch(`/api/brand-contacts?profile_id=${encodeURIComponent(nextProfileId)}`);
       const data = (await response.json().catch(() => ({}))) as {
         contacts?: BrandContact[];
         error?: string;
       };
+      if (requestSeq !== profileLoadSeqRef.current) return;
       if (!response.ok) {
         setParseError(data.error ?? "Could not load saved contacts.");
         setGroups({});
@@ -168,25 +245,31 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
       const grouped = groupContacts(contacts);
       setTalent(profile.talent_name);
+      setContactSource("profile");
       setGroups(grouped);
       setSelectedBrands(Object.keys(grouped).sort());
       setParseError("");
     } catch {
+      if (requestSeq !== profileLoadSeqRef.current) return;
       setParseError("Could not load saved contacts.");
       setGroups({});
       setSelectedBrands([]);
     }
-  };
+  }, [profiles]);
 
   useEffect(() => {
     if (step !== 2 || requestType !== "existing" || !profileId || brands.length > 0) return;
     void loadProfileContacts(profileId);
-  }, [step, requestType, profileId, brands.length]);
+  }, [step, requestType, profileId, brands.length, loadProfileContacts]);
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    profileLoadSeqRef.current += 1;
     const parsed = await parseBrandContactsFileDetailed(file);
+    setContactSource("upload");
+    setRequestType("new");
+    setProfileId("");
     setGroups(parsed.groups);
     setSelectedBrands(Object.keys(parsed.groups).sort());
     setParseError(parsed.errors[0] ?? "");
@@ -204,6 +287,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
   const submitRequest = async () => {
     setSubmitState("saving");
+    setSubmitMode("sent");
     setSubmitError("");
     setSubmittedRequestId(null);
     const response = await fetch("/api/requests", {
@@ -223,14 +307,24 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       id?: string;
       error?: string;
       source?: string;
+      previewOnly?: boolean;
+      notice?: string;
     };
     if (!response.ok || !data.id) {
+      if (response.ok && data.previewOnly) {
+        setSubmitMode("preview");
+        setSubmitError(data.notice ?? "");
+        setSubmitState("success");
+        return;
+      }
       setSubmitState("error");
       setSubmitError(data.error ?? "Could not create request.");
       return;
     }
-    if (data.source === "mock" || data.id === "req_local_preview") {
-      setSubmittedRequestId(data.id);
+    if (data.source === "mock" || data.previewOnly) {
+      setSubmitMode("preview");
+      setSubmittedRequestId(null);
+      setSubmitError(data.notice ?? "");
       setSubmitState("success");
       return;
     }
@@ -240,6 +334,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       ok?: boolean;
       sent?: number;
       failed?: number;
+      remaining?: number;
     };
     if (sendResponse.status === 400) {
       setSubmitState("error");
@@ -252,7 +347,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       setSubmitState("error");
       setSubmitError(
         sendPayload.error ??
-          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed. Open the request to retry.`
+          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed, ${sendPayload.remaining ?? 0} still queued. Open the request to continue.`
       );
       return;
     }
@@ -341,7 +436,9 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
             {/* Profile status hint */}
             <p className="font-sans text-[0.84rem] font-medium text-white/50">
-              {matchedProfile
+              {contactSource === "upload"
+                ? "Using uploaded contacts for this request. Saved roster contacts will not be attached unless you choose the saved profile option in step 2."
+                : matchedProfile
                 ? `Existing profile found for ${matchedProfile.talent_name} — saved contacts load automatically in step 2.`
                 : "No saved roster profile found yet — you can upload a contact file in step 2."}
             </p>
@@ -386,7 +483,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   Contacts
                 </h2>
                 <p className="mt-1 font-sans text-[0.85rem] font-light text-white/50">
-                  Load a saved profile or upload a new contact file (.csv or .xlsx).
+                  Load a saved profile or upload a new contact file (.csv, .xls, or .xlsx).
                 </p>
               </div>
 
@@ -423,7 +520,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".csv,.xlsx"
+                    accept=".csv,.xls,.xlsx"
                     className="sr-only"
                     onChange={handleFile}
                   />
@@ -431,7 +528,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   <div className="mt-2 flex items-center gap-2">
                     <Upload className="h-4 w-4 text-styloire-champagneLight" />
                     <p className="font-sans text-[1.05rem] font-semibold text-styloire-champagneLight">
-                      Upload .csv or .xlsx
+                      Upload .csv, .xls, or .xlsx
                     </p>
                   </div>
                   <p className="mt-1 font-sans text-[0.82rem] text-white/55">
@@ -603,39 +700,45 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div className="space-y-2">
               <span className={labelCls}>Sending from</span>
               <div className="flex flex-wrap items-center gap-3 rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
-                <span className="font-sans text-[0.88rem] text-white/78">User&apos;s email</span>
-                <span className="font-sans text-[0.82rem] font-medium text-emerald-300/85">
-                  Connected via Gmail
-                </span>
+                {accountSummary ? (
+                  <>
+                    <span className="font-sans text-[0.88rem] text-white/78">{accountSummary.email}</span>
+                    <span className="font-sans text-[0.82rem] font-medium text-emerald-300/85">
+                      Connected via {providerLabel}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-sans text-[0.88rem] text-white/55">
+                    No active sending account set in Settings yet.
+                  </span>
+                )}
               </div>
+              {accountError ? (
+                <p className="font-sans text-[0.72rem] text-red-300">{accountError}</p>
+              ) : null}
             </div>
 
             {/* CC recipients */}
             <div className="space-y-2">
               <span className={labelCls}>CC recipients</span>
-              <div className="flex flex-wrap items-center gap-2">
-                {ccRecipients.map((recipient, index) => (
-                  <input
-                    key={`cc-${index}`}
-                    value={recipient}
-                    onChange={(e) => {
-                      const next = [...ccRecipients];
-                      next[index] = e.target.value;
-                      setCcRecipients(next);
-                    }}
-                    className="min-w-[12rem] rounded-[0.55rem] border border-white/14 bg-black/12 px-3 py-2 font-sans text-[0.85rem] text-white/72 focus:border-white/28 focus:outline-none"
-                  />
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setCcRecipients((prev) => [...prev, ""])}
-                  className="font-sans text-[0.82rem] font-semibold text-white/48 transition-colors hover:text-white/72"
-                >
-                  + Add another
-                </button>
+              <div className="flex flex-wrap items-center gap-2 rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
+                {savedCcRecipients.length > 0 ? (
+                  savedCcRecipients.map((recipient) => (
+                    <span
+                      key={recipient}
+                      className="rounded-full border border-white/12 bg-white/8 px-3 py-1 font-sans text-[0.8rem] text-white/72"
+                    >
+                      {recipient}
+                    </span>
+                  ))
+                ) : (
+                  <span className="font-sans text-[0.85rem] text-white/52">
+                    No CC recipients saved in Account Settings.
+                  </span>
+                )}
               </div>
               <p className="font-sans text-[0.72rem] text-white/38">
-                These addresses will be copied on every email sent in this request.
+                CC recipients are managed in Account Settings and apply to every sent request.
               </p>
             </div>
           </div>
@@ -670,7 +773,8 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div>
               <span className={labelCls}>Review your request</span>
               <p className="mt-1 font-sans text-[0.8rem] text-white/45">
-                Double-check everything before sending. Emails go out individually - one per brand.
+                Double-check everything before sending. One email goes out per selected brand,
+                with all recipients for that brand grouped in To.
               </p>
             </div>
 
@@ -684,7 +788,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   {eventName || "—"}
                 </p>
                 <p className="mt-1 font-sans text-[0.82rem] text-white/52">
-                  {selectedContactCount} contacts selected
+                  {selectedCount} brands selected · {selectedContactCount} contacts included
                 </p>
               </div>
               <div className="px-5 py-4">
@@ -693,10 +797,12 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               </div>
               <div className="px-5 py-4">
                 <p className={labelCls + " mb-2"}>Sending from</p>
-                <p className="font-sans text-[0.88rem] text-white/65">Your connected email</p>
-                {ccRecipients.filter((v) => v.trim()).length > 0 ? (
+                <p className="font-sans text-[0.88rem] text-white/65">
+                  {accountSummary ? `${accountSummary.email} via ${providerLabel}` : "Your active sending account in Settings"}
+                </p>
+                {savedCcRecipients.length > 0 ? (
                   <p className="mt-0.5 font-sans text-[0.82rem] text-white/45">
-                    CC: {ccRecipients.filter((v) => v.trim()).join(", ")}
+                    CC: {savedCcRecipients.join(", ")}
                   </p>
                 ) : null}
               </div>
@@ -743,22 +849,30 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 <Check className="h-5 w-5 text-emerald-300" />
               </div>
               <p className="mt-4 font-serif text-[1.5rem] font-semibold text-styloire-champagneLight">
-                {selectedContactCount} emails sent
+                {submitMode === "preview" ? "Preview ready" : `${selectedCount} brand emails sent`}
               </p>
               <p className="mt-1 font-sans text-[0.85rem] text-white/52">
                 {talent} <span className="mx-2 text-white/30">/</span> {eventName}
               </p>
               <p className="mt-0.5 font-sans text-[0.82rem] text-white/42">
-                Sent from your connected email
+                {submitMode === "preview"
+                  ? submitError || "Supabase is not configured, so this request was not saved or sent."
+                  : "Sent from your connected email"}
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <StyloireButton
-                  href={submittedRequestId ? `/requests/${submittedRequestId}` : "/dashboard"}
-                  variant="outline"
-                  className={ghostBtn}
-                >
-                  View request
-                </StyloireButton>
+                {submittedRequestId ? (
+                  <StyloireButton
+                    href={`/requests/${submittedRequestId}`}
+                    variant="outline"
+                    className={ghostBtn}
+                  >
+                    View request
+                  </StyloireButton>
+                ) : (
+                  <StyloireButton href="/dashboard" variant="outline" className={ghostBtn}>
+                    Back to dashboard
+                  </StyloireButton>
+                )}
                 <StyloireButton href="/requests/new" variant="outline" className={filledBtn}>
                   + New request
                 </StyloireButton>
@@ -769,7 +883,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div className="flex flex-col items-center py-10 text-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-styloire-champagneLight" />
               <p className="mt-4 font-sans text-[0.9rem] text-white/55">
-                Sending {selectedContactCount} emails…
+                Sending {selectedCount} brand emails…
               </p>
             </div>
           ) : (
@@ -777,8 +891,8 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <div className="p-6 md:p-7">
               <span className={labelCls}>Ready to send</span>
               <p className="mt-2 font-sans text-[0.88rem] text-white/55">
-                {selectedContactCount} emails will go out individually — one per brand, personalized with
-                their name.
+                {selectedCount} brand emails will go out, with all recipients for each selected
+                brand grouped together in To.
               </p>
 
               {submitError ? (
@@ -803,7 +917,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   onClick={submitRequest}
                   className="px-8 py-2 text-[0.65rem] tracking-[0.1em]"
                 >
-                  Send {selectedContactCount} emails
+                  Send {selectedCount} brand emails
                 </StyloireButton>
               </div>
             </div>

@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
   const row = account as ConnectedAccountRow;
   const message: SendEmailInput = {
-    to,
+    to: [{ email: to }],
     subject: "Styloire connection test",
     bodyText:
       "This is a test message from Styloire. If you received it, your connected account can send mail.",

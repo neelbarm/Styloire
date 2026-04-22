@@ -21,6 +21,12 @@ export async function sendViaOutlook(
   try {
     const exp = args.tokenExpiresAt ? Date.parse(args.tokenExpiresAt) : 0;
     const refreshSoon = Date.now() + 5 * 60 * 1000;
+    if ((!exp || exp < refreshSoon) && !args.refreshToken) {
+      return {
+        ok: false,
+        error: "Outlook connection needs to be reconnected before it can send mail."
+      };
+    }
     if ((!exp || exp < refreshSoon) && args.refreshToken) {
       const { clientId, clientSecret, tenantId } = microsoftOAuthWebConfig();
       const refreshed = await refreshMicrosoftAccessToken({
@@ -52,14 +58,12 @@ export async function sendViaOutlook(
       message: {
         subject: message.subject,
         body: { contentType: "Text", content: message.bodyText },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: message.to,
-              name: message.toName ?? undefined,
-            },
+        toRecipients: message.to.map((recipient) => ({
+          emailAddress: {
+            address: recipient.email,
+            name: recipient.name ?? undefined,
           },
-        ],
+        })),
         ccRecipients: message.cc.map((address) => ({
           emailAddress: { address },
         })),

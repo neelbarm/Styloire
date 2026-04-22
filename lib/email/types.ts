@@ -1,8 +1,12 @@
 export type EmailProvider = "gmail" | "outlook" | "smtp";
 
+export type SendEmailRecipient = {
+  email: string;
+  name?: string | null;
+};
+
 export type SendEmailInput = {
-  to: string;
-  toName?: string | null;
+  to: SendEmailRecipient[];
   subject: string;
   bodyText: string;
   cc: string[];

@@ -4,9 +4,10 @@ import {
   dispatchOutboundEmail,
   type ConnectedAccountRow,
 } from "./dispatch-outbound";
-import type { SendEmailInput } from "./types";
+import type { SendEmailInput, SendEmailRecipient } from "./types";
 
 const SEND_GAP_MS = 450;
+const MAX_SENDS_PER_RUN = 25;
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -31,7 +32,14 @@ export type SendOutreachResult = {
   error?: string;
   sent: number;
   failed: number;
+  remaining: number;
   results: Array<{ requestContactId: string; ok: boolean; error?: string }>;
+};
+
+type PendingBrandGroup = {
+  brandName: string;
+  requestContactIds: string[];
+  recipients: SendEmailRecipient[];
 };
 
 export async function sendRequestOutreach(params: {
@@ -65,6 +73,7 @@ export async function sendRequestOutreach(params: {
       error: accountError.message,
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
     };
   }
@@ -76,6 +85,7 @@ export async function sendRequestOutreach(params: {
         "No active sending account. Connect Gmail, Outlook, or SMTP in Settings, run a test send, then set the account as active.",
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
     };
   }
@@ -97,6 +107,7 @@ export async function sendRequestOutreach(params: {
       error: reqErr?.message ?? "Request not found.",
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
     };
   }
@@ -114,23 +125,25 @@ export async function sendRequestOutreach(params: {
       error: rcErr.message,
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
     };
   }
 
-  const pending = rcRows ?? [];
-  if (!pending.length) {
+  const allPending = rcRows ?? [];
+  if (!allPending.length) {
     const allDone = await finalizeRequestIfComplete(supabase, requestId, userId);
     return {
       ok: true,
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
       ...(allDone ? {} : {}),
     };
   }
 
-  const brandIds = [...new Set(pending.map((r) => r.brand_contact_id as string))];
+  const brandIds = [...new Set(allPending.map((r) => r.brand_contact_id as string))];
   const { data: bcRows, error: bcErr } = await supabase
     .from("brand_contacts")
     .select("id,brand_name,email,contact_name")
@@ -142,18 +155,19 @@ export async function sendRequestOutreach(params: {
       error: bcErr.message,
       sent: 0,
       failed: 0,
+      remaining: 0,
       results: [],
     };
   }
 
   const byBc = new Map((bcRows ?? []).map((b) => [b.id as string, b]));
+  const groupedByBrand = new Map<string, PendingBrandGroup>();
 
   const results: SendOutreachResult["results"] = [];
   let sent = 0;
   let failed = 0;
 
-  for (let i = 0; i < pending.length; i++) {
-    const rc = pending[i]!;
+  for (const rc of allPending) {
     const bc = byBc.get(rc.brand_contact_id as string);
     if (!bc) {
       failed += 1;
@@ -171,11 +185,48 @@ export async function sendRequestOutreach(params: {
       continue;
     }
 
+    const brandName = String(bc.brand_name).trim().toUpperCase();
+    const recipientEmail = String(bc.email).toLowerCase();
+    const recipientName = String(bc.contact_name ?? "").trim();
+    const existing = groupedByBrand.get(brandName);
+
+    if (existing) {
+      existing.requestContactIds.push(rc.id as string);
+      if (!existing.recipients.some((recipient) => recipient.email === recipientEmail)) {
+        existing.recipients.push({
+          email: recipientEmail,
+          name: recipientName || null,
+        });
+      }
+      continue;
+    }
+
+    groupedByBrand.set(brandName, {
+      brandName,
+      requestContactIds: [rc.id as string],
+      recipients: [
+        {
+          email: recipientEmail,
+          name: recipientName || null,
+        },
+      ],
+    });
+  }
+
+  const allBrandGroups = [...groupedByBrand.values()];
+  const pendingGroups = allBrandGroups.slice(0, MAX_SENDS_PER_RUN);
+  const remaining = Math.max(0, allBrandGroups.length - pendingGroups.length);
+
+  for (let i = 0; i < pendingGroups.length; i++) {
+    const group = pendingGroups[i]!;
+
     const talent = String(reqRow.talent_name);
     const event = String(reqRow.event_name);
-    const brandName = String(bc.brand_name);
-    const contactName = String(bc.contact_name ?? "");
-    const toEmail = String(bc.email).toLowerCase();
+    const brandName = group.brandName;
+    const isGroupedSend = group.recipients.length > 1;
+    const contactName = isGroupedSend
+      ? "team"
+      : String(group.recipients[0]?.name ?? "").trim();
 
     const templateVars = {
       talent,
@@ -196,8 +247,10 @@ export async function sendRequestOutreach(params: {
     });
 
     const message: SendEmailInput = {
-      to: toEmail,
-      toName: contactName || null,
+      to: group.recipients.map((recipient) => ({
+        email: recipient.email,
+        name: isGroupedSend ? null : recipient.name ?? null,
+      })),
       subject,
       bodyText,
       cc: ccEmails,
@@ -209,45 +262,55 @@ export async function sendRequestOutreach(params: {
 
     if (sendResult.ok) {
       sent += 1;
-      results.push({ requestContactId: rc.id as string, ok: true });
+      const sentAt = new Date().toISOString();
+      group.requestContactIds.forEach((requestContactId) => {
+        results.push({ requestContactId, ok: true });
+      });
       await supabase
         .from("request_contacts")
         .update({
           email_sent: true,
-          sent_at: new Date().toISOString(),
+          sent_at: sentAt,
           send_error: null,
         })
-        .eq("id", rc.id as string);
+        .in("id", group.requestContactIds);
     } else {
       failed += 1;
-      results.push({
-        requestContactId: rc.id as string,
-        ok: false,
-        error: sendResult.error,
+      group.requestContactIds.forEach((requestContactId) => {
+        results.push({
+          requestContactId,
+          ok: false,
+          error: sendResult.error,
+        });
       });
       await supabase
         .from("request_contacts")
         .update({
           send_error: sendResult.error,
         })
-        .eq("id", rc.id as string);
+        .in("id", group.requestContactIds);
     }
 
-    if (i < pending.length - 1) {
+    if (i < pendingGroups.length - 1) {
       await delay(SEND_GAP_MS);
     }
   }
 
   await finalizeRequestIfComplete(supabase, requestId, userId);
 
+  const cappedRun = remaining > 0;
+
   return {
-    ok: failed === 0,
+    ok: failed === 0 && !cappedRun,
     error:
       failed > 0
-        ? `${failed} message(s) failed; you can retry from the request detail view after fixing your sending account.`
-        : undefined,
+        ? `${failed} brand email(s) failed; you can retry from the request detail view after fixing your sending account.`
+        : cappedRun
+          ? `Sent ${sent} brand email(s). ${remaining} still remain queued for the next send run.`
+          : undefined,
     sent,
     failed,
+    remaining,
     results,
   };
 }

@@ -28,9 +28,11 @@ export async function sendViaSmtp(
       from: message.fromName
         ? `"${message.fromName.replace(/"/g, "")}" <${message.fromEmail}>`
         : message.fromEmail,
-      to: message.toName
-        ? `"${message.toName.replace(/"/g, "")}" <${message.to}>`
-        : message.to,
+      to: message.to.map((recipient) =>
+        recipient.name
+          ? `"${recipient.name.replace(/"/g, "")}" <${recipient.email}>`
+          : recipient.email
+      ),
       cc: message.cc.length ? message.cc : undefined,
       subject: message.subject,
       text: message.bodyText,
