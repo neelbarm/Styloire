@@ -15,11 +15,23 @@ type CreateRequestPayload = {
   profileId?: string;
   contacts: ContactInput[];
   selectedBrands: string[];
+  emailSubject?: string;
   emailBody: string;
 };
 
 function subjectTemplate(): string {
   return "{talent} / {event} / {brand_name}";
+}
+
+function normalizeSubjectTemplate(input?: string): string {
+  const trimmed = input?.trim();
+  if (!trimmed) return subjectTemplate();
+
+  return trimmed
+    .replace(/\{\{\s*talent\s*\}\}/gi, "{talent}")
+    .replace(/\{\{\s*event\s*\}\}/gi, "{event}")
+    .replace(/\{\{\s*brand_name\s*\}\}/gi, "{brand_name}")
+    .replace(/BRAND NAME/gi, "{brand_name}");
 }
 
 function isValidEmail(email: string): boolean {
@@ -160,7 +172,7 @@ export async function POST(request: Request) {
       client_profile_id: clientProfileId,
       talent_name: body.talent.trim(),
       event_name: body.eventName.trim(),
-      email_subject_template: subjectTemplate(),
+      email_subject_template: normalizeSubjectTemplate(body.emailSubject),
       email_body: body.emailBody,
       status: "draft",
       sent_at: null

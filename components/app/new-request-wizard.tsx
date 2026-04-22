@@ -62,6 +62,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState("{{talent}} / {{event}} / BRAND NAME");
   const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
   const [accountSummary, setAccountSummary] = useState<{
     provider: ConnectedAccount["provider"];
@@ -75,6 +76,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileLoadSeqRef = useRef(0);
+  const autoSubjectRef = useRef("{{talent}} / {{event}} / BRAND NAME");
 
   // ── All derived state preserved exactly ─────────────────────────────────
   const matchedProfile = useMemo(() => {
@@ -187,9 +189,22 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     });
   }, [emailBody, previewBrand, previewContact, previewContactName, talent, eventName]);
 
-  const subjectPreview = `${talent.trim() || "{{talent}}"} / ${
+  const autoSubjectPreview = `${talent.trim() || "{{talent}}"} / ${
     eventName.trim() || "{{event}}"
   } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
+  const subjectPreview = renderTemplate(emailSubject, {
+    talent: talent.trim() || "{{talent}}",
+    event: eventName.trim() || "{{event}}",
+    brand_name: previewBrand?.toUpperCase() || "BRAND NAME",
+    contact_name: previewContactName || "{{contact_name}}"
+  }).replace(/\{\{\s*brand_name\s*\}\}/gi, previewBrand?.toUpperCase() || "BRAND NAME");
+
+  useEffect(() => {
+    setEmailSubject((current) =>
+      current === autoSubjectRef.current ? autoSubjectPreview : current
+    );
+    autoSubjectRef.current = autoSubjectPreview;
+  }, [autoSubjectPreview]);
 
   const providerLabel = useMemo(() => {
     if (!accountSummary) return "";
@@ -299,6 +314,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
         profileId: profileId || undefined,
         contacts: contactsPayload,
         selectedBrands,
+        emailSubject,
         emailBody
       })
     });
@@ -673,15 +689,21 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
           <div className="space-y-6 p-6 md:p-7">
 
             {/* Subject preview */}
-            <div className="space-y-2">
+            <label className="block space-y-2">
               <span className={labelCls}>Subject line preview</span>
+              <input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                className={inputCls}
+              />
+              <p className="font-sans text-[0.72rem] text-white/38">
+                Editable at this stage. Use BRAND NAME or {"{{brand_name}}"} to keep the
+                selected brand dynamic.
+              </p>
               <div className="rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
                 <p className="font-sans text-[0.88rem] text-white/70">{subjectPreview}</p>
               </div>
-              <p className="font-sans text-[0.72rem] text-white/38">
-                Auto-generated per brand using Talent / Event / BRAND NAME format.
-              </p>
-            </div>
+            </label>
 
             {/* Email body */}
             <label className="block space-y-2">
