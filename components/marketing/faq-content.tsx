@@ -37,7 +37,7 @@ export const FAQ_BLOCKS: FaqBlock[] = [
       },
       {
         q: "What does the subject line look like?",
-        a: "Styloire auto generates subject lines in the standard industry format: Talent Name / BRAND NAME / event or publication. Every email goes out with the correct brand name already in the subject line. No manual editing required."
+        a: "Styloire auto generates subject lines in the standard industry format: Talent Name / event or publication / BRAND NAME. Every email goes out with the correct brand name already in the subject line. No manual editing required."
       },
       {
         q: "Can I use my own email copy?",
