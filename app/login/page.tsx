@@ -187,7 +187,7 @@ function LoginContent() {
                 className="w-full border-0 border-b border-styloire-line bg-transparent py-2 font-sans text-sm font-light text-styloire-ink focus:border-styloire-champagne focus:outline-none"
               />
             </label>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               <StyloireButton type="submit" variant="solid" disabled={busy}>
                 Send magic link
               </StyloireButton>
@@ -267,7 +267,7 @@ function LoginContent() {
                 </button>
               </div>
             ) : null}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               <StyloireButton type="submit" variant="solid" disabled={busy}>
                 {authMode === "signup" ? "Create account" : "Sign in"}
               </StyloireButton>
