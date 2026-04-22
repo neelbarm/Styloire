@@ -712,7 +712,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 rows={8}
                 value={emailBody}
                 onChange={(e) => setEmailBody(e.target.value)}
-                placeholder="Write your pull request email here. Use {{brand_name}} and {{contact_name}} for personalization."
+                placeholder="Write your pull request email here."
                 className={inputCls + " resize-y"}
               />
             </label>
@@ -894,7 +894,11 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                     Back to dashboard
                   </StyloireButton>
                 )}
-                <StyloireButton href="/requests/new" variant="outline" className={filledBtn}>
+                <StyloireButton
+                  href={`/requests/new?fresh=${Date.now()}`}
+                  variant="outline"
+                  className={filledBtn}
+                >
                   + New request
                 </StyloireButton>
               </div>
@@ -911,7 +915,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             /* ── Pre-send / error state ── */
             <div className="p-6 md:p-7">
               <span className={labelCls}>Ready to send</span>
-              <p className="mt-2 font-sans text-[0.88rem] text-white/55">
+              <p className="mt-2 max-w-[42rem] pr-4 whitespace-normal break-words font-sans text-[0.88rem] leading-relaxed text-white/55">
                 {selectedCount} brand emails will go out, with all recipients for each selected
                 brand grouped together in To.
               </p>
