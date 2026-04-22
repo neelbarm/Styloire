@@ -889,17 +889,9 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   >
                     View request
                   </StyloireButton>
-                ) : (
-                  <StyloireButton href="/dashboard" variant="outline" className={ghostBtn}>
-                    Back to dashboard
-                  </StyloireButton>
-                )}
-                <StyloireButton
-                  href={`/requests/new?fresh=${Date.now()}`}
-                  variant="outline"
-                  className={filledBtn}
-                >
-                  + New request
+                ) : null}
+                <StyloireButton href="/dashboard" variant="outline" className={filledBtn}>
+                  Return to my Portal
                 </StyloireButton>
               </div>
             </div>
