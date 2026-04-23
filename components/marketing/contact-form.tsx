@@ -15,8 +15,9 @@ export function ContactForm() {
     setLoading(true);
     setError("");
     setSent(false);
+    const formEl = event.currentTarget;
 
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formEl);
     const rawName = String(form.get("firstName") ?? "").trim();
     const nameParts = rawName.split(/\s+/).filter(Boolean);
     const firstName = nameParts[0] ?? "";
@@ -45,7 +46,7 @@ export function ContactForm() {
         return;
       }
 
-      event.currentTarget.reset();
+      formEl.reset();
       setSent(true);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
