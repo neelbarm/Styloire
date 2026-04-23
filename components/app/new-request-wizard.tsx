@@ -191,16 +191,18 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     });
   }, [emailBody, previewBrand, previewContact, previewContactName, talent, eventName]);
 
-  const autoSubjectPreview = `${talent.trim() || "Talent Name"} / ${
+  const autoSubjectTemplate = `${talent.trim() || "Talent Name"} / ${
     eventName.trim() || "Event"
-  } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
-  const effectiveEmailSubject = emailSubjectTouched ? emailSubject : autoSubjectPreview;
+  } / BRAND NAME`;
+  const effectiveEmailSubject = emailSubjectTouched ? emailSubject : autoSubjectTemplate;
   const subjectPreview = renderTemplate(effectiveEmailSubject, {
     talent: talent.trim() || "Talent Name",
     event: eventName.trim() || "Event",
     brand_name: previewBrand?.toUpperCase() || "BRAND NAME",
     contact_name: previewContactName || "team"
-  }).replace(/\{\{\s*brand_name\s*\}\}/gi, previewBrand?.toUpperCase() || "BRAND NAME");
+  })
+    .replace(/\{\{\s*brand_name\s*\}\}/gi, previewBrand?.toUpperCase() || "BRAND NAME")
+    .replace(/BRAND NAME/gi, previewBrand?.toUpperCase() || "BRAND NAME");
 
   const providerLabel = useMemo(() => {
     if (!accountSummary) return "";
