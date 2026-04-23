@@ -69,7 +69,7 @@ function LoginContent() {
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
       {
-        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+        redirectTo: `${origin}/reset-password`,
       },
     );
     setBusy(false);
