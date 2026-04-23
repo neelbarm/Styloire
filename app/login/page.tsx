@@ -36,7 +36,19 @@ function LoginContent() {
   }
 
   async function ensureUserRow() {
-    await fetch("/api/auth/ensure-user", { method: "POST" });
+    const response = await fetch("/api/auth/ensure-user", { method: "POST" });
+    if (response.ok || response.status === 401 || response.status === 503) {
+      return;
+    }
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(payload.error ?? "Could not finish setting up your account.");
+  }
+
+  async function finishPasswordSignIn(redirectTo: string, ensureProfile = true) {
+    if (ensureProfile) {
+      await ensureUserRow();
+    }
+    window.location.assign(redirectTo);
   }
 
   async function handleMagicLink(event: FormEvent<HTMLFormElement>) {
@@ -118,8 +130,11 @@ function LoginContent() {
         return;
       }
 
-      await ensureUserRow();
-      router.push("/dashboard");
+      try {
+        await finishPasswordSignIn("/dashboard", false);
+      } catch (error) {
+        setNote(error instanceof Error ? error.message : "Could not finish signing you in.");
+      }
       return;
     }
 
@@ -133,8 +148,11 @@ function LoginContent() {
       return;
     }
 
-    await ensureUserRow();
-    router.push(next);
+    try {
+      await finishPasswordSignIn(next);
+    } catch (error) {
+      setNote(error instanceof Error ? error.message : "Could not finish signing you in.");
+    }
   }
 
   return (
