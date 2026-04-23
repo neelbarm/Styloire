@@ -23,6 +23,7 @@ const ghostBtn =
   "border-white/26 bg-transparent px-5 py-2 text-[0.78rem] tracking-[0.01em] text-white/84 hover:bg-white/8";
 const filledBtn =
   "border-white/30 bg-white/10 px-6 py-2 text-[0.82rem] tracking-[0.01em] text-white/92 hover:bg-white/16";
+const DEFAULT_SUBJECT_TEMPLATE = "{{talent}} / {{event}} / BRAND NAME";
 
 type Props = {
   initialProfiles: ClientProfileSummary[];
@@ -62,7 +63,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [contactSearch, setContactSearch] = useState("");
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>("");
-  const [emailSubject, setEmailSubject] = useState("BRAND NAME");
+  const [emailSubject, setEmailSubject] = useState(DEFAULT_SUBJECT_TEMPLATE);
   const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
   const [accountSummary, setAccountSummary] = useState<{
     provider: ConnectedAccount["provider"];
@@ -76,7 +77,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileLoadSeqRef = useRef(0);
-  const autoSubjectRef = useRef("{{talent}} / {{event}} / BRAND NAME");
+  const autoSubjectRef = useRef(DEFAULT_SUBJECT_TEMPLATE);
 
   // ── All derived state preserved exactly ─────────────────────────────────
   const matchedProfile = useMemo(() => {
@@ -201,7 +202,9 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
   useEffect(() => {
     setEmailSubject((current) =>
-      current === autoSubjectRef.current ? autoSubjectPreview : current
+      current === autoSubjectRef.current || current === "BRAND NAME"
+        ? autoSubjectPreview
+        : current
     );
     autoSubjectRef.current = autoSubjectPreview;
   }, [autoSubjectPreview]);
