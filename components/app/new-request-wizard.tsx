@@ -74,6 +74,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [submitMode, setSubmitMode] = useState<"sent" | "preview">("sent");
   const [submitError, setSubmitError] = useState("");
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
+  const [sendRequestSignature, setSendRequestSignature] = useState<string | null>(null);
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileLoadSeqRef = useRef(0);
@@ -301,25 +302,83 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
   const isStepOneReady = Boolean(talent.trim() && eventName.trim());
   const contactsPayload = Object.values(groups).flat();
+  const requestPayload = useMemo(
+    () => ({
+      talent: talent.trim(),
+      eventName: eventName.trim(),
+      requestType,
+      profileId: profileId || undefined,
+      contacts: contactsPayload,
+      selectedBrands,
+      emailSubject,
+      emailBody,
+    }),
+    [contactsPayload, emailBody, emailSubject, eventName, profileId, requestType, selectedBrands, talent]
+  );
+  const requestSignature = useMemo(
+    () =>
+      JSON.stringify({
+        ...requestPayload,
+        selectedBrands: [...selectedBrands].sort(),
+      }),
+    [requestPayload, selectedBrands]
+  );
+  const isRetryingExistingRequest =
+    submittedRequestId !== null && sendRequestSignature === requestSignature;
+
+  const sendExistingRequest = async (requestId: string) => {
+    const sendResponse = await fetch(`/api/requests/${requestId}/send`, { method: "POST" });
+    const sendPayload = (await sendResponse.json().catch(() => ({}))) as {
+      error?: string;
+      ok?: boolean;
+      sent?: number;
+      failed?: number;
+      remaining?: number;
+    };
+
+    if (sendResponse.status === 400) {
+      setSubmittedRequestId(requestId);
+      setSubmitState("error");
+      setSubmitError(
+        sendPayload.error ?? "Could not send emails. Check your connected account in Settings."
+      );
+      return;
+    }
+    if (sendResponse.status === 207) {
+      setSubmittedRequestId(requestId);
+      setSubmitState("error");
+      setSubmitError(
+        sendPayload.error ??
+          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed, ${sendPayload.remaining ?? 0} still queued. Open the request to continue.`
+      );
+      return;
+    }
+    if (!sendResponse.ok) {
+      setSubmittedRequestId(requestId);
+      setSubmitState("error");
+      setSubmitError(sendPayload.error ?? "Send request failed.");
+      return;
+    }
+
+    setSubmittedRequestId(requestId);
+    setSubmitState("success");
+  };
 
   const submitRequest = async () => {
     setSubmitState("saving");
     setSubmitMode("sent");
     setSubmitError("");
+    if (isRetryingExistingRequest && submittedRequestId) {
+      await sendExistingRequest(submittedRequestId);
+      return;
+    }
+
     setSubmittedRequestId(null);
+    setSendRequestSignature(null);
     const response = await fetch("/api/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        talent: talent.trim(),
-        eventName: eventName.trim(),
-        requestType,
-        profileId: profileId || undefined,
-        contacts: contactsPayload,
-        selectedBrands,
-        emailSubject,
-        emailBody
-      })
+      body: JSON.stringify(requestPayload)
     });
     const data = (await response.json().catch(() => ({}))) as {
       id?: string;
@@ -342,40 +401,14 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     if (data.source === "mock" || data.previewOnly) {
       setSubmitMode("preview");
       setSubmittedRequestId(null);
+      setSendRequestSignature(null);
       setSubmitError(data.notice ?? "");
       setSubmitState("success");
       return;
     }
-    const sendResponse = await fetch(`/api/requests/${data.id}/send`, { method: "POST" });
-    const sendPayload = (await sendResponse.json().catch(() => ({}))) as {
-      error?: string;
-      ok?: boolean;
-      sent?: number;
-      failed?: number;
-      remaining?: number;
-    };
-    if (sendResponse.status === 400) {
-      setSubmitState("error");
-      setSubmitError(
-        sendPayload.error ?? "Could not send emails. Check your connected account in Settings."
-      );
-      return;
-    }
-    if (sendResponse.status === 207) {
-      setSubmitState("error");
-      setSubmitError(
-        sendPayload.error ??
-          `Partial send: ${sendPayload.sent ?? 0} sent, ${sendPayload.failed ?? 0} failed, ${sendPayload.remaining ?? 0} still queued. Open the request to continue.`
-      );
-      return;
-    }
-    if (!sendResponse.ok) {
-      setSubmitState("error");
-      setSubmitError(sendPayload.error ?? "Send request failed.");
-      return;
-    }
     setSubmittedRequestId(data.id);
-    setSubmitState("success");
+    setSendRequestSignature(requestSignature);
+    await sendExistingRequest(data.id);
   };
 
   // ── Template download ────────────────────────────────────────────────────
@@ -937,7 +970,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   onClick={submitRequest}
                   className="px-8 py-2 text-[0.65rem] tracking-[0.1em]"
                 >
-                  Send {selectedCount} brand emails
+                  {isRetryingExistingRequest ? "Continue sending" : `Send ${selectedCount} brand emails`}
                 </StyloireButton>
               </div>
             </div>
