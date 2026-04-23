@@ -53,6 +53,8 @@ const emptySmtp: SmtpForm = {
   secure: false
 };
 
+const TEST_SEND_TIMEOUT_MS = 20_000;
+
 export function SettingsManager({
   defaultName,
   defaultEmail,
@@ -190,19 +192,34 @@ export function SettingsManager({
   async function testConnection(accountId: string) {
     setBusy(true);
     setNote("");
-    const response = await fetch("/api/email/test-send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId })
-    });
-    const data = (await response.json().catch(() => ({}))) as { error?: string };
-    setBusy(false);
-    if (!response.ok) {
-      setNote(data.error ?? "Connection test failed.");
-      return;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), TEST_SEND_TIMEOUT_MS);
+    try {
+      const response = await fetch("/api/email/test-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId }),
+        signal: controller.signal
+      });
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        setNote(data.error ?? "Connection test failed.");
+        return;
+      }
+      setNote("Test send succeeded. You can now set this account active.");
+      await loadAll();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setNote(
+          "Test send timed out. Outlook may be hanging while waiting for Microsoft Graph. Check the connection permissions and mailbox setup, then try again.",
+        );
+        return;
+      }
+      setNote(error instanceof Error ? error.message : "Connection test failed.");
+    } finally {
+      window.clearTimeout(timeoutId);
+      setBusy(false);
     }
-    setNote("Test send succeeded. You can now set this account active.");
-    await loadAll();
   }
 
   async function setActive(accountId: string) {

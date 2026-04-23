@@ -78,9 +78,20 @@ export async function POST(request: Request) {
     fromName: row.display_name,
   };
 
+  console.log("[email/test-send] starting", {
+    accountId: row.id,
+    provider: row.provider,
+    userId: authed.userId,
+    to,
+  });
   const result = await dispatchOutboundEmail(authed.client, row, message);
 
   if (!result.ok) {
+    console.error("[email/test-send] failed", {
+      accountId: row.id,
+      provider: row.provider,
+      error: result.error,
+    });
     return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
   }
 
@@ -96,5 +107,9 @@ export async function POST(request: Request) {
     .eq("id", row.id)
     .eq("user_id", authed.userId);
 
+  console.log("[email/test-send] succeeded", {
+    accountId: row.id,
+    provider: row.provider,
+  });
   return NextResponse.json({ ok: true });
 }
