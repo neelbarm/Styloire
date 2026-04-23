@@ -64,6 +64,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [parseError, setParseError] = useState("");
   const [emailBody, setEmailBody] = useState<string>("");
   const [emailSubject, setEmailSubject] = useState(DEFAULT_SUBJECT_TEMPLATE);
+  const [emailSubjectTouched, setEmailSubjectTouched] = useState(false);
   const [savedCcRecipients, setSavedCcRecipients] = useState<string[]>([]);
   const [accountSummary, setAccountSummary] = useState<{
     provider: ConnectedAccount["provider"];
@@ -78,7 +79,6 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileLoadSeqRef = useRef(0);
-  const autoSubjectRef = useRef(DEFAULT_SUBJECT_TEMPLATE);
 
   // ── All derived state preserved exactly ─────────────────────────────────
   const matchedProfile = useMemo(() => {
@@ -194,21 +194,13 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const autoSubjectPreview = `${talent.trim() || "Talent Name"} / ${
     eventName.trim() || "Event"
   } / ${previewBrand?.toUpperCase() || "BRAND NAME"}`;
-  const subjectPreview = renderTemplate(emailSubject, {
+  const effectiveEmailSubject = emailSubjectTouched ? emailSubject : autoSubjectPreview;
+  const subjectPreview = renderTemplate(effectiveEmailSubject, {
     talent: talent.trim() || "Talent Name",
     event: eventName.trim() || "Event",
     brand_name: previewBrand?.toUpperCase() || "BRAND NAME",
     contact_name: previewContactName || "team"
   }).replace(/\{\{\s*brand_name\s*\}\}/gi, previewBrand?.toUpperCase() || "BRAND NAME");
-
-  useEffect(() => {
-    setEmailSubject((current) =>
-      current === autoSubjectRef.current || current === "BRAND NAME"
-        ? autoSubjectPreview
-        : current
-    );
-    autoSubjectRef.current = autoSubjectPreview;
-  }, [autoSubjectPreview]);
 
   const providerLabel = useMemo(() => {
     if (!accountSummary) return "";
@@ -310,10 +302,10 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       profileId: profileId || undefined,
       contacts: contactsPayload,
       selectedBrands,
-      emailSubject,
+      emailSubject: effectiveEmailSubject,
       emailBody,
     }),
-    [contactsPayload, emailBody, emailSubject, eventName, profileId, requestType, selectedBrands, talent]
+    [contactsPayload, effectiveEmailSubject, emailBody, eventName, profileId, requestType, selectedBrands, talent]
   );
   const requestSignature = useMemo(
     () =>
@@ -728,8 +720,11 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             <label className="block space-y-2">
               <span className={labelCls}>Subject line preview</span>
               <input
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
+                value={effectiveEmailSubject}
+                onChange={(e) => {
+                  setEmailSubjectTouched(true);
+                  setEmailSubject(e.target.value);
+                }}
                 className={inputCls}
               />
               <p className="font-sans text-[0.72rem] text-white/38">
