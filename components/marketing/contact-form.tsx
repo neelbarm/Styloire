@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { StyloireButton } from "@/components/styloire/button";
 
+const CONTACT_REQUEST_TIMEOUT_MS = 15_000;
+
 export function ContactForm() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -26,22 +28,35 @@ export function ContactForm() {
       role: String(form.get("role") ?? "") as "stylist" | "assistant",
       message: String(form.get("message") ?? "")
     };
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), CONTACT_REQUEST_TIMEOUT_MS);
 
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const data = (await response.json().catch(() => ({}))) as { error?: string };
-    setLoading(false);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
 
-    if (!response.ok) {
-      setError(data.error ?? "Something went wrong. Please try again.");
-      return;
+      if (!response.ok) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      event.currentTarget.reset();
+      setSent(true);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("The message request timed out. Please try again in a moment.");
+        return;
+      }
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      window.clearTimeout(timeoutId);
+      setLoading(false);
     }
-
-    event.currentTarget.reset();
-    setSent(true);
   };
 
   return (
