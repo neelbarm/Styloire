@@ -95,7 +95,11 @@ export async function listDashboardRequestSummaries(
 
   const supabase = createServiceRoleClient();
   if (!supabase) {
-    return { source: "mock", rows: mockRows };
+    return {
+      source: "supabase",
+      rows: [],
+      notice: "Supabase client is unavailable for request listing."
+    };
   }
 
   let query = supabase
@@ -112,9 +116,9 @@ export async function listDashboardRequestSummaries(
 
   if (error) {
     return {
-      source: "mock",
-      rows: mockRows,
-      notice: `Supabase list failed (${error.message}). Using bundled mock data.`
+      source: "supabase",
+      rows: [],
+      notice: `Supabase list failed (${error.message}).`
     };
   }
 
@@ -150,17 +154,16 @@ export async function getRequestDetailResolved(
 ): Promise<RequestDetailResult | null> {
   const userId = await getCurrentUserId();
   if (!userId) return null;
-  const mock = getMockRequestDetail(requestId);
 
   if (!isSupabaseConfigured()) {
+    const mock = getMockRequestDetail(requestId);
     if (!mock) return null;
     return { source: "mock", request: mock.request, rows: mock.rows };
   }
 
   const supabase = createServiceRoleClient();
   if (!supabase) {
-    if (!mock) return null;
-    return { source: "mock", request: mock.request, rows: mock.rows };
+    return null;
   }
 
   const { data: reqRow, error: reqErr } = await supabase
@@ -171,13 +174,7 @@ export async function getRequestDetailResolved(
     .maybeSingle();
 
   if (reqErr || !reqRow) {
-    if (!mock) return null;
-    return {
-      source: "mock",
-      request: mock.request,
-      rows: mock.rows,
-      notice: reqErr ? `Supabase: ${reqErr.message} — showing mock request.` : undefined
-    };
+    return null;
   }
 
   const { data: rcRows, error: rcErr } = await supabase
@@ -237,7 +234,7 @@ export async function getRequestDetailResolved(
           updated_at: new Date().toISOString()
         };
       }
-      return { ...(rc as object), ...(bc as object) } as RequestContactDetail;
+      return { ...(bc as object), ...(rc as object) } as RequestContactDetail;
     });
   }
 
