@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sendRequestOutreach } from "@/lib/email/send-request-outreach";
 import { getAuthedServiceRoleClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/service";
+import { isPaidSubscriptionStatus } from "@/lib/stripe";
 
 export async function POST(
   _request: Request,
@@ -19,6 +20,19 @@ export async function POST(
     );
   }
 
+  const { data: billingRow } = await authed.client
+    .from("users")
+    .select("subscription_status")
+    .eq("id", authed.userId)
+    .maybeSingle();
+
+  if (!isPaidSubscriptionStatus(billingRow?.subscription_status as string | undefined)) {
+    return NextResponse.json(
+      { error: "An active subscription is required to send outreach." },
+      { status: 402 },
+    );
+  }
+
   const result = await sendRequestOutreach({
     supabase: authed.client,
     userId: authed.userId,
@@ -32,6 +46,7 @@ export async function POST(
         error: result.error ?? "Send failed.",
         sent: result.sent,
         failed: result.failed,
+        remaining: result.remaining,
         results: result.results,
       },
       { status: 400 },
@@ -46,6 +61,7 @@ export async function POST(
         error: result.error,
         sent: result.sent,
         failed: result.failed,
+        remaining: result.remaining,
         results: result.results,
       },
       { status: 207 },
@@ -56,6 +72,7 @@ export async function POST(
     ok: true,
     sent: result.sent,
     failed: result.failed,
+    remaining: result.remaining,
     results: result.results,
   });
 }

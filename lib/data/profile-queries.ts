@@ -83,7 +83,7 @@ export async function listClientProfileSummaries(): Promise<ClientProfileSummary
 
   const supabase = createServiceRoleClient();
   if (!supabase) {
-    return mockRows;
+    return [];
   }
 
   const { data: profileRows, error: profileError } = await supabase
@@ -94,7 +94,7 @@ export async function listClientProfileSummaries(): Promise<ClientProfileSummary
     .order("created_at", { ascending: false });
 
   if (profileError || !profileRows) {
-    return mockRows;
+    return [];
   }
 
   if (!profileRows.length) {
@@ -143,17 +143,15 @@ export async function getProfileDetail(
   const userId = await getCurrentUserId();
   if (!userId) return null;
 
-  const mock = getMockBundle(profileId);
-
   if (!isSupabaseConfigured()) {
+    const mock = getMockBundle(profileId);
     if (!mock) return null;
     return { source: "mock", ...mock };
   }
 
   const supabase = createServiceRoleClient();
   if (!supabase) {
-    if (!mock) return null;
-    return { source: "mock", ...mock };
+    return null;
   }
 
   // Verify profile belongs to this user
@@ -165,8 +163,7 @@ export async function getProfileDetail(
     .maybeSingle();
 
   if (profileErr || !profileRow) {
-    if (!mock) return null;
-    return { source: "mock", ...mock };
+    return null;
   }
 
   const profile: ClientProfile = {

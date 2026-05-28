@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import { StyloireButton } from "@/components/styloire";
+
+export const metadata: Metadata = {
+  title: "How it works",
+  description:
+    "See how Styloire turns one polished pull request into personalized outreach to every brand on your list.",
+  alternates: {
+    canonical: "/how-it-works",
+  },
+};
 
 const IMG_STEPS = "url('/images/how-it-works.jpeg')";
 const IMG_STRIP = "url('/images/mesh-fabric.jpeg')";

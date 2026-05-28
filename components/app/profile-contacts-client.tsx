@@ -248,13 +248,14 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
       if (json.added > 0) parts.push(`${json.added} contact${json.added !== 1 ? "s" : ""} added`);
       if (json.skipped > 0)
         parts.push(`${json.skipped} duplicate${json.skipped !== 1 ? "s" : ""} skipped`);
-      if (json.errors.length > 0)
-        parts.push(`${json.errors.length} row error${json.errors.length !== 1 ? "s" : ""}`);
+      const allErrors = [...parsed.errors, ...json.errors];
+      if (allErrors.length > 0)
+        parts.push(`${allErrors.length} row issue${allErrors.length !== 1 ? "s" : ""}`);
 
-      const hasOnlyErrors = json.added === 0 && json.errors.length > 0;
+      const hasOnlyErrors = json.added === 0 && allErrors.length > 0;
       setUploadNote({
         type: hasOnlyErrors ? "err" : "ok",
-        text: parts.join(" · ") || "Nothing to import."
+        text: [parts.join(" · ") || "Nothing to import.", allErrors[0]].filter(Boolean).join(" — ")
       });
     } catch {
       setUploadNote({ type: "err", text: "Network error — please try again." });
@@ -316,7 +317,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.xlsx"
+            accept=".csv,.xls,.xlsx"
             className="sr-only"
             onChange={handleUpload}
             disabled={uploading}
@@ -532,7 +533,7 @@ export function ProfileContactsClient({ profileId, initialContacts }: Props) {
           <p className="mt-2 font-sans text-[0.75rem] text-red-300">{addError}</p>
         ) : null}
         <p className="mt-2 font-sans text-[0.72rem] text-white/28">
-          CSV columns: <code className="text-white/42">Brand Name, Email Address, PR Contact Name</code>
+          Upload columns: <code className="text-white/42">Brand Name, Email Address, PR Contact Name</code>
         </p>
       </div>
     </div>

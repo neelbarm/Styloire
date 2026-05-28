@@ -23,8 +23,8 @@ async function ensureAuthedPublicUser(supabase: ReturnType<typeof createUserServ
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const next = url.searchParams.get("next") ?? "/dashboard";
-  const redirectTo = next.startsWith("/") ? next : "/dashboard";
+  const next = url.searchParams.get("next") ?? "/onboarding";
+  const redirectTo = next.startsWith("/") ? next : "/onboarding";
   const supabase = createUserServerClient();
   const code = url.searchParams.get("code");
   const tokenHash = url.searchParams.get("token_hash");

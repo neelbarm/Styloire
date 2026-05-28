@@ -24,7 +24,7 @@ function LoginContent() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const error = search.get("error");
-  const next = search.get("next") ?? "/dashboard";
+  const next = search.get("next") ?? "/onboarding";
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
 
   function formatEmailDeliveryError(message: string) {
@@ -131,7 +131,7 @@ function LoginContent() {
       }
 
       try {
-        await finishPasswordSignIn("/dashboard", false);
+        await finishPasswordSignIn("/onboarding", false);
       } catch (error) {
         setNote(error instanceof Error ? error.message : "Could not finish signing you in.");
       }

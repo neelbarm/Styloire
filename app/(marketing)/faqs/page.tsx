@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import {
   StyloireButton
 } from "@/components/styloire";
 import { FaqPageContent } from "@/components/marketing/faq-content";
+
+export const metadata: Metadata = {
+  title: "FAQs",
+  description:
+    "Pricing, canceling, templates, and how Styloire helps stylists send pull-request outreach at scale.",
+  alternates: {
+    canonical: "/faqs",
+  },
+};
 
 const IMG_HEADER = "url('/images/dress-motion.jpeg')";
 const IMG_PRICING = "url('/images/stylist-rack.jpeg')";

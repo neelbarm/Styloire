@@ -5,9 +5,6 @@ export const metadata: Metadata = {
   title: "Make emailing simple",
   description:
     "Styloire helps stylists send one polished pull request and reach every house on the list — without the paste marathon.",
-  alternates: {
-    canonical: "/"
-  },
   openGraph: {
     title: "Styloire — Make emailing simple",
     description:

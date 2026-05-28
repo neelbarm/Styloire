@@ -79,24 +79,62 @@ export async function GET(request: Request) {
       name: user.user_metadata?.full_name as string | undefined,
     });
 
-    const { error: insertError } = await authed.client
+    const { data: existingRows, error: existingError } = await authed.client
       .from("connected_accounts")
-      .insert({
-        user_id: authed.userId,
-        provider: "gmail",
-        email,
-        display_name: profile.name ?? null,
-        access_token_encrypted: encAccess,
-        refresh_token_encrypted: encRefresh,
-        token_expires_at: expiresAt,
-        status: "inactive",
-        is_sending_active: false,
-        last_error_message: null,
-        last_error_at: null,
-      });
+      .select("id,refresh_token_encrypted")
+      .eq("user_id", authed.userId)
+      .eq("provider", "gmail")
+      .eq("email", email)
+      .order("created_at", { ascending: false });
 
-    if (insertError) {
-      throw new Error(insertError.message);
+    if (existingError) {
+      throw new Error(existingError.message);
+    }
+
+    const payload = {
+      user_id: authed.userId,
+      provider: "gmail" as const,
+      email,
+      display_name: profile.name ?? null,
+      access_token_encrypted: encAccess,
+      refresh_token_encrypted:
+        encRefresh ?? existingRows?.[0]?.refresh_token_encrypted ?? null,
+      token_expires_at: expiresAt,
+      status: "inactive" as const,
+      is_sending_active: false,
+      last_error_message: null,
+      last_error_at: null,
+    };
+
+    if (existingRows?.length) {
+      const primaryId = String(existingRows[0]!.id);
+      const { error: updateError } = await authed.client
+        .from("connected_accounts")
+        .update(payload)
+        .eq("id", primaryId)
+        .eq("user_id", authed.userId);
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+      const duplicateIds = existingRows.slice(1).map((row) => String(row.id));
+      if (duplicateIds.length > 0) {
+        const { error: deleteError } = await authed.client
+          .from("connected_accounts")
+          .delete()
+          .in("id", duplicateIds)
+          .eq("user_id", authed.userId);
+        if (deleteError) {
+          throw new Error(deleteError.message);
+        }
+      }
+    } else {
+      const { error: insertError } = await authed.client
+        .from("connected_accounts")
+        .insert(payload);
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
     }
 
     const res = NextResponse.redirect(`${base}${next}?connected=gmail`);

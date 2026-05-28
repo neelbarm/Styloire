@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import { ContactForm } from "@/components/marketing/contact-form";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Questions about Styloire pull-request outreach for stylists? Reach our team - we're happy to help.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default function ContactPage() {
   return (

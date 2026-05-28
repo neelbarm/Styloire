@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { StyloireButton } from "@/components/styloire";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const IMG_HERO = "url('/images/who-for.jpeg')";
 const IMG_HOW = "url('/images/editorial-bw.jpeg')";

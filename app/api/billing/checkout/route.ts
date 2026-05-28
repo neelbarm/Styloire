@@ -34,6 +34,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const priceId = serverEnv.NEXT_PUBLIC_STRIPE_PRICE_ID.trim();
+  if (!priceId.startsWith("price_")) {
+    const hint = priceId.startsWith("prod_")
+      ? " Railway is using a Stripe Product ID (prod_...). Set NEXT_PUBLIC_STRIPE_PRICE_ID to the Price ID (price_...) from your product's pricing section."
+      : " NEXT_PUBLIC_STRIPE_PRICE_ID must be a Stripe Price ID starting with price_.";
+    return NextResponse.json(
+      { error: `Billing is misconfigured.${hint}` },
+      { status: 503 },
+    );
+  }
+
   const body = (await request.json().catch(() => ({}))) as CheckoutBody;
   const successPath = resolveAppPath(body.successPath, "/onboarding?checkout=success");
   const cancelPath = resolveAppPath(body.cancelPath, "/onboarding?checkout=cancelled");
@@ -91,7 +102,7 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
       line_items: [
         {
-          price: serverEnv.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],

@@ -67,7 +67,10 @@ export const clientEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: requiredUrl("NEXT_PUBLIC_SITE_URL"),
   NEXT_PUBLIC_SUPABASE_URL: requiredUrl("NEXT_PUBLIC_SUPABASE_URL"),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: requiredNonEmpty("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  NEXT_PUBLIC_STRIPE_PRICE_ID: requiredNonEmpty("NEXT_PUBLIC_STRIPE_PRICE_ID"),
+  NEXT_PUBLIC_STRIPE_PRICE_ID: requiredNonEmpty("NEXT_PUBLIC_STRIPE_PRICE_ID").refine(
+    (value) => value.trim().startsWith("price_"),
+    "NEXT_PUBLIC_STRIPE_PRICE_ID must be a Stripe Price ID (price_...), not a Product ID (prod_...).",
+  ),
 });
 
 export const serverEnvSchema = z.object({
@@ -85,7 +88,10 @@ export const serverEnvSchema = z.object({
   MICROSOFT_REDIRECT_URI: requiredUrl("MICROSOFT_REDIRECT_URI"),
   STRIPE_SECRET_KEY: requiredNonEmpty("STRIPE_SECRET_KEY"),
   STRIPE_WEBHOOK_SECRET: requiredNonEmpty("STRIPE_WEBHOOK_SECRET"),
-  NEXT_PUBLIC_STRIPE_PRICE_ID: requiredNonEmpty("NEXT_PUBLIC_STRIPE_PRICE_ID"),
+  NEXT_PUBLIC_STRIPE_PRICE_ID: requiredNonEmpty("NEXT_PUBLIC_STRIPE_PRICE_ID").refine(
+    (value) => value.trim().startsWith("price_"),
+    "NEXT_PUBLIC_STRIPE_PRICE_ID must be a Stripe Price ID (price_...), not a Product ID (prod_...).",
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
