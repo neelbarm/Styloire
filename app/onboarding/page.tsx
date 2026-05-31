@@ -79,6 +79,7 @@ export default async function OnboardingPage({
         </div>
         <OnboardingCheckoutLauncher
           subscriptionStatus={state.subscriptionStatus}
+          hasStripeCustomer={state.hasStripeCustomer}
           checkoutStatus={searchParams?.checkout}
           checkoutSuccessPath="/onboarding?checkout=success"
           checkoutCancelPath="/onboarding?checkout=cancelled"

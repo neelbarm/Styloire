@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
   subscriptionStatus: string;
+  hasStripeCustomer: boolean;
   checkoutStatus?: string;
   checkoutSuccessPath: string;
   checkoutCancelPath: string;
@@ -15,6 +16,7 @@ function isPaidStatus(status: string): boolean {
 
 export function OnboardingCheckoutLauncher({
   subscriptionStatus,
+  hasStripeCustomer,
   checkoutStatus,
   checkoutSuccessPath,
   checkoutCancelPath,
@@ -25,7 +27,10 @@ export function OnboardingCheckoutLauncher({
 
   const isPaid = isPaidStatus(subscriptionStatus);
   const skipAuto =
-    isPaid || checkoutStatus === "success" || checkoutStatus === "cancelled";
+    isPaid ||
+    hasStripeCustomer ||
+    checkoutStatus === "success" ||
+    checkoutStatus === "cancelled";
 
   useEffect(() => {
     if (skipAuto) return;

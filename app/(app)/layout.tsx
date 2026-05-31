@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/service";
+import { isPaidSubscriptionStatus } from "@/lib/stripe";
 
 export const metadata: Metadata = {
   robots: {
@@ -24,7 +25,13 @@ export default async function AppLayout({
 
   if (isSupabaseConfigured()) {
     const onboarding = await getOnboardingState();
-    if (!onboarding || !onboarding.hasCompletedOnboarding) {
+    if (!onboarding) {
+      redirect("/onboarding");
+    }
+    if (!isPaidSubscriptionStatus(onboarding.subscriptionStatus)) {
+      redirect("/onboarding");
+    }
+    if (!onboarding.hasActiveSendingAccount) {
       redirect("/onboarding");
     }
   }

@@ -1,4 +1,5 @@
 import "server-only";
+import { syncSubscriptionForUser } from "@/lib/billing/sync-subscription";
 import { ensurePublicUserRow } from "@/lib/supabase/ensure-public-user";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service";
@@ -47,8 +48,18 @@ export async function getOnboardingState(): Promise<OnboardingState | null> {
       .maybeSingle(),
   ]);
 
-  const subscriptionStatus = (billingData?.subscription_status as string | undefined) ?? "inactive";
+  let subscriptionStatus = (billingData?.subscription_status as string | undefined) ?? "inactive";
   const hasStripeCustomer = Boolean(billingData?.stripe_customer_id);
+
+  if (hasStripeCustomer && !isPaidSubscriptionStatus(subscriptionStatus)) {
+    try {
+      const synced = await syncSubscriptionForUser(user.id);
+      if (synced) subscriptionStatus = synced;
+    } catch {
+      // Webhook may still catch up; avoid blocking onboarding.
+    }
+  }
+
   const hasActiveSendingAccount = Boolean(activeAccount?.id);
   const hasCompletedOnboarding =
     isPaidSubscriptionStatus(subscriptionStatus) && hasActiveSendingAccount;
