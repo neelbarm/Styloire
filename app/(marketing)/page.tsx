@@ -112,9 +112,9 @@ export default function MarketingHomePage() {
           <p className="mt-4 font-serif text-[clamp(1rem,2vw,1.55rem)] font-light italic text-[#ddd1c2]">
             Everything you need. Nothing you don&apos;t.
           </p>
-          <ul className="mx-auto mt-6 max-w-[35rem] space-y-1.5 text-left font-sans text-[0.86rem] font-light leading-[1.45] text-[#f1ede7] md:text-[0.96rem]">
+          <ul className="mx-auto mt-6 flex max-w-[35rem] flex-col items-center space-y-1.5 font-sans text-[0.86rem] font-light leading-[1.45] text-[#f1ede7] md:text-[0.96rem]">
             {features.map((feature) => (
-              <li key={feature}>- {feature}</li>
+              <li key={feature}>{feature}</li>
             ))}
           </ul>
         </div>
