@@ -61,18 +61,23 @@ export default function HowItWorksPage() {
 
           <div className="mt-10 space-y-7 md:mt-12 md:space-y-9">
             {steps.map((step) => (
-              <article key={step.index} className="text-center">
-                <p className="font-serif text-[clamp(2.8rem,6vw,4.25rem)] font-semibold leading-none text-white/92">
+              <article
+                key={step.index}
+                className="grid items-start gap-3 md:grid-cols-[5rem_1fr]"
+              >
+                <p className="text-center font-serif text-[clamp(2.8rem,6vw,4.25rem)] font-semibold leading-none text-white/92 md:pt-1">
                   {step.index}
                 </p>
-                <h2 className="mt-1 font-serif text-[clamp(1.15rem,2.2vw,1.85rem)] font-medium leading-[1.08] text-white">
-                  {step.title}
-                </h2>
-                {step.body && (
-                  <p className="mx-auto mt-2 max-w-[33rem] font-sans text-[0.82rem] font-light leading-[1.38] text-white/88 md:text-[0.95rem]">
-                    {step.body}
-                  </p>
-                )}
+                <div className="text-center">
+                  <h2 className="font-serif text-[clamp(1.15rem,2.2vw,1.85rem)] font-medium leading-[1.08] text-white">
+                    {step.title}
+                  </h2>
+                  {step.body && (
+                    <p className="mx-auto mt-2 max-w-[33rem] font-sans text-[0.82rem] font-light leading-[1.38] text-white/88 md:text-[0.95rem]">
+                      {step.body}
+                    </p>
+                  )}
+                </div>
               </article>
             ))}
           </div>
