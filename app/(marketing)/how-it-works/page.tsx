@@ -85,7 +85,7 @@ export default function HowItWorksPage() {
               href="https://youtu.be/ypYwEhfL1DM"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full border border-white/45 bg-white/10 px-8 py-2.5 font-sans text-[0.54rem] font-medium uppercase tracking-[0.18em] text-white/92 transition-[color,background-color,border-color,opacity,transform] duration-200 hover:-translate-y-[1px] hover:border-white/70 hover:bg-white/18"
+              className="inline-flex items-center justify-center rounded-full border border-white/45 bg-white/10 px-12 py-3.5 font-sans text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/92 transition-[color,background-color,border-color,opacity,transform] duration-200 hover:-translate-y-[1px] hover:border-white/70 hover:bg-white/18"
             >
               Demo Video
             </a>
