@@ -27,7 +27,7 @@ const steps = [
   {
     index: "03",
     title: "The Part You'll Love: Write Your Email Once",
-    body: ""
+    body: "Every email will go out personalized per brand - no copying and pasting, no manual edits."
   },
   {
     index: "04",
