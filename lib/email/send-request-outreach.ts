@@ -5,10 +5,43 @@ import {
   dispatchOutboundEmail,
   type ConnectedAccountRow,
 } from "./dispatch-outbound";
-import type { SendEmailInput, SendEmailRecipient } from "./types";
+import type {
+  SendEmailAttachment,
+  SendEmailInput,
+  SendEmailRecipient,
+} from "./types";
 
 const SEND_GAP_MS = 450;
 const MAX_SENDS_PER_RUN = 25;
+const ATTACHMENTS_BUCKET = "email-attachments";
+
+async function loadRequestAttachments(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<SendEmailAttachment[]> {
+  const { data: rows } = await supabase
+    .from("request_attachments")
+    .select("storage_path,filename,content_type")
+    .eq("request_id", requestId);
+
+  if (!rows?.length) return [];
+
+  const out: SendEmailAttachment[] = [];
+  for (const row of rows) {
+    const path = String(row.storage_path);
+    const { data: blob, error } = await supabase.storage
+      .from(ATTACHMENTS_BUCKET)
+      .download(path);
+    if (error || !blob) continue; // skip a missing file rather than fail the send
+    const content = Buffer.from(await blob.arrayBuffer());
+    out.push({
+      filename: String(row.filename),
+      contentType: String(row.content_type),
+      content,
+    });
+  }
+  return out;
+}
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -218,6 +251,9 @@ export async function sendRequestOutreach(params: {
   const pendingGroups = allBrandGroups.slice(0, MAX_SENDS_PER_RUN);
   const remaining = Math.max(0, allBrandGroups.length - pendingGroups.length);
 
+  // Attachments are the same for every brand email in this request; load once.
+  const attachments = await loadRequestAttachments(supabase, requestId);
+
   for (let i = 0; i < pendingGroups.length; i++) {
     const group = pendingGroups[i]!;
 
@@ -260,6 +296,7 @@ export async function sendRequestOutreach(params: {
       cc: ccEmails,
       fromEmail: row.email,
       fromName: row.display_name,
+      ...(attachments.length ? { attachments } : {}),
     };
 
     const sendResult = await dispatchOutboundEmail(supabase, row, message);

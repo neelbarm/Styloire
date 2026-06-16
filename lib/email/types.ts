@@ -5,6 +5,13 @@ export type SendEmailRecipient = {
   name?: string | null;
 };
 
+export type SendEmailAttachment = {
+  filename: string;
+  contentType: string;
+  /** Raw file bytes. */
+  content: Buffer;
+};
+
 export type SendEmailInput = {
   to: SendEmailRecipient[];
   subject: string;
@@ -14,6 +21,8 @@ export type SendEmailInput = {
   cc: string[];
   fromEmail: string;
   fromName?: string | null;
+  /** File attachments. Optional so existing callers stay valid. */
+  attachments?: SendEmailAttachment[];
 };
 
 export type SendEmailResult = { ok: true } | { ok: false; error: string };

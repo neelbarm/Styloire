@@ -8,6 +8,13 @@ type ContactInput = {
   contact_name: string;
 };
 
+type AttachmentInput = {
+  path: string;
+  filename: string;
+  contentType: string;
+  size: number;
+};
+
 type CreateRequestPayload = {
   talent: string;
   eventName: string;
@@ -17,7 +24,10 @@ type CreateRequestPayload = {
   selectedBrands: string[];
   emailSubject?: string;
   emailBody: string;
+  attachments?: AttachmentInput[];
 };
+
+const MAX_ATTACHMENTS = 10;
 
 function subjectTemplate(): string {
   return "{talent} / {event} / {brand_name}";
@@ -201,6 +211,35 @@ export async function POST(request: Request) {
   const { error: requestContactsError } = await supabase.from("request_contacts").insert(requestContacts);
   if (requestContactsError) {
     return NextResponse.json({ error: requestContactsError.message }, { status: 500 });
+  }
+
+  // Persist email attachments (uploaded earlier to the private bucket).
+  // Only accept files that live under this user's own storage prefix.
+  const attachmentRows = (body.attachments ?? [])
+    .filter(
+      (a) =>
+        a &&
+        typeof a.path === "string" &&
+        a.path.startsWith(`${userId}/`) &&
+        typeof a.filename === "string" &&
+        typeof a.contentType === "string",
+    )
+    .slice(0, MAX_ATTACHMENTS)
+    .map((a) => ({
+      request_id: requestRow.id,
+      storage_path: a.path,
+      filename: a.filename,
+      content_type: a.contentType,
+      size_bytes: Number.isFinite(a.size) ? Math.max(0, Math.trunc(a.size)) : 0,
+    }));
+
+  if (attachmentRows.length) {
+    const { error: attachmentsError } = await supabase
+      .from("request_attachments")
+      .insert(attachmentRows);
+    if (attachmentsError) {
+      return NextResponse.json({ error: attachmentsError.message }, { status: 500 });
+    }
   }
 
   if (clientProfileId) {

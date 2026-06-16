@@ -44,6 +44,15 @@ export async function sendViaSmtp(
       subject: message.subject,
       text: message.bodyText,
       ...(message.bodyHtml ? { html: message.bodyHtml } : {}),
+      ...(message.attachments?.length
+        ? {
+            attachments: message.attachments.map((a) => ({
+              filename: a.filename,
+              content: a.content,
+              contentType: a.contentType,
+            })),
+          }
+        : {}),
     });
     return { ok: true };
   } catch (e: unknown) {

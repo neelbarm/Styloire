@@ -87,6 +87,16 @@ export async function sendViaOutlook(
           ccRecipients: message.cc.map((address) => ({
             emailAddress: { address },
           })),
+          ...(message.attachments?.length
+            ? {
+                attachments: message.attachments.map((a) => ({
+                  "@odata.type": "#microsoft.graph.fileAttachment",
+                  name: a.filename,
+                  contentType: a.contentType,
+                  contentBytes: a.content.toString("base64"),
+                })),
+              }
+            : {}),
         },
         saveToSentItems: true,
       }),

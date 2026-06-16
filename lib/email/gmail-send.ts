@@ -1,6 +1,11 @@
 import { google } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
-import type { SendEmailInput, SendEmailRecipient, SendEmailResult } from "./types";
+import type {
+  SendEmailAttachment,
+  SendEmailInput,
+  SendEmailRecipient,
+  SendEmailResult,
+} from "./types";
 
 function encodeMimeWord(s: string): string {
   if (/^[\x01-\x7F]*$/.test(s)) return s;
@@ -14,9 +19,62 @@ function formatRecipient(recipient: SendEmailRecipient): string {
     : recipient.email;
 }
 
+function makeBoundary(tag: string): string {
+  return `styloire_${tag}_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2)}`;
+}
+
 function encodeBase64Body(content: string): string {
   const b64 = Buffer.from(content, "utf8").toString("base64");
   return b64.replace(/.{1,76}/g, (chunk) => `${chunk}\r\n`).trimEnd();
+}
+
+function encodeBase64Bytes(buf: Buffer): string {
+  return buf
+    .toString("base64")
+    .replace(/.{1,76}/g, (chunk) => `${chunk}\r\n`)
+    .trimEnd();
+}
+
+/** MIME lines for the message body alone (multipart/alternative or single part). */
+function buildBodyEntity(m: SendEmailInput): string[] {
+  if (m.bodyHtml) {
+    const boundary = makeBoundary("alt");
+    return [
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
+      "",
+      `--${boundary}`,
+      "Content-Type: text/plain; charset=UTF-8",
+      "Content-Transfer-Encoding: base64",
+      "",
+      encodeBase64Body(m.bodyText),
+      `--${boundary}`,
+      "Content-Type: text/html; charset=UTF-8",
+      "Content-Transfer-Encoding: base64",
+      "",
+      encodeBase64Body(m.bodyHtml),
+      `--${boundary}--`,
+    ];
+  }
+  return [
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    encodeBase64Body(m.bodyText),
+  ];
+}
+
+/** MIME lines for a single file attachment. */
+function buildAttachmentEntity(a: SendEmailAttachment): string[] {
+  const name = encodeMimeWord(a.filename);
+  return [
+    `Content-Type: ${a.contentType}; name="${name}"`,
+    "Content-Transfer-Encoding: base64",
+    `Content-Disposition: attachment; filename="${name}"`,
+    "",
+    encodeBase64Bytes(a.content),
+  ];
 }
 
 function buildRfc822(m: SendEmailInput): string {
@@ -31,30 +89,21 @@ function buildRfc822(m: SendEmailInput): string {
   lines.push(`Subject: ${encodeMimeWord(m.subject)}`);
   lines.push("MIME-Version: 1.0");
 
-  if (m.bodyHtml) {
-    const boundary = `styloire_${Date.now().toString(36)}_${Math.random()
-      .toString(36)
-      .slice(2)}`;
-    lines.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+  if (m.attachments?.length) {
+    const boundary = makeBoundary("mixed");
+    lines.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
     lines.push("");
     lines.push(`--${boundary}`);
-    lines.push("Content-Type: text/plain; charset=UTF-8");
-    lines.push("Content-Transfer-Encoding: base64");
-    lines.push("");
-    lines.push(encodeBase64Body(m.bodyText));
-    lines.push(`--${boundary}`);
-    lines.push("Content-Type: text/html; charset=UTF-8");
-    lines.push("Content-Transfer-Encoding: base64");
-    lines.push("");
-    lines.push(encodeBase64Body(m.bodyHtml));
+    lines.push(...buildBodyEntity(m));
+    for (const a of m.attachments) {
+      lines.push(`--${boundary}`);
+      lines.push(...buildAttachmentEntity(a));
+    }
     lines.push(`--${boundary}--`);
     return lines.join("\r\n");
   }
 
-  lines.push("Content-Type: text/plain; charset=UTF-8");
-  lines.push("Content-Transfer-Encoding: base64");
-  lines.push("");
-  lines.push(encodeBase64Body(m.bodyText));
+  lines.push(...buildBodyEntity(m));
   return lines.join("\r\n");
 }
 

@@ -41,6 +41,21 @@ type CcResponse = {
   error?: string;
 };
 
+type UploadedAttachment = {
+  path: string;
+  filename: string;
+  contentType: string;
+  size: number;
+};
+
+const MAX_ATTACHMENTS = 10;
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function groupContacts(contacts: BrandContact[]): GroupedContacts {
   return contacts.reduce<GroupedContacts>((acc, row) => {
     const key = row.brand_name.trim().toUpperCase();
@@ -77,8 +92,12 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
   const [submitError, setSubmitError] = useState("");
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
   const [sendRequestSignature, setSendRequestSignature] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
+  const [attachmentUploading, setAttachmentUploading] = useState(false);
+  const [attachmentError, setAttachmentError] = useState("");
   const profiles = initialProfiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const profileLoadSeqRef = useRef(0);
 
   // ── All derived state preserved exactly ─────────────────────────────────
@@ -307,8 +326,14 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
       selectedBrands,
       emailSubject: effectiveEmailSubject,
       emailBody,
+      attachments: attachments.map((a) => ({
+        path: a.path,
+        filename: a.filename,
+        contentType: a.contentType,
+        size: a.size,
+      })),
     }),
-    [contactsPayload, effectiveEmailSubject, emailBody, eventName, profileId, requestType, selectedBrands, talent]
+    [attachments, contactsPayload, effectiveEmailSubject, emailBody, eventName, profileId, requestType, selectedBrands, talent]
   );
   const requestSignature = useMemo(
     () =>
@@ -357,6 +382,58 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
 
     setSubmittedRequestId(requestId);
     setSubmitState("success");
+  };
+
+  const handleAttachmentChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setAttachmentError("");
+    setAttachmentUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (attachments.length >= MAX_ATTACHMENTS) {
+          setAttachmentError(`You can attach up to ${MAX_ATTACHMENTS} images.`);
+          break;
+        }
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/email/attachments", { method: "POST", body: fd });
+        const json = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          path?: string;
+          filename?: string;
+          contentType?: string;
+          size?: number;
+          error?: string;
+        };
+        if (!res.ok || !json.path) {
+          setAttachmentError(json.error ?? `Could not upload ${file.name}.`);
+          continue;
+        }
+        setAttachments((prev) => [
+          ...prev,
+          {
+            path: json.path!,
+            filename: json.filename ?? file.name,
+            contentType: json.contentType ?? file.type,
+            size: json.size ?? file.size,
+          },
+        ]);
+      }
+    } finally {
+      setAttachmentUploading(false);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (path: string) => {
+    setAttachments((prev) => prev.filter((a) => a.path !== path));
+    // Best-effort cleanup of the uploaded file; UI does not depend on the result.
+    void fetch("/api/email/attachments", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path }),
+    });
   };
 
   const submitRequest = async () => {
@@ -749,6 +826,58 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               />
             </label>
 
+            {/* Image attachments */}
+            <div className="space-y-2">
+              <span className={labelCls}>Image attachments</span>
+              <input
+                ref={attachmentInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                multiple
+                onChange={handleAttachmentChange}
+                className="hidden"
+              />
+              <div className="rounded-[0.35rem] border border-white/8 bg-black/18 px-4 py-3">
+                {attachments.length > 0 ? (
+                  <ul className="mb-3 space-y-2">
+                    {attachments.map((a) => (
+                      <li
+                        key={a.path}
+                        className="flex items-center justify-between gap-3 rounded-[0.3rem] border border-white/10 bg-white/[0.04] px-3 py-2"
+                      >
+                        <span className="truncate font-sans text-[0.85rem] text-white/78">
+                          {a.filename}
+                          <span className="ml-2 text-white/40">{formatBytes(a.size)}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(a.path)}
+                          className="shrink-0 font-sans text-[0.78rem] text-white/45 transition-colors hover:text-red-300"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => attachmentInputRef.current?.click()}
+                  disabled={attachmentUploading || attachments.length >= MAX_ATTACHMENTS}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/26 bg-white/8 px-4 py-1.5 font-sans text-[0.8rem] text-white/82 transition-colors hover:bg-white/14 disabled:opacity-40"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {attachmentUploading ? "Uploading…" : "Add images"}
+                </button>
+                <p className="mt-2 font-sans text-[0.72rem] text-white/38">
+                  PNG, JPEG, GIF, or WebP · up to 5 MB each · attached to every brand email.
+                </p>
+              </div>
+              {attachmentError ? (
+                <p className="font-sans text-[0.72rem] text-red-300">{attachmentError}</p>
+              ) : null}
+            </div>
+
             {/* Sending from */}
             <div className="space-y-2">
               <span className={labelCls}>Sending from</span>
@@ -869,6 +998,12 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 ) : (
                   <p className="font-sans text-[0.85rem] leading-relaxed text-white/60">—</p>
                 )}
+                {attachments.length > 0 ? (
+                  <p className="mt-3 font-sans text-[0.8rem] text-white/45">
+                    {attachments.length} image attachment{attachments.length > 1 ? "s" : ""}:{" "}
+                    {attachments.map((a) => a.filename).join(", ")}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
