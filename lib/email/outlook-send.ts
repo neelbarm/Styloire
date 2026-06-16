@@ -75,7 +75,9 @@ export async function sendViaOutlook(
       client.api("/me/sendMail").post({
         message: {
           subject: message.subject,
-          body: { contentType: "Text", content: message.bodyText },
+          body: message.bodyHtml
+            ? { contentType: "HTML", content: message.bodyHtml }
+            : { contentType: "Text", content: message.bodyText },
           toRecipients: message.to.map((recipient) => ({
             emailAddress: {
               address: recipient.email,

@@ -9,6 +9,7 @@ import {
   parseBrandContactsFileDetailed
 } from "@/lib/styloire/parse-contacts";
 import { renderTemplate } from "@/lib/styloire/template-render";
+import { RichTextEditor } from "@/components/app/rich-text-editor";
 
 // ─── Shared style tokens ──────────────────────────────────────────────────────
 const labelCls =
@@ -741,12 +742,10 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
             {/* Email body */}
             <label className="block space-y-2">
               <span className={labelCls}>Email body</span>
-              <textarea
-                rows={8}
+              <RichTextEditor
                 value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
+                onChange={setEmailBody}
                 placeholder="Write your pull request email here."
-                className={inputCls + " resize-y"}
               />
             </label>
 
@@ -862,9 +861,14 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               </div>
               <div className="px-5 py-4">
                 <p className={labelCls + " mb-2"}>Email preview</p>
-                <p className="whitespace-pre-wrap font-sans text-[0.85rem] leading-relaxed text-white/60 line-clamp-6">
-                  {mergedBody || emailBody || "—"}
-                </p>
+                {mergedBody || emailBody ? (
+                  <div
+                    className="tiptap-body font-sans text-[0.85rem] leading-relaxed text-white/60"
+                    dangerouslySetInnerHTML={{ __html: mergedBody || emailBody }}
+                  />
+                ) : (
+                  <p className="font-sans text-[0.85rem] leading-relaxed text-white/60">—</p>
+                )}
               </div>
             </div>
           </div>

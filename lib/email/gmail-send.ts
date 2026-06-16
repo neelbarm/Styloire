@@ -14,6 +14,11 @@ function formatRecipient(recipient: SendEmailRecipient): string {
     : recipient.email;
 }
 
+function encodeBase64Body(content: string): string {
+  const b64 = Buffer.from(content, "utf8").toString("base64");
+  return b64.replace(/.{1,76}/g, (chunk) => `${chunk}\r\n`).trimEnd();
+}
+
 function buildRfc822(m: SendEmailInput): string {
   const from = m.fromName
     ? `${encodeMimeWord(m.fromName)} <${m.fromEmail}>`
@@ -25,11 +30,31 @@ function buildRfc822(m: SendEmailInput): string {
   }
   lines.push(`Subject: ${encodeMimeWord(m.subject)}`);
   lines.push("MIME-Version: 1.0");
+
+  if (m.bodyHtml) {
+    const boundary = `styloire_${Date.now().toString(36)}_${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    lines.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+    lines.push("");
+    lines.push(`--${boundary}`);
+    lines.push("Content-Type: text/plain; charset=UTF-8");
+    lines.push("Content-Transfer-Encoding: base64");
+    lines.push("");
+    lines.push(encodeBase64Body(m.bodyText));
+    lines.push(`--${boundary}`);
+    lines.push("Content-Type: text/html; charset=UTF-8");
+    lines.push("Content-Transfer-Encoding: base64");
+    lines.push("");
+    lines.push(encodeBase64Body(m.bodyHtml));
+    lines.push(`--${boundary}--`);
+    return lines.join("\r\n");
+  }
+
   lines.push("Content-Type: text/plain; charset=UTF-8");
   lines.push("Content-Transfer-Encoding: base64");
   lines.push("");
-  const b64 = Buffer.from(m.bodyText, "utf8").toString("base64");
-  lines.push(b64.replace(/.{1,76}/g, (chunk) => `${chunk}\r\n`).trimEnd());
+  lines.push(encodeBase64Body(m.bodyText));
   return lines.join("\r\n");
 }
 

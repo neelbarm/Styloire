@@ -9,6 +9,8 @@ export type SendEmailInput = {
   to: SendEmailRecipient[];
   subject: string;
   bodyText: string;
+  /** HTML version of the body. Optional so existing callers stay valid. */
+  bodyHtml?: string;
   cc: string[];
   fromEmail: string;
   fromName?: string | null;

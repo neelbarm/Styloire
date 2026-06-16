@@ -43,6 +43,7 @@ export async function sendViaSmtp(
       cc: message.cc.length ? message.cc : undefined,
       subject: message.subject,
       text: message.bodyText,
+      ...(message.bodyHtml ? { html: message.bodyHtml } : {}),
     });
     return { ok: true };
   } catch (e: unknown) {

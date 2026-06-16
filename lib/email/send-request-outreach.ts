@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { renderBracedFields, renderTemplate } from "@/lib/styloire/template-render";
+import { bodyToHtml, bodyToPlainText } from "./body-format";
 import {
   dispatchOutboundEmail,
   type ConnectedAccountRow,
@@ -239,12 +240,14 @@ export async function sendRequestOutreach(params: {
       String(reqRow.email_subject_template),
       templateVars,
     );
-    const bodyText = renderTemplate(String(reqRow.email_body), {
+    const renderedBody = renderTemplate(String(reqRow.email_body), {
       talent,
       event,
       brand_name: brandName,
       contact_name: contactName,
     });
+    const bodyText = bodyToPlainText(renderedBody);
+    const bodyHtml = bodyToHtml(renderedBody);
 
     const message: SendEmailInput = {
       to: group.recipients.map((recipient) => ({
@@ -253,6 +256,7 @@ export async function sendRequestOutreach(params: {
       })),
       subject,
       bodyText,
+      bodyHtml,
       cc: ccEmails,
       fromEmail: row.email,
       fromName: row.display_name,

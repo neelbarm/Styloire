@@ -38,3 +38,25 @@
   color-scheme: light;
   @apply bg-stone-50 text-stone-900;
 }
+
+/* Rich text email body editor (Tiptap) */
+.tiptap-body p {
+  margin: 0 0 0.6em;
+}
+.tiptap-body p:last-child {
+  margin-bottom: 0;
+}
+.tiptap-body a {
+  color: #9db8d8;
+  text-decoration: underline;
+}
+.tiptap-body:focus {
+  outline: none;
+}
+.tiptap-body p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.3);
+}
