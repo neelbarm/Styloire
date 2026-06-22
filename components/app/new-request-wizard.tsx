@@ -392,7 +392,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
     try {
       for (const file of Array.from(files)) {
         if (attachments.length >= MAX_ATTACHMENTS) {
-          setAttachmentError(`You can attach up to ${MAX_ATTACHMENTS} images.`);
+          setAttachmentError(`You can attach up to ${MAX_ATTACHMENTS} files.`);
           break;
         }
         const fd = new FormData();
@@ -826,13 +826,12 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
               />
             </label>
 
-            {/* Image attachments */}
+            {/* Attachments */}
             <div className="space-y-2">
-              <span className={labelCls}>Image attachments</span>
+              <span className={labelCls}>Attachments</span>
               <input
                 ref={attachmentInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/gif,image/webp"
                 multiple
                 onChange={handleAttachmentChange}
                 className="hidden"
@@ -867,10 +866,10 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                   className="inline-flex items-center gap-2 rounded-full border border-white/26 bg-white/8 px-4 py-1.5 font-sans text-[0.8rem] text-white/82 transition-colors hover:bg-white/14 disabled:opacity-40"
                 >
                   <Upload className="h-3.5 w-3.5" />
-                  {attachmentUploading ? "Uploading…" : "Add images"}
+                  {attachmentUploading ? "Uploading…" : "Add files"}
                 </button>
                 <p className="mt-2 font-sans text-[0.72rem] text-white/38">
-                  PNG, JPEG, GIF, or WebP · up to 5 MB each · attached to every brand email.
+                  Most file types · up to 5 MB each · attached to every brand email.
                 </p>
               </div>
               {attachmentError ? (
@@ -1000,7 +999,7 @@ export function NewRequestWizard({ initialProfiles, initialProfileId }: Props) {
                 )}
                 {attachments.length > 0 ? (
                   <p className="mt-3 font-sans text-[0.8rem] text-white/45">
-                    {attachments.length} image attachment{attachments.length > 1 ? "s" : ""}:{" "}
+                    {attachments.length} attachment{attachments.length > 1 ? "s" : ""}:{" "}
                     {attachments.map((a) => a.filename).join(", ")}
                   </p>
                 ) : null}

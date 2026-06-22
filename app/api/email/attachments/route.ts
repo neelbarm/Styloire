@@ -4,26 +4,33 @@ import { isSupabaseConfigured } from "@/lib/supabase/service";
 import { getAuthedServiceRoleClient } from "@/lib/supabase/server";
 
 const BUCKET = "email-attachments";
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per image
-const ALLOWED_TYPES = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/jpg",
-  "image/gif",
-  "image/webp",
-]);
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per file
 
-const EXT_BY_TYPE: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/jpg": "jpg",
-  "image/gif": "gif",
-  "image/webp": "webp",
-};
+// Block executable / script types (defense-in-depth; email providers also reject these).
+const BLOCKED_EXTENSIONS = new Set([
+  "exe", "bat", "cmd", "com", "msi", "scr", "pif", "cpl", "jar",
+  "js", "jse", "vbs", "vbe", "ws", "wsf", "wsh", "ps1", "sh", "app",
+  "dmg", "deb", "rpm", "dll", "gadget", "hta", "lnk", "reg", "msc", "vb",
+]);
+const BLOCKED_CONTENT_TYPES = new Set([
+  "application/x-msdownload",
+  "application/x-msdos-program",
+  "application/x-executable",
+  "application/x-sh",
+  "application/x-bat",
+  "application/vnd.microsoft.portable-executable",
+]);
 
 function sanitizeFilename(name: string): string {
   const base = name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
-  return base || "image";
+  return base || "file";
+}
+
+/** Lower-cased extension from a filename, or "" if none. */
+function fileExtension(name: string): string {
+  const dot = name.lastIndexOf(".");
+  if (dot <= 0 || dot === name.length - 1) return "";
+  return name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 export async function POST(request: Request) {
@@ -44,27 +51,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No file provided." }, { status: 400 });
   }
 
-  if (!ALLOWED_TYPES.has(file.type)) {
+  const ext = fileExtension(file.name);
+  if (
+    (ext && BLOCKED_EXTENSIONS.has(ext)) ||
+    (file.type && BLOCKED_CONTENT_TYPES.has(file.type.toLowerCase()))
+  ) {
     return NextResponse.json(
-      { error: "Only PNG, JPEG, GIF, or WebP images are allowed." },
+      { error: "That file type isn't allowed for security reasons." },
       { status: 400 },
     );
   }
   if (file.size > MAX_BYTES) {
     return NextResponse.json(
-      { error: "Image is too large. Maximum size is 5 MB." },
+      { error: "File is too large. Maximum size is 5 MB." },
       { status: 400 },
     );
   }
 
-  const ext = EXT_BY_TYPE[file.type] ?? "img";
-  const storagePath = `${authed.userId}/${randomUUID()}.${ext}`;
+  const contentType = file.type || "application/octet-stream";
+  const storagePath = `${authed.userId}/${randomUUID()}${ext ? `.${ext}` : ""}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await authed.client.storage
     .from(BUCKET)
     .upload(storagePath, bytes, {
-      contentType: file.type,
+      contentType,
       upsert: false,
     });
 
@@ -76,7 +87,7 @@ export async function POST(request: Request) {
     ok: true,
     path: storagePath,
     filename: sanitizeFilename(file.name),
-    contentType: file.type,
+    contentType,
     size: file.size,
   });
 }
