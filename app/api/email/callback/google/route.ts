@@ -58,6 +58,21 @@ export async function GET(request: Request) {
     const { tokens } = await oauth2.getToken(code);
     oauth2.setCredentials(tokens);
 
+    // The connection is useless for sending unless the user granted gmail.send.
+    // Catch a missing grant here with a clear message instead of failing later
+    // at send time with a cryptic "insufficient authentication scopes" error.
+    const grantedScopes = (tokens.scope ?? "").split(/\s+/).filter(Boolean);
+    if (!grantedScopes.includes("https://www.googleapis.com/auth/gmail.send")) {
+      const res = NextResponse.redirect(
+        `${base}${next}?email_error=${encodeURIComponent(
+          "Gmail connected, but the “Send email on your behalf” permission wasn’t allowed. Please reconnect and make sure that box is checked.",
+        )}`,
+      );
+      res.cookies.delete(googleStateCookieName());
+      res.cookies.delete(googleNextCookieName());
+      return res;
+    }
+
     const oauth2Api = google.oauth2({ version: "v2", auth: oauth2 });
     const { data: profile } = await oauth2Api.userinfo.get();
     const email = profile.email?.toLowerCase();
